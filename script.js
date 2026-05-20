@@ -140,10 +140,17 @@ function closeAccountMenu() {
 function initAccountMenu() {
   if (!accountMenu || !accountToggle || !accountPanel) return;
 
+  accountPanel.hidden = true;
+  accountToggle.setAttribute("aria-expanded", "false");
+
   accountToggle.addEventListener("click", () => {
     const isOpen = accountToggle.getAttribute("aria-expanded") === "true";
     accountPanel.hidden = isOpen;
     accountToggle.setAttribute("aria-expanded", String(!isOpen));
+  });
+
+  accountPanel.addEventListener("click", (event) => {
+    event.stopPropagation();
   });
 
   document.addEventListener("click", (event) => {
@@ -273,6 +280,10 @@ function refreshAuthUi() {
 
   logoutButtons.forEach((button) => {
     button.hidden = !isSignedIn;
+  });
+
+  authButtons.forEach((button) => {
+    button.hidden = isSignedIn;
   });
 
   if (profileForm) {

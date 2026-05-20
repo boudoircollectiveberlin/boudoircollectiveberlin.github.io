@@ -132,6 +132,12 @@ textarea {
   color: var(--ink);
 }
 
+.nav-home::before {
+  content: "\2302";
+  margin-right: 7px;
+  font-size: 12px;
+}
+
 .nav-toggle {
   display: none;
   width: 44px;
@@ -258,6 +264,10 @@ textarea {
   border-radius: var(--radius);
   background: linear-gradient(180deg, #19191f, #101014);
   box-shadow: var(--shadow);
+}
+
+.account-menu__panel[hidden] {
+  display: none;
 }
 
 .account-menu__section {

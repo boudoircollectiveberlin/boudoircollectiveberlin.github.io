@@ -1,6 +1,7 @@
 const translations = {
   de: {
     htmlLang: "de",
+    navHome: "Home",
     navEvents: "Events",
     navCodex: "Codex",
     navWhatsapp: "WhatsApp",
@@ -141,6 +142,7 @@ const translations = {
   },
   en: {
     htmlLang: "en",
+    navHome: "Home",
     navEvents: "Events",
     navCodex: "Code",
     navWhatsapp: "WhatsApp",

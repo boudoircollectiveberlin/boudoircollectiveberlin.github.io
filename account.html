@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boudoir Collective Berlin | Login & Registrierung</title>
+  <meta name="description" content="Login, privates Community-Profil und Eventanmeldung für Boudoir Collective Berlin.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__name">Boudoir Collective Berlin</span>
+      <a class="brand__meta" href="https://instagram.com/boudoircollectiveberlin" target="_blank" rel="noopener" aria-label="Instagram @boudoircollectiveberlin">
+        <img src="assets/instagram_glyph_white.svg" alt="" aria-hidden="true">
+        <span>@boudoircollectiveberlin</span>
+      </a>
+    </div>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="sr-only">Menü</span>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Hauptnavigation" data-menu>
+      <a href="index.html#events" data-i18n="navEvents">Events</a>
+      <a href="index.html#codex" data-i18n="navCodex">Codex</a>
+      <a href="account.html" data-i18n="navRegister">Registrierung</a>
+      <a href="index.html#legal" data-i18n="navLegal">Rechtliches</a>
+    </nav>
+    <div class="lang-switch" aria-label="Language">
+      <span data-i18n="langLabel">Sprache</span>
+      <button type="button" data-lang="de" aria-pressed="true">DE</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="register" class="section section--register account-shell">
+      <div class="section__heading">
+        <p class="eyebrow" data-i18n="registerEyebrow">Registrierung</p>
+        <h1 class="account-title" data-i18n="loginTitle">Login & privates Community-Profil</h1>
+        <p data-i18n="loginCopy">Melde dich an und hinterlege, in welchen Bereichen du dich im Boudoir-Kontext bewegst. Profile sind nicht öffentlich und dienen vorerst nur Community-Prüfung, Updates und Eventorganisation.</p>
+      </div>
+
+      <div class="auth-panel">
+        <div class="auth-buttons">
+          <button class="button button--primary" type="button" data-auth-provider="google" data-i18n="authGoogle" disabled>Mit Google einloggen</button>
+          <button class="button button--ghost" type="button" data-auth-provider="microsoft" data-i18n="authMicrosoft" disabled>Mit Microsoft einloggen</button>
+          <button class="button button--ghost" type="button" data-auth-provider="github" data-i18n="authGithub" disabled>Mit GitHub einloggen</button>
+        </div>
+        <p id="auth-status" role="status" data-i18n="authUnavailable">Login ist noch nicht konfiguriert. Setze die Firebase Web App Variablen in Vercel und aktiviere die gewünschten Provider in Firebase Authentication.</p>
+      </div>
+
+      <form class="register-form profile-form" id="profile-form" novalidate>
+        <label>
+          <span data-i18n="profileName">Name / Community-Name</span>
+          <input name="displayName" autocomplete="name" placeholder="Name" required>
+        </label>
+        <fieldset class="checkbox-group full">
+          <legend data-i18n="profileFunctions">Bereiche im kreativen Prozess</legend>
+          <label class="checkbox"><input type="checkbox" name="functions" value="model"><span data-i18n="roleModel">Model</span></label>
+          <label class="checkbox"><input type="checkbox" name="functions" value="photographer"><span data-i18n="rolePhotographer">Fotograf:in</span></label>
+          <label class="checkbox"><input type="checkbox" name="functions" value="mua"><span data-i18n="roleMua">Make-up Artist</span></label>
+        </fieldset>
+        <label>
+          <span data-i18n="profileInstagram">Instagram</span>
+          <input name="instagram" placeholder="@username">
+        </label>
+        <label class="full">
+          <span data-i18n="profilePortfolio">Portfolio / Website</span>
+          <input name="portfolio" type="url" placeholder="https://...">
+        </label>
+        <label class="checkbox full">
+          <input type="checkbox" name="futureUpdates">
+          <span data-i18n="profileUpdates">Ich möchte Informationen über zukünftige Events erhalten.</span>
+        </label>
+        <label class="checkbox full">
+          <input type="checkbox" name="lobbyInfo">
+          <span data-i18n="profileLobby">Ich möchte Infos zur WhatsApp-Lobby erhalten.</span>
+        </label>
+        <label class="checkbox full">
+          <input type="checkbox" name="communityConsent" required>
+          <span data-i18n="communityConsentCopy">Ich akzeptiere den Community-Codex, insbesondere Consent, respektvollen Umgang, Privatsphäre und finale Bildfreigabe.</span>
+        </label>
+        <label class="checkbox full">
+          <input type="checkbox" name="communityPrivacy" required>
+          <span data-i18n="communityPrivacyCopy">Ich bin mit der Verarbeitung meiner Angaben zur Community-Prüfung, Kommunikation und Eventorganisation einverstanden.</span>
+        </label>
+        <div class="form-actions full">
+          <button class="button button--primary" type="submit" data-i18n="saveProfile">Profil speichern</button>
+          <p id="profile-status" role="status"></p>
+        </div>
+      </form>
+
+      <div class="section__heading section__heading--secondary">
+        <h2 data-i18n="eventSignupTitle">Eventanmeldung</h2>
+        <p data-i18n="eventSignupCopy">Eventinteresse wird später auf der jeweiligen Eventdetailseite möglich sein. Daraus entsteht noch keine Teilnahme: Erst wenn Rahmenbedingungen und Rollenmix passen, erhältst du Zahlungsinformationen. In das Event aufgenommen wird, wer bezahlt hat.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span data-i18n="footerName">Boudoir Collective Berlin</span>
+    <a class="instagram-link" href="https://instagram.com/boudoircollectiveberlin" target="_blank" rel="noopener" aria-label="Instagram @boudoircollectiveberlin">
+      <img src="assets/instagram_glyph_white.svg" alt="" aria-hidden="true">
+      <span>@boudoircollectiveberlin</span>
+    </a>
+  </footer>
+
+  <script src="i18n.js" defer></script>
+  <script src="site-config.js" defer></script>
+  <script src="script.js" defer></script>
+</body>
+</html>

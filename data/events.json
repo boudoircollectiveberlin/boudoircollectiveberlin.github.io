@@ -1,0 +1,122 @@
+{
+  "updatedAt": "2026-05-20",
+  "events": [
+    {
+      "id": "heilstaette-grabowsee-2026-07-04",
+      "group": "upcoming",
+      "type": "TFP / Costsharing",
+      "status": "interest",
+      "dateLabel": {
+        "de": "04.07.2026",
+        "en": "4 Jul 2026"
+      },
+      "timeLabel": {
+        "de": "Tagesformat, Details folgen",
+        "en": "Full-day format, details tba"
+      },
+      "location": {
+        "de": "Heilstätte Grabowsee",
+        "en": "Heilstätte Grabowsee"
+      },
+      "title": {
+        "de": "Heilstätte Grabowsee: Boudoir & Sensual",
+        "en": "Heilstätte Grabowsee: Boudoir & Sensual"
+      },
+      "summary": {
+        "de": "Community-Shooting in einer besonderen Lost-Place-Location mit Boudoir- und Sensual-Fokus.",
+        "en": "Community shoot in a distinctive lost-place location with a boudoir and sensual focus."
+      },
+      "format": {
+        "de": "Fotograf:innen und Models melden sich bevorzugt gemeinsam oder als kuratierte Einzelperson an. Pro Fotograf:in sind voraussichtlich 2-3 Models möglich. Es gibt keine festen Setbuchungen; vor Ort arbeiten wir mit Fairness-Policies, damit Sets nicht dauerhaft durch einzelne Personen blockiert werden.",
+        "en": "Photographers and models preferably apply together or as curated individuals. We expect 2-3 models per photographer to be possible. There will be no fixed set bookings; on site we will use fairness policies so sets are not permanently blocked by individual people."
+      },
+      "cost": {
+        "de": "konkrete Umlage pro Teilnehmer:in wird noch ermittelt",
+        "en": "exact cost share per participant tba"
+      },
+      "capacity": {
+        "photographers": null,
+        "models": null
+      },
+      "tags": ["location", "lost-place", "boudoir", "sensual", "tfp", "costsharing"]
+    },
+    {
+      "id": "schloss-wrodow-2026-08-08",
+      "group": "upcoming",
+      "type": "TFP / Costsharing",
+      "status": "interest",
+      "dateLabel": {
+        "de": "08.08.2026",
+        "en": "8 Aug 2026"
+      },
+      "timeLabel": {
+        "de": "Tagesformat, Details folgen",
+        "en": "Full-day format, details tba"
+      },
+      "location": {
+        "de": "Schloss Wrodow",
+        "en": "Schloss Wrodow"
+      },
+      "title": {
+        "de": "Schloss Wrodow: Boudoir & Sensual",
+        "en": "Schloss Wrodow: Boudoir & Sensual"
+      },
+      "summary": {
+        "de": "Community-Shooting in Schloss-Atmosphäre mit Raum für elegante, sinnliche Bildstrecken.",
+        "en": "Community shoot in a castle setting with room for elegant, sensual image stories."
+      },
+      "format": {
+        "de": "Fotograf:innen und Models melden sich bevorzugt gemeinsam oder als kuratierte Einzelperson an. Pro Fotograf:in sind voraussichtlich 2-3 Models möglich. Es gibt keine festen Setbuchungen; vor Ort arbeiten wir mit Fairness-Policies, damit Sets nicht dauerhaft durch einzelne Personen blockiert werden.",
+        "en": "Photographers and models preferably apply together or as curated individuals. We expect 2-3 models per photographer to be possible. There will be no fixed set bookings; on site we will use fairness policies so sets are not permanently blocked by individual people."
+      },
+      "cost": {
+        "de": "konkrete Umlage pro Teilnehmer:in wird noch ermittelt",
+        "en": "exact cost share per participant tba"
+      },
+      "capacity": {
+        "photographers": null,
+        "models": null
+      },
+      "tags": ["location", "castle", "boudoir", "sensual", "tfp", "costsharing"]
+    },
+    {
+      "id": "boudoir-sensual-open-studio-2026-03",
+      "group": "past",
+      "type": "TFP / Costsharing",
+      "status": "completed",
+      "dateLabel": {
+        "de": "28.03.2026",
+        "en": "28 Mar 2026"
+      },
+      "timeLabel": {
+        "de": "10:00-18:00",
+        "en": "10:00-18:00"
+      },
+      "location": {
+        "de": "Fotostyle Berlin",
+        "en": "Fotostyle Berlin"
+      },
+      "title": {
+        "de": "Boudoir & Sensual - Offenes Studioshooting",
+        "en": "Boudoir & Sensual - Open Studio Shoot"
+      },
+      "summary": {
+        "de": "Das ursprüngliche Boudoirshoot-Berlin Format mit festem Kern-Pairing, optionalen Kollaborationen und klarer Kostenumlage.",
+        "en": "The original Boudoirshoot Berlin format with core pairings, optional collaborations and transparent cost sharing."
+      },
+      "format": {
+        "de": "Strukturierter Studiotag für Fotograf:innen und Models im Bereich Boudoir & Sensual.",
+        "en": "A structured studio day for photographers and models in boudoir and sensual photography."
+      },
+      "cost": {
+        "de": "max. 90 EUR pro Fotograf:in-Model-Paar",
+        "en": "max. EUR 90 per photographer-model pair"
+      },
+      "capacity": {
+        "photographers": 12,
+        "models": 12
+      },
+      "tags": ["past", "studio", "boudoir", "sensual"]
+    }
+  ]
+}

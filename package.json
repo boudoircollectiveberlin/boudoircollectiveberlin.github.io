@@ -1,0 +1,22 @@
+{
+  "name": "boudoircollectiveberlin-site",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Community and event page for Boudoir Collective Berlin.",
+  "scripts": {
+    "serve": "npx serve .",
+    "dev": "npx vercel dev",
+    "check": "node --check api/events.js && node --check api/register.js && node --check api/member.js && node --check api/config.js && node --check api/_google.js"
+  },
+  "dependencies": {
+    "googleapis": "^118.0.0",
+    "jose": "^6.2.3"
+  },
+  "devDependencies": {
+    "serve": "^14.2.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

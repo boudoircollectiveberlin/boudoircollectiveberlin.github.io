@@ -33,10 +33,33 @@
       <a href="account.html" data-i18n="navRegister">Registrierung</a>
       <a href="#legal" data-i18n="navLegal">Rechtliches</a>
     </nav>
-    <div class="lang-switch" aria-label="Language">
-      <span data-i18n="langLabel">Sprache</span>
-      <button type="button" data-lang="de" aria-pressed="true">DE</button>
-      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    <div class="topbar__actions">
+      <div class="lang-switch" aria-label="Language">
+        <span data-i18n="langLabel">Sprache</span>
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="account-menu" data-account-menu>
+        <button class="account-menu__trigger" type="button" aria-expanded="false" aria-controls="account-flyout" data-account-toggle>
+          <span class="sr-only" data-i18n="accountMenu">Account</span>
+          <span class="account-menu__icon" aria-hidden="true"></span>
+        </button>
+        <div class="account-menu__panel" id="account-flyout" hidden data-account-panel>
+          <div class="account-menu__section">
+            <p class="account-menu__eyebrow" data-i18n="accountMenu">Account</p>
+            <p class="account-menu__status" id="topbar-auth-status" role="status" data-i18n="authFlyoutSignedOut">Login für Profil, Eventanmeldung und spätere Updates.</p>
+          </div>
+          <div class="account-menu__section auth-buttons">
+            <button class="button button--primary" type="button" data-auth-provider="google" data-i18n="authGoogle" disabled>Mit Google einloggen</button>
+            <button class="button button--ghost" type="button" data-auth-provider="microsoft" data-i18n="authMicrosoft" disabled>Mit Microsoft einloggen</button>
+            <button class="button button--ghost" type="button" data-auth-provider="github" data-i18n="authGithub" disabled>Mit GitHub einloggen</button>
+          </div>
+          <div class="account-menu__section account-menu__links">
+            <a class="button button--ghost" href="account.html" data-i18n="accountFlyoutRegister">Zur Registrierung</a>
+            <button class="button button--ghost" type="button" data-auth-logout hidden data-i18n="authLogout">Logout</button>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 

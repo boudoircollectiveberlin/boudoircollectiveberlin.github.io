@@ -177,6 +177,12 @@ textarea {
   font-weight: 680;
 }
 
+.topbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .lang-switch button {
   min-width: 36px;
   min-height: 32px;
@@ -191,6 +197,96 @@ textarea {
   background: var(--accent);
   color: var(--accent-ink);
   border-color: rgba(232, 201, 183, .72);
+}
+
+.account-menu {
+  position: relative;
+}
+
+.account-menu__trigger {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .04);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.account-menu__icon {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  position: relative;
+}
+
+.account-menu__icon::before,
+.account-menu__icon::after {
+  content: "";
+  position: absolute;
+  inset: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+}
+
+.account-menu__icon::before {
+  width: 6px;
+  height: 6px;
+  top: 27%;
+  background: currentColor;
+}
+
+.account-menu__icon::after {
+  width: 10px;
+  height: 4px;
+  top: 70%;
+  background: currentColor;
+}
+
+.account-menu__panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(360px, calc(100vw - 24px));
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #19191f, #101014);
+  box-shadow: var(--shadow);
+}
+
+.account-menu__section {
+  display: grid;
+  gap: 10px;
+}
+
+.account-menu__eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 760;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+.account-menu__status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.account-menu__links {
+  grid-template-columns: 1fr;
+}
+
+.account-menu .auth-buttons,
+.account-menu__links {
+  display: grid;
 }
 
 main {
@@ -561,15 +657,24 @@ h3 {
 }
 
 .auth-panel {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 12px;
-  align-items: center;
   margin-top: 18px;
   padding: 14px;
   border: 1px solid rgba(255, 255, 255, .12);
   border-radius: var(--radius);
   background: rgba(0, 0, 0, .16);
+}
+
+.auth-panel__title,
+.auth-panel__note {
+  margin: 0;
+}
+
+.auth-panel__title {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 760;
 }
 
 .cta-panel {
@@ -611,6 +716,21 @@ h3 {
 
 .profile-form {
   margin-bottom: 12px;
+}
+
+.account-locked {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px dashed rgba(232, 201, 183, .32);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, .03);
+}
+
+.account-locked p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
 }
 
 .register-form {
@@ -947,7 +1067,7 @@ textarea:focus,
   }
 
   .nav,
-  .lang-switch {
+  .topbar__actions {
     grid-column: 1 / -1;
   }
 
@@ -975,13 +1095,22 @@ textarea:focus,
     border-color: rgba(255, 255, 255, .08);
   }
 
-  .lang-switch {
-    justify-content: flex-start;
+  .topbar__actions {
+    justify-content: space-between;
     display: none;
   }
 
-  .topbar[data-menu-open="true"] .lang-switch {
+  .topbar[data-menu-open="true"] .topbar__actions {
     display: inline-flex;
+  }
+
+  .lang-switch {
+    justify-content: flex-start;
+  }
+
+  .account-menu__panel {
+    right: 0;
+    left: auto;
   }
 
   .section-band,

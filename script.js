@@ -8,9 +8,15 @@ const profileForm = document.querySelector("#profile-form");
 const formStatus = document.querySelector("#form-status");
 const profileStatus = document.querySelector("#profile-status");
 const authStatus = document.querySelector("#auth-status");
+const topbarAuthStatus = document.querySelector("#topbar-auth-status");
 const authButtons = Array.from(document.querySelectorAll("[data-auth-provider]"));
+const logoutButtons = Array.from(document.querySelectorAll("[data-auth-logout]"));
 const menuToggle = document.querySelector("[data-menu-toggle]");
 const topbar = document.querySelector(".topbar");
+const accountMenu = document.querySelector("[data-account-menu]");
+const accountToggle = document.querySelector("[data-account-toggle]");
+const accountPanel = document.querySelector("[data-account-panel]");
+const profileLocked = document.querySelector("#profile-locked");
 
 let eventsCache = [];
 let authState = {
@@ -18,7 +24,8 @@ let authState = {
   profile: null,
   config: null,
   auth: null,
-  providers: {}
+  providers: {},
+  profileComplete: false
 };
 
 function t(key) {
@@ -124,6 +131,30 @@ function initMenu() {
   });
 }
 
+function closeAccountMenu() {
+  if (!accountToggle || !accountPanel) return;
+  accountPanel.hidden = true;
+  accountToggle.setAttribute("aria-expanded", "false");
+}
+
+function initAccountMenu() {
+  if (!accountMenu || !accountToggle || !accountPanel) return;
+
+  accountToggle.addEventListener("click", () => {
+    const isOpen = accountToggle.getAttribute("aria-expanded") === "true";
+    accountPanel.hidden = isOpen;
+    accountToggle.setAttribute("aria-expanded", String(!isOpen));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!accountMenu.contains(event.target)) closeAccountMenu();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeAccountMenu();
+  });
+}
+
 function initContactFlyout() {
   const flyout = document.querySelector("#contact-flyout");
   const flyoutImage = document.querySelector("#contact-flyout-image");
@@ -179,6 +210,7 @@ function initContactFlyout() {
 }
 
 function setStatus(element, message, isError = false) {
+  if (!element) return;
   element.textContent = message;
   element.style.color = isError ? "#ffb4a8" : "rgba(255, 255, 255, .72)";
 }
@@ -201,6 +233,7 @@ async function handleFirebaseUser(user) {
     name: user.displayName || "",
     provider: user.providerData[0]?.providerId || ""
   };
+  authState.profileComplete = localStorage.getItem(`bcb-profile-complete:${authState.profile.uid}`) === "true";
 
   if (form) {
     form.elements.email.value = authState.profile.email || "";
@@ -209,7 +242,45 @@ async function handleFirebaseUser(user) {
   if (profileForm?.elements.displayName && !profileForm.elements.displayName.value) {
     profileForm.elements.displayName.value = authState.profile.name || "";
   }
-  setStatus(authStatus, `${t("signedInAs")} ${authState.profile.email}`);
+  refreshAuthUi();
+}
+
+function handleSignedOutState() {
+  authState.idToken = "";
+  authState.profile = null;
+  authState.profileComplete = false;
+
+  if (profileForm) {
+    profileForm.hidden = true;
+  }
+  if (profileLocked) {
+    profileLocked.hidden = false;
+  }
+
+  refreshAuthUi();
+}
+
+function refreshAuthUi() {
+  const isSignedIn = Boolean(authState.profile?.email);
+  const email = authState.profile?.email || "";
+  const signedInMessage = isSignedIn ? `${t("signedInAs")} ${email}` : t("authFlyoutSignedOut");
+  const profileMessage = isSignedIn
+    ? (authState.profileComplete ? t("accountFlowComplete") : t("accountFlowIncomplete"))
+    : t("accountFlowCopy");
+
+  setStatus(topbarAuthStatus, signedInMessage);
+  setStatus(authStatus, isSignedIn ? profileMessage : t("authFlyoutSignedOut"));
+
+  logoutButtons.forEach((button) => {
+    button.hidden = !isSignedIn;
+  });
+
+  if (profileForm) {
+    profileForm.hidden = !isSignedIn;
+  }
+  if (profileLocked) {
+    profileLocked.hidden = isSignedIn;
+  }
 }
 
 async function initFirebaseLogin() {
@@ -226,6 +297,8 @@ async function initFirebaseLogin() {
 
   if (!hasFirebaseConfig) {
     authButtons.forEach((button) => { button.disabled = true; });
+    setStatus(topbarAuthStatus, t("authUnavailable"), true);
+    setStatus(authStatus, t("authUnavailable"), true);
     return;
   }
 
@@ -240,6 +313,7 @@ async function initFirebaseLogin() {
       GoogleAuthProvider,
       OAuthProvider,
       onAuthStateChanged,
+      signOut,
       signInWithPopup
     } = authModule;
 
@@ -259,19 +333,38 @@ async function initFirebaseLogin() {
         try {
           const result = await signInWithPopup(authState.auth, authState.providers[provider]);
           await handleFirebaseUser(result.user);
+          closeAccountMenu();
         } catch {
           setStatus(authStatus, t("signupError"), true);
+          setStatus(topbarAuthStatus, t("signupError"), true);
+        }
+      });
+    });
+
+    logoutButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        try {
+          await signOut(authState.auth);
+          closeAccountMenu();
+        } catch {
+          setStatus(topbarAuthStatus, t("signupError"), true);
         }
       });
     });
 
     onAuthStateChanged(authState.auth, async (user) => {
-      if (user) await handleFirebaseUser(user);
+      if (user) {
+        await handleFirebaseUser(user);
+        return;
+      }
+      handleSignedOutState();
     });
 
-    setStatus(authStatus, "");
+    refreshAuthUi();
   } catch {
     authButtons.forEach((button) => { button.disabled = true; });
+    setStatus(topbarAuthStatus, t("authUnavailable"), true);
+    setStatus(authStatus, t("authUnavailable"), true);
   }
 }
 
@@ -348,6 +441,11 @@ profileForm?.addEventListener("submit", async (event) => {
     });
 
     if (!response.ok) throw new Error("member_failed");
+    if (authState.profile?.uid) {
+      localStorage.setItem(`bcb-profile-complete:${authState.profile.uid}`, "true");
+      authState.profileComplete = true;
+      refreshAuthUi();
+    }
     setStatus(profileStatus, t("profileSaved"));
   } catch {
     setStatus(profileStatus, t("signupError"), true);
@@ -404,6 +502,7 @@ window.addEventListener("bcb:languagechange", () => {
 });
 
 initMenu();
+initAccountMenu();
 initContactFlyout();
 loadEvents().then(renderEvents);
 initFirebaseLogin();

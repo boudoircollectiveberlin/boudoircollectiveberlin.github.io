@@ -21,6 +21,11 @@ const accountMenu = document.querySelector("[data-account-menu]");
 const accountToggle = document.querySelector("[data-account-toggle]");
 const accountPanel = document.querySelector("[data-account-panel]");
 const profileLocked = document.querySelector("#profile-locked");
+const joinTitle = document.querySelector("[data-join-title]");
+const joinCopy = document.querySelector("[data-join-copy]");
+const joinNote = document.querySelector("[data-join-note]");
+const joinPrimary = document.querySelector("[data-join-primary]");
+const registerPrimary = document.querySelector("[data-register-primary]");
 
 let eventsCache = [];
 let authState = {
@@ -58,6 +63,27 @@ function applyMemberProfile(member) {
   profileForm.elements.communityConsent.checked = member.communityConsent === true;
   profileForm.elements.communityPrivacy.checked = member.communityPrivacy === true;
   setCheckedValues("functions", member.functions || []);
+}
+
+function refreshLandingCtas() {
+  const hasProfile = authState.profileComplete;
+
+  if (joinTitle) {
+    joinTitle.textContent = t(hasProfile ? "joinTitleRegistered" : "joinTitle");
+  }
+  if (joinCopy) {
+    joinCopy.textContent = t(hasProfile ? "joinCopyRegistered" : "joinCopy");
+  }
+  if (joinNote) {
+    joinNote.textContent = t(hasProfile ? "joinNoteRegistered" : "joinNote");
+  }
+
+  [joinPrimary, registerPrimary].forEach((link) => {
+    if (!link) return;
+    link.textContent = t(hasProfile ? "heroPrimaryExplore" : "heroPrimary");
+    link.href = hasProfile ? "#events" : "account.html";
+    link.hidden = false;
+  });
 }
 
 async function loadMemberProfile() {
@@ -376,6 +402,8 @@ function refreshAuthUi() {
   if (profileLocked) {
     profileLocked.hidden = isSignedIn;
   }
+
+  refreshLandingCtas();
 }
 
 async function initFirebaseLogin() {

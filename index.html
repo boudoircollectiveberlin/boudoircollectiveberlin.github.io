@@ -48,6 +48,7 @@
         <div class="account-menu__panel" id="account-flyout" hidden data-account-panel>
           <div class="account-menu__section">
             <p class="account-menu__eyebrow" data-i18n="accountMenu">Account</p>
+            <p class="account-menu__badge" id="topbar-member-status" hidden></p>
             <p class="account-menu__status" id="topbar-auth-status" role="status" data-i18n="authFlyoutSignedOut">Login für Profil, Eventanmeldung und spätere Updates.</p>
           </div>
           <div class="account-menu__section auth-buttons">
@@ -56,7 +57,7 @@
             <button class="button button--ghost" type="button" data-auth-provider="github" data-i18n="authGithub" disabled>Mit GitHub einloggen</button>
           </div>
           <div class="account-menu__section account-menu__links">
-            <a class="button button--ghost" href="account.html" data-i18n="accountFlyoutRegister">Zur Registrierung</a>
+            <a class="button button--ghost" href="account.html" data-account-profile-link data-i18n="accountFlyoutRegister">Zur Registrierung</a>
             <button class="button button--ghost" type="button" data-auth-logout hidden data-i18n="authLogout">Logout</button>
           </div>
         </div>

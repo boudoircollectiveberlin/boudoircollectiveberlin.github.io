@@ -19,6 +19,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -290,6 +294,17 @@ textarea {
   font-size: 13px;
 }
 
+.account-menu__badge {
+  width: fit-content;
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid rgba(232, 201, 183, .32);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 760;
+}
+
 .account-menu__links {
   grid-template-columns: 1fr;
 }
@@ -416,9 +431,10 @@ h1 {
 }
 
 .account-title {
-  max-width: none;
+  max-width: 100%;
   font-size: clamp(28px, 3.5vw, 42px);
   line-height: 1.08;
+  overflow-wrap: anywhere;
 }
 
 h2 {
@@ -567,6 +583,7 @@ h3 {
 .steps p,
 .event-card p {
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .metrics,
@@ -724,6 +741,51 @@ h3 {
   font-size: 13px;
 }
 
+.account-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account-steps li,
+.future-profile,
+.privacy-actions {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, .14);
+}
+
+.account-steps li {
+  opacity: .7;
+}
+
+.account-steps li[data-state="current"],
+.account-steps li[data-state="done"] {
+  opacity: 1;
+  border-color: rgba(232, 201, 183, .36);
+}
+
+.account-steps strong,
+.future-profile strong,
+.privacy-actions strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.account-steps span,
+.future-profile span,
+.privacy-actions span {
+  color: var(--muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
 .profile-form {
   margin-bottom: 12px;
 }
@@ -741,6 +803,15 @@ h3 {
 .account-locked p:last-child {
   margin-bottom: 0;
   color: var(--muted);
+}
+
+.future-profile,
+.privacy-actions {
+  margin-top: 20px;
+}
+
+.privacy-actions .button {
+  width: fit-content;
 }
 
 .register-form {
@@ -1149,7 +1220,8 @@ textarea:focus,
 
   .event-grid,
   .codex-grid,
-  .contact-grid {
+  .contact-grid,
+  .account-steps {
     grid-template-columns: 1fr;
   }
 

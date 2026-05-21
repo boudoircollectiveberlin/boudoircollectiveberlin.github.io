@@ -109,7 +109,7 @@ Empfohlene Header:
 `Members`
 
 ```text
-timestamp | firebase_uid | verified_email | display_name | provider | functions | instagram | portfolio | future_updates | lobby_info | community_consent | community_privacy
+timestamp | firebase_uid | verified_email | display_name | provider | functions | instagram | portfolio | future_updates | lobby_info | community_consent | community_privacy | member_status | private_profile_visibility | community_profile_visibility
 ```
 
 `Registrations`
@@ -197,11 +197,13 @@ Vor Livegang prüfen:
 2. Login mit Microsoft funktioniert.
 3. Login mit GitHub funktioniert.
 4. Community-Profil schreibt eine Zeile in `Members`.
-5. `data/events.json` wird öffentlich geladen.
-6. `GET /api/config` liefert Firebase Config.
-7. CORS funktioniert von GitHub Pages zur Vercel-Domain.
-8. Footer/Header/Instagram/WhatsApp-Links zeigen korrekt.
-9. Impressum und Datenschutz final prüfen.
+5. Eingeloggte Personen ohne gespeichertes privates Profil werden zur Profilanlage geführt.
+6. Lösch-/Auskunftsanfrage ist im Account und Datenschutztext auffindbar.
+7. `data/events.json` wird öffentlich geladen.
+8. `GET /api/config` liefert Firebase Config.
+9. CORS funktioniert von GitHub Pages zur Vercel-Domain.
+10. Footer/Header/Instagram/WhatsApp-Links zeigen korrekt.
+11. Impressum und Datenschutz final prüfen.
 
 ## 11. Was ins Repo gehört
 

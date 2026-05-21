@@ -76,12 +76,15 @@ export default async function handler(req, res) {
           body.futureUpdates === true ? "yes" : "no",
           body.lobbyInfo === true ? "yes" : "no",
           body.communityConsent === true ? "yes" : "no",
-          body.communityPrivacy === true ? "yes" : "no"
+          body.communityPrivacy === true ? "yes" : "no",
+          "registered",
+          "orga_only",
+          "none"
         ]]
       }
     });
 
-    res.status(200).json({ ok: true });
+    res.status(200).json({ ok: true, memberStatus: "registered" });
   } catch (error) {
     console.error("member_failed", { message: error.message });
     res.status(error.statusCode || 500).json({ ok: false, error: "member_failed" });

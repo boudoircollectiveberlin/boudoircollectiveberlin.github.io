@@ -98,13 +98,14 @@ Für DSGVO-Konformität sollten vor Launch ergänzt werden:
 - Löschfrist für Interessensbekundungen
 - Empfänger und Zugriffsberechtigte
 - Hinweis auf Vercel, Firebase Authentication und Google Sheets als eingesetzte Dienstleister
-- Prozess für Auskunft und Löschung
+
+Der Accountbereich enthält bereits eine E-Mail-Aktion für Auskunft, Korrektur und Löschung. Vor Livegang muss daraus ein verbindlicher Orga-Prozess werden: Identität prüfen, betroffene Zeilen in `Members`/`Registrations` finden, nicht mehr benötigte Daten löschen oder anonymisieren, gesetzliche Aufbewahrungspflichten dokumentieren.
 
 Das ist technische Vorarbeit, keine Rechtsberatung.
 
 ## Profilmodell
 
-Community-Profile sind vorerst nicht öffentlich. Sie dienen nur der internen Prüfung, Eventorganisation und gewünschten Updates. Bereits bei der Community-Registrierung müssen Name bzw. Community-Name, Codex und Datenverarbeitung bestätigt werden. Statt einer exklusiven Rolle wird gespeichert, in welchen Bereichen sich eine Person bewegt:
+Community-Profile sind vorerst nicht öffentlich. Das erste Pflichtprofil ist ein privates Orga-Profil und dient nur der internen Prüfung, Eventorganisation und gewünschten Updates. Bereits bei der Community-Registrierung müssen Name bzw. Community-Name, Codex und Datenverarbeitung bestätigt werden. Statt einer exklusiven Rolle wird gespeichert, in welchen Bereichen sich eine Person bewegt:
 
 - `model`
 - `photographer`
@@ -112,11 +113,19 @@ Community-Profile sind vorerst nicht öffentlich. Sie dienen nur der internen Pr
 
 Mehrfachauswahl ist ausdrücklich erlaubt, weil Personen im Boudoir-Kontext mehrere Funktionen einnehmen können.
 
+Statuslogik:
+
+- `needs_profile`: Firebase Login vorhanden, aber privates Profil noch nicht gespeichert; keine Eventbewerbung.
+- `registered`: privates Profil gespeichert; Updates und Eventbewerbungen möglich; Orga-Prüfung offen.
+- `confirmed`: spätere Ausbaustufe für bestätigte Community-Mitglieder.
+
+Ein späteres community-sichtbares Profil soll separat per Opt-in entstehen, nur für `confirmed` Mitglieder sichtbar sein und jederzeit deaktivierbar bzw. löschbar sein. Es wird bewusst nicht automatisch aus dem privaten Orga-Profil veröffentlicht.
+
 ## Eventmodell
 
 Die Events sind bewusst nicht als reine 1:1-Pairings modelliert. Ein Event kann Rollenlimits, Team-Anmeldungen und kleine Gruppensets abbilden. Die Orga entscheidet nach Anmeldung, welche Kombination bestätigt wird.
 
-Eventinteresse ist nur für eingeloggte Accounts möglich und soll nicht aus der allgemeinen Community-Registrierung heraus angeboten werden, sondern aus der jeweiligen Eventdetailseite. Daraus entsteht noch keine Teilnahme. Ablauf:
+Eventinteresse ist nur für registrierte Accounts mit gespeichertem privatem Profil möglich und soll nicht aus der allgemeinen Community-Registrierung heraus angeboten werden, sondern aus der jeweiligen Eventdetailseite. Daraus entsteht noch keine Teilnahme. Ablauf:
 
 1. Community-Validierung über Lobby/Profil.
 2. Eventinteresse über Eventdetailseite.
@@ -141,7 +150,7 @@ timestamp | registration_id | event_id | firebase_uid | provider | event_functio
 Empfohlenes `Members`-Set:
 
 ```text
-timestamp | firebase_uid | verified_email | display_name | provider | functions | instagram | portfolio | future_updates | lobby_info | community_consent | community_privacy
+timestamp | firebase_uid | verified_email | display_name | provider | functions | instagram | portfolio | future_updates | lobby_info | community_consent | community_privacy | member_status | private_profile_visibility | community_profile_visibility
 ```
 
 ## Partner-Bestätigung

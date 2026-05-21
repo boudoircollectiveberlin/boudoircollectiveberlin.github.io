@@ -9,8 +9,12 @@ const formStatus = document.querySelector("#form-status");
 const profileStatus = document.querySelector("#profile-status");
 const authStatus = document.querySelector("#auth-status");
 const topbarAuthStatus = document.querySelector("#topbar-auth-status");
+const topbarMemberStatus = document.querySelector("#topbar-member-status");
 const authButtons = Array.from(document.querySelectorAll("[data-auth-provider]"));
+const authButtonSections = Array.from(document.querySelectorAll(".account-menu .auth-buttons"));
 const logoutButtons = Array.from(document.querySelectorAll("[data-auth-logout]"));
+const accountProfileLinks = Array.from(document.querySelectorAll("[data-account-profile-link]"));
+const accountStages = Array.from(document.querySelectorAll("[data-account-stage]"));
 const menuToggle = document.querySelector("[data-menu-toggle]");
 const topbar = document.querySelector(".topbar");
 const accountMenu = document.querySelector("[data-account-menu]");
@@ -27,6 +31,14 @@ let authState = {
   providers: {},
   profileComplete: false
 };
+
+function isAccountPage() {
+  return window.location.pathname.endsWith("/account.html") || window.location.pathname.endsWith("account.html");
+}
+
+function profileStorageKey(uid) {
+  return `bcb-profile-complete:${uid}`;
+}
 
 function t(key) {
   return window.BCB_I18N?.translate(key) || key;
@@ -240,7 +252,7 @@ async function handleFirebaseUser(user) {
     name: user.displayName || "",
     provider: user.providerData[0]?.providerId || ""
   };
-  authState.profileComplete = localStorage.getItem(`bcb-profile-complete:${authState.profile.uid}`) === "true";
+  authState.profileComplete = localStorage.getItem(profileStorageKey(authState.profile.uid)) === "true";
 
   if (form) {
     form.elements.email.value = authState.profile.email || "";
@@ -250,6 +262,10 @@ async function handleFirebaseUser(user) {
     profileForm.elements.displayName.value = authState.profile.name || "";
   }
   refreshAuthUi();
+
+  if (!authState.profileComplete && !isAccountPage()) {
+    window.location.href = "account.html#profile-form";
+  }
 }
 
 function handleSignedOutState() {
@@ -271,12 +287,19 @@ function refreshAuthUi() {
   const isSignedIn = Boolean(authState.profile?.email);
   const email = authState.profile?.email || "";
   const signedInMessage = isSignedIn ? `${t("signedInAs")} ${email}` : t("authFlyoutSignedOut");
+  const memberStatus = !isSignedIn
+    ? ""
+    : (authState.profileComplete ? t("memberStatusRegistered") : t("memberStatusNeedsProfile"));
   const profileMessage = isSignedIn
     ? (authState.profileComplete ? t("accountFlowComplete") : t("accountFlowIncomplete"))
     : t("accountFlowCopy");
 
   setStatus(topbarAuthStatus, signedInMessage);
   setStatus(authStatus, isSignedIn ? profileMessage : t("authFlyoutSignedOut"));
+  if (topbarMemberStatus) {
+    topbarMemberStatus.hidden = !memberStatus;
+    topbarMemberStatus.textContent = memberStatus;
+  }
 
   logoutButtons.forEach((button) => {
     button.hidden = !isSignedIn;
@@ -284,6 +307,27 @@ function refreshAuthUi() {
 
   authButtons.forEach((button) => {
     button.hidden = isSignedIn;
+  });
+  authButtonSections.forEach((section) => {
+    section.hidden = isSignedIn;
+  });
+
+  accountProfileLinks.forEach((link) => {
+    link.textContent = isSignedIn
+      ? (authState.profileComplete ? t("accountFlyoutProfile") : t("accountFlyoutCompleteProfile"))
+      : t("accountFlyoutRegister");
+    link.classList.toggle("button--primary", isSignedIn && !authState.profileComplete);
+    link.classList.toggle("button--ghost", !isSignedIn || authState.profileComplete);
+    link.href = isSignedIn && !authState.profileComplete ? "account.html#profile-form" : "account.html";
+  });
+
+  accountStages.forEach((stage) => {
+    const name = stage.dataset.accountStage;
+    let state = "locked";
+    if (name === "profile") state = isSignedIn && !authState.profileComplete ? "current" : (authState.profileComplete ? "done" : "locked");
+    if (name === "registered") state = authState.profileComplete ? "current" : "locked";
+    if (name === "confirmed") state = "locked";
+    stage.dataset.state = state;
   });
 
   if (profileForm) {
@@ -453,7 +497,7 @@ profileForm?.addEventListener("submit", async (event) => {
 
     if (!response.ok) throw new Error("member_failed");
     if (authState.profile?.uid) {
-      localStorage.setItem(`bcb-profile-complete:${authState.profile.uid}`, "true");
+      localStorage.setItem(profileStorageKey(authState.profile.uid), "true");
       authState.profileComplete = true;
       refreshAuthUi();
     }
@@ -470,6 +514,12 @@ form?.addEventListener("submit", async (event) => {
 
   if (!authState.idToken) {
     setStatus(formStatus, t("mustLogin"), true);
+    return;
+  }
+
+  if (!authState.profileComplete) {
+    setStatus(formStatus, t("accountFlowIncomplete"), true);
+    if (!isAccountPage()) window.location.href = "account.html#profile-form";
     return;
   }
 
@@ -510,6 +560,7 @@ form?.addEventListener("submit", async (event) => {
 
 window.addEventListener("bcb:languagechange", () => {
   if (eventsCache.length) renderEvents(eventsCache);
+  refreshAuthUi();
 });
 
 initMenu();

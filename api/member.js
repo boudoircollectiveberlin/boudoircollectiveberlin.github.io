@@ -44,7 +44,10 @@ async function loadMemberProfile(identity) {
   const rows = response.data.values || [];
   for (let index = rows.length - 1; index >= 0; index -= 1) {
     const row = rows[index];
-    if (clean(row?.[1], 200) === identity.sub) {
+    const rowUid = clean(row?.[1], 200);
+    const rowEmail = clean(row?.[2], 200).toLowerCase();
+    const identityEmail = clean(identity.email, 200).toLowerCase();
+    if (rowUid === identity.sub || (!rowUid && identityEmail && rowEmail === identityEmail)) {
       return memberFromRow(row);
     }
   }

@@ -94,7 +94,7 @@ export async function verifyFirebaseIdToken(idToken) {
   }
 
   return {
-    sub: payload.uid,
+    sub: payload.sub || payload.user_id || "",
     email: payload.email || "",
     name: payload.name || "",
     picture: payload.picture || "",

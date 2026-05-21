@@ -1,4 +1,4 @@
-import { applyCors, getSheetsClient, readBody, verifyFirebaseIdToken } from "./_google.js";
+import { applyCors, getSheetsClient, readBearerToken, readBody, verifyFirebaseIdToken } from "./_google.js";
 
 function clean(value, maxLength = 600) {
   return String(value || "").trim().slice(0, maxLength);
@@ -13,6 +13,45 @@ function normalizeFunctions(value) {
     .filter((entry) => ALLOWED_FUNCTIONS.has(entry));
 }
 
+function parseBoolean(value) {
+  return String(value || "").trim().toLowerCase() === "yes";
+}
+
+function memberFromRow(row) {
+  return {
+    displayName: clean(row[3], 120),
+    provider: clean(row[4], 60),
+    functions: normalizeFunctions(String(row[5] || "").split(",")),
+    instagram: clean(row[6], 80),
+    portfolio: clean(row[7], 300),
+    futureUpdates: parseBoolean(row[8]),
+    lobbyInfo: parseBoolean(row[9]),
+    communityConsent: parseBoolean(row[10]),
+    communityPrivacy: parseBoolean(row[11]),
+    memberStatus: clean(row[12], 40) || "registered",
+    privateProfileVisibility: clean(row[13], 40) || "orga_only",
+    communityProfileVisibility: clean(row[14], 40) || "none"
+  };
+}
+
+async function loadMemberProfile(identity) {
+  const sheets = getSheetsClient();
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: process.env.REGISTRATION_SHEET_ID,
+    range: process.env.MEMBER_SHEET_RANGE || "Members!A:Z"
+  });
+
+  const rows = response.data.values || [];
+  for (let index = rows.length - 1; index >= 0; index -= 1) {
+    const row = rows[index];
+    if (clean(row?.[1], 200) === identity.sub) {
+      return memberFromRow(row);
+    }
+  }
+
+  return null;
+}
+
 export default async function handler(req, res) {
   applyCors(req, res);
 
@@ -21,7 +60,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (req.method !== "POST") {
+  if (req.method !== "POST" && req.method !== "GET") {
     res.status(405).json({ ok: false, error: "method_not_allowed" });
     return;
   }
@@ -29,6 +68,13 @@ export default async function handler(req, res) {
   try {
     if (!process.env.REGISTRATION_SHEET_ID) {
       throw new Error("Missing REGISTRATION_SHEET_ID");
+    }
+
+    if (req.method === "GET") {
+      const identity = await verifyFirebaseIdToken(readBearerToken(req));
+      const member = await loadMemberProfile(identity);
+      res.status(200).json({ ok: true, member });
+      return;
     }
 
     const body = readBody(req);

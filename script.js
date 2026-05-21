@@ -26,6 +26,7 @@ let eventsCache = [];
 let authState = {
   idToken: "",
   profile: null,
+  member: null,
   config: null,
   auth: null,
   providers: {},
@@ -38,6 +39,40 @@ function isAccountPage() {
 
 function profileStorageKey(uid) {
   return `bcb-profile-complete:${uid}`;
+}
+
+function setCheckedValues(name, values) {
+  const allowed = new Set(Array.isArray(values) ? values : []);
+  document.querySelectorAll(`input[name="${name}"]`).forEach((input) => {
+    input.checked = allowed.has(input.value);
+  });
+}
+
+function applyMemberProfile(member) {
+  if (!profileForm || !member) return;
+  profileForm.elements.displayName.value = member.displayName || authState.profile?.name || "";
+  profileForm.elements.instagram.value = member.instagram || "";
+  profileForm.elements.portfolio.value = member.portfolio || "";
+  profileForm.elements.futureUpdates.checked = member.futureUpdates === true;
+  profileForm.elements.lobbyInfo.checked = member.lobbyInfo === true;
+  profileForm.elements.communityConsent.checked = member.communityConsent === true;
+  profileForm.elements.communityPrivacy.checked = member.communityPrivacy === true;
+  setCheckedValues("functions", member.functions || []);
+}
+
+async function loadMemberProfile() {
+  if (!authState.idToken) return null;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/member`, {
+      headers: { Authorization: `Bearer ${authState.idToken}` }
+    });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return payload.member || null;
+  } catch {
+    return null;
+  }
 }
 
 function t(key) {
@@ -252,13 +287,17 @@ async function handleFirebaseUser(user) {
     name: user.displayName || "",
     provider: user.providerData[0]?.providerId || ""
   };
-  authState.profileComplete = localStorage.getItem(profileStorageKey(authState.profile.uid)) === "true";
+  authState.member = await loadMemberProfile();
+  authState.profileComplete = Boolean(authState.member);
 
   if (form) {
     form.elements.email.value = authState.profile.email || "";
     form.elements.name.value = authState.profile.name || "";
   }
-  if (profileForm?.elements.displayName && !profileForm.elements.displayName.value) {
+  if (authState.member) {
+    applyMemberProfile(authState.member);
+    localStorage.setItem(profileStorageKey(authState.profile.uid), "true");
+  } else if (profileForm?.elements.displayName && !profileForm.elements.displayName.value) {
     profileForm.elements.displayName.value = authState.profile.name || "";
   }
   refreshAuthUi();
@@ -271,6 +310,7 @@ async function handleFirebaseUser(user) {
 function handleSignedOutState() {
   authState.idToken = "";
   authState.profile = null;
+  authState.member = null;
   authState.profileComplete = false;
 
   if (profileForm) {
@@ -496,6 +536,7 @@ profileForm?.addEventListener("submit", async (event) => {
     });
 
     if (!response.ok) throw new Error("member_failed");
+    authState.member = payloadFromProfileForm(profileForm);
     if (authState.profile?.uid) {
       localStorage.setItem(profileStorageKey(authState.profile.uid), "true");
       authState.profileComplete = true;

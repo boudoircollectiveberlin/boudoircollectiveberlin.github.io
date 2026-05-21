@@ -34,7 +34,7 @@ export function applyCors(req, res) {
 
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
 export function readBody(req) {
@@ -47,6 +47,12 @@ export function readBody(req) {
   }
 
   return {};
+}
+
+export function readBearerToken(req) {
+  const header = req.headers.authorization || "";
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1] : "";
 }
 
 export async function verifyFirebaseIdToken(idToken) {

@@ -534,6 +534,10 @@ h3 {
   max-width: 720px;
 }
 
+.section__cta {
+  margin-top: 12px;
+}
+
 .section__heading--secondary {
   margin-top: 34px;
 }

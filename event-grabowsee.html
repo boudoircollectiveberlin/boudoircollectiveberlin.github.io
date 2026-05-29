@@ -69,7 +69,7 @@
       <div class="event-hero__content">
         <p class="eyebrow" data-i18n="grabowseeHeroEyebrow">04.07.2026 · TFP / Costsharing</p>
         <h1 id="event-title" data-i18n="grabowseeHeroTitle">Heilst&auml;tte Grabowsee: Boudoir &amp; Sensual</h1>
-        <p data-i18n="grabowseeHeroCopy">Community-Shooting in einer besonderen Lost-Place-Location. Bewerbungen sind als Model, Fotograf:in oder MUA m&ouml;glich. Feste Partner:innen k&ouml;nnen vorgeschlagen werden; die Bewerbung wird erst g&uuml;ltig, wenn die vorgeschlagene Person per E-Mail best&auml;tigt und ebenfalls ein Community-Profil nutzt.</p>
+        <p data-i18n="grabowseeHeroCopy">Community-Shooting in einer besonderen Lost-Place-Location. Eine Person reicht die Bewerbung f&uuml;r das geplante Setup ein; weitere beteiligte Personen werden per Einladungslink eingebunden. Vollst&auml;ndig ist die Bewerbung erst, wenn diese Einladungen mit eingeloggt best&auml;tigten Accounts angenommen wurden.</p>
         <div class="hero__actions">
           <a class="button button--primary" href="#application" data-i18n="grabowseeHeroPrimary">Bewerbung starten</a>
           <a class="button button--ghost" href="#location-reference" data-i18n="grabowseeHeroSecondary">Location ansehen</a>
@@ -80,13 +80,13 @@
     <section class="section section--split">
       <div class="section__heading">
         <p class="eyebrow" data-i18n="grabowseeFlowEyebrow">Bewerbungslogik</p>
-        <h2 data-i18n="grabowseeFlowTitle">Fairer Rollenmix statt First Come, First Served</h2>
-        <p data-i18n="grabowseeFlowCopy">Grabowsee braucht einen ausgewogenen Mix. Ziel ist, dass pro Fotograf:in mindestens ein Model best&auml;tigt ist. Solo-Bewerbungen sind willkommen; Pairing- oder Gruppenvorschl&auml;ge helfen der Orga bei der Kuratierung.</p>
+        <h2 data-i18n="grabowseeFlowTitle">Bewerbung, Best&auml;tigung, Admin-Freigabe</h2>
+        <p data-i18n="grabowseeFlowCopy">Eine Bewerbung wird immer von einer hauptverantwortlichen Person eingereicht. Weitere beteiligte Personen werden eingeladen und machen die Bewerbung erst vollst&auml;ndig, wenn sie den Link mit eingeloggt best&auml;tigtem Account annehmen. Danach pr&uuml;fen Admins jede Bewerbung einzeln und geben sie frei oder lehnen sie ab.</p>
       </div>
       <div class="steps">
         <article><span>1</span><h3 data-i18n="grabowseeStep1Title">Profil</h3><p data-i18n="grabowseeStep1Copy">Login und privates Community-Profil sind Pflicht, weil die E-Mail dar&uuml;ber best&auml;tigt ist.</p></article>
-        <article><span>2</span><h3 data-i18n="grabowseeStep2Title">Bewerbung</h3><p data-i18n="grabowseeStep2Copy">Du bewirbst dich solo oder schl&auml;gst Partner:innen vor. Partner:innen erhalten eine E-Mail mit Best&auml;tigen-/Ablehnen-Link.</p></article>
-        <article><span>3</span><h3 data-i18n="grabowseeStep3Title">Kuratierung</h3><p data-i18n="grabowseeStep3Copy">Die Orga pr&uuml;ft Rollenmix, Partnerbest&auml;tigungen, Codex-Fit und Kapazit&auml;t. Admins best&auml;tigen, lehnen ab oder setzen Bewerbungen zur&uuml;ck.</p></article>
+        <article><span>2</span><h3 data-i18n="grabowseeStep2Title">Einladungen</h3><p data-i18n="grabowseeStep2Copy">Die hauptverantwortliche Person tr&auml;gt die weiteren Beteiligten ein. Diese erhalten eine E-Mail und m&uuml;ssen den Link mit eingeloggt best&auml;tigtem Account annehmen, damit die Bewerbung vollst&auml;ndig wird.</p></article>
+        <article><span>3</span><h3 data-i18n="grabowseeStep3Title">Admin-Pr&uuml;fung</h3><p data-i18n="grabowseeStep3Copy">Sobald alle Einladungen best&auml;tigt sind, pr&uuml;fen Admins jede Bewerbung einzeln und geben sie frei, lehnen sie ab oder setzen sie zur&uuml;ck.</p></article>
       </div>
     </section>
 
@@ -131,7 +131,7 @@
       <div class="section__heading">
         <p class="eyebrow" data-i18n="grabowseeApplicationEyebrow">Bewerbung</p>
         <h2 data-i18n="grabowseeApplicationTitle">F&uuml;r Grabowsee bewerben</h2>
-        <p data-i18n="grabowseeApplicationCopy">Bitte zuerst einloggen und dein privates Community-Profil speichern. Partner:innen werden per Mail gefragt und m&uuml;ssen ihre Beteiligung best&auml;tigen; ohne Best&auml;tigung bleibt die Bewerbung unvollst&auml;ndig.</p>
+        <p data-i18n="grabowseeApplicationCopy">Bitte zuerst einloggen und dein privates Community-Profil speichern. Eine Person reicht die Bewerbung f&uuml;r das geplante Setup ein; weitere Beteiligte werden per Mail eingeladen und m&uuml;ssen mit eingeloggt best&auml;tigtem Account annehmen. Erst danach kann die Bewerbung von Admins gepr&uuml;ft und freigegeben werden.</p>
       </div>
       <form class="register-form" id="register-form" novalidate>
         <input type="hidden" name="eventId" value="heilstaette-grabowsee-2026-07-04">
@@ -148,29 +148,21 @@
         <label><span data-i18n="emailLabel">E-Mail</span><input name="email" type="email" autocomplete="email" required></label>
         <label><span data-i18n="profileInstagram">Instagram</span><input name="instagram" placeholder="@username"></label>
         <label class="full"><span data-i18n="profilePortfolio">Portfolio / Website</span><input name="portfolio" type="url" placeholder="https://..."></label>
-        <label><span data-i18n="partnerLabel">Mitangemeldete Person</span><input name="partnerName" placeholder="Name" data-i18n-attrs="placeholder:partnerPlaceholder"></label>
-        <label><span data-i18n="partnerEmailLabel">E-Mail der mitangemeldeten Person</span><input name="partnerEmail" type="email" placeholder="email@example.com" data-i18n-attrs="placeholder:partnerEmailPlaceholder"></label>
-        <label><span data-i18n="partnerInstagramLabel">Partner Instagram</span><input name="partnerInstagram" placeholder="@username"></label>
+        <label><span data-i18n="grabowseeInviteLabel">Eingeladene Person</span><input name="partnerName" placeholder="Name" data-i18n-attrs="placeholder:grabowseeInvitePlaceholder"></label>
+        <label><span data-i18n="grabowseeInviteEmailLabel">E-Mail der eingeladenen Person</span><input name="partnerEmail" type="email" placeholder="email@example.com" data-i18n-attrs="placeholder:grabowseeInviteEmailPlaceholder"></label>
+        <label><span data-i18n="grabowseeInviteInstagramLabel">Instagram der eingeladenen Person</span><input name="partnerInstagram" placeholder="@username"></label>
         <label>
-          <span data-i18n="partnerFunctionLabel">Funktion der mitangemeldeten Person</span>
+          <span data-i18n="grabowseeInviteFunctionLabel">Funktion der eingeladenen Person</span>
           <select name="partnerFunction">
-            <option value="" data-i18n="partnerFunctionPlaceholder">Keine / offen</option>
+            <option value="" data-i18n="grabowseeInviteFunctionPlaceholder">Keine / offen</option>
             <option value="model" data-i18n="roleModel">Model</option>
             <option value="photographer" data-i18n="rolePhotographer">Fotograf:in</option>
             <option value="mua" data-i18n="roleMua">Make-up Artist</option>
           </select>
         </label>
-        <label class="full">
-          <span data-i18n="pairingLabel">Wunschformat</span>
-          <select name="pairing" required>
-            <option value="open" data-i18n="pairingOpen">Offen / nach Kuratierung</option>
-            <option value="fixed" data-i18n="pairingFixed">festes Fotograf:in-Model-Pairing</option>
-            <option value="group" data-i18n="pairingGroup">kleines Set mit 2-3 Models</option>
-          </select>
-        </label>
         <label class="full"><span data-i18n="notesLabel">Hinweise</span><textarea name="notes" rows="5" data-i18n-placeholder="notesPlaceholder" placeholder="Erfahrung, Bildideen, Grenzen, organisatorische Hinweise"></textarea></label>
         <label class="honeypot">Website<input name="website" tabindex="-1" autocomplete="off"></label>
-        <label class="checkbox full"><input type="checkbox" name="partnerNotice"><span data-i18n="partnerNoticeCopy">Falls ich eine andere Person mit anmelde, best&auml;tige ich, dass ich sie informieren darf. Die Person kann sp&auml;ter per E-Mail best&auml;tigen oder ablehnen.</span></label>
+        <label class="checkbox full"><input type="checkbox" name="partnerNotice"><span data-i18n="grabowseeInviteNoticeCopy">Falls ich weitere beteiligte Personen eintrage, best&auml;tige ich, dass ich sie einladen darf. Diese Personen erhalten einen Link und m&uuml;ssen mit eingeloggt best&auml;tigtem Account annehmen oder ablehnen.</span></label>
         <label class="checkbox full"><input type="checkbox" name="consent" required><span data-i18n="consentCopy">Ich akzeptiere den Codex, insbesondere Consent, Privatsph&auml;re am Set und finale Bildfreigabe.</span></label>
         <label class="checkbox full"><input type="checkbox" name="privacy" required><span data-i18n="privacyCopy">Ich bin mit der Verarbeitung meiner Angaben zur Eventorganisation einverstanden.</span></label>
         <div class="form-actions full">

@@ -33,7 +33,7 @@ export function applyCors(req, res) {
   }
 
   res.setHeader("Vary", "Origin");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
@@ -53,6 +53,26 @@ export function readBearerToken(req) {
   const header = req.headers.authorization || "";
   const match = header.match(/^Bearer\s+(.+)$/i);
   return match ? match[1] : "";
+}
+
+export function clean(value, maxLength = 600) {
+  return String(value || "").trim().slice(0, maxLength);
+}
+
+export function configuredEmails(name) {
+  return (process.env[name] || "")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function isAdminIdentity(identity) {
+  const email = clean(identity?.email, 200).toLowerCase();
+  return Boolean(email && configuredEmails("ADMIN_EMAILS").includes(email));
+}
+
+export function publicBaseUrl(req) {
+  return (process.env.PUBLIC_SITE_URL || req.headers.origin || "").replace(/\/$/, "");
 }
 
 export async function verifyFirebaseIdToken(idToken) {

@@ -1,8 +1,4 @@
-import { applyCors, getSheetsClient, readBearerToken, readBody, verifyFirebaseIdToken } from "./_google.js";
-
-function clean(value, maxLength = 600) {
-  return String(value || "").trim().slice(0, maxLength);
-}
+import { applyCors, clean, getSheetsClient, readBearerToken, readBody, verifyFirebaseIdToken } from "./_google.js";
 
 const ALLOWED_FUNCTIONS = new Set(["model", "photographer", "mua"]);
 
@@ -30,7 +26,10 @@ function memberFromRow(row) {
     communityPrivacy: parseBoolean(row[11]),
     memberStatus: clean(row[12], 40) || "registered",
     privateProfileVisibility: clean(row[13], 40) || "orga_only",
-    communityProfileVisibility: clean(row[14], 40) || "none"
+    communityProfileVisibility: clean(row[14], 40) || "none",
+    discoverable: parseBoolean(row[15]),
+    discoverableName: clean(row[16], 120),
+    discoverableIntro: clean(row[17], 600)
   };
 }
 
@@ -128,7 +127,10 @@ export default async function handler(req, res) {
           body.communityPrivacy === true ? "yes" : "no",
           "registered",
           "orga_only",
-          "none"
+          body.discoverable === true ? "confirmed_members" : "none",
+          body.discoverable === true ? "yes" : "no",
+          clean(body.discoverableName || displayName, 120),
+          clean(body.discoverableIntro, 600)
         ]]
       }
     });

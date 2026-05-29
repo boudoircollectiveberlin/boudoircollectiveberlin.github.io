@@ -634,6 +634,10 @@ h3 {
   gap: 12px;
 }
 
+.event-card__link {
+  margin-top: auto;
+}
+
 .event-card__top {
   display: flex;
   justify-content: space-between;
@@ -1131,6 +1135,131 @@ textarea:focus,
   font-size: 13px;
 }
 
+.event-hero {
+  position: relative;
+  min-height: clamp(520px, 68vh, 680px);
+  margin-top: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.event-hero__image {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, .78), rgba(0, 0, 0, .32) 55%, rgba(0, 0, 0, .08)),
+    linear-gradient(180deg, rgba(0, 0, 0, .08), rgba(0, 0, 0, .78)),
+    url("assets/images/location/grabowsee/grabowsee-corridor.jpg") center / cover no-repeat;
+}
+
+.event-hero__content {
+  position: relative;
+  z-index: 1;
+  min-height: inherit;
+  width: min(760px, 100%);
+  display: grid;
+  align-content: end;
+  gap: 18px;
+  padding: clamp(24px, 6vw, 58px);
+}
+
+.event-hero__content h1 {
+  max-width: 14ch;
+}
+
+.event-hero__content p:not(.eyebrow) {
+  max-width: 64ch;
+  margin: 0;
+  color: rgba(255, 255, 255, .82);
+  font-size: clamp(16px, 1.5vw, 18px);
+}
+
+.reference-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.reference-gallery figure {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, .18);
+}
+
+.reference-gallery img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.reference-gallery figcaption {
+  padding: 10px 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.attribution,
+.footer__license {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.admin-panel {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid rgba(232, 201, 183, .32);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, .18);
+}
+
+.admin-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 18px;
+}
+
+.admin-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, .04);
+}
+
+.admin-row strong,
+.admin-row span {
+  display: block;
+}
+
+.admin-row span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.admin-row__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 @media (max-width: 920px) {
   .topbar {
     display: grid;
@@ -1219,9 +1348,12 @@ textarea:focus,
   }
 
   .event-grid,
+  .reference-gallery,
   .codex-grid,
   .contact-grid,
-  .account-steps {
+  .account-steps,
+  .admin-tools,
+  .admin-row {
     grid-template-columns: 1fr;
   }
 

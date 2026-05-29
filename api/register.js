@@ -1,13 +1,10 @@
 import crypto from "node:crypto";
-import { applyCors, getSheetsClient, readBody, verifyFirebaseIdToken } from "./_google.js";
+import { actionUrl, sendMail } from "./_mail.js";
+import { applyCors, clean, getSheetsClient, readBody, verifyFirebaseIdToken } from "./_google.js";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INSTAGRAM_RE = /^@?[a-zA-Z0-9._]{1,30}$/;
 const ALLOWED_EVENT_FUNCTIONS = new Set(["model", "photographer", "mua", "team", "other"]);
-
-function clean(value, maxLength = 600) {
-  return String(value || "").trim().slice(0, maxLength);
-}
 
 function validate(payload) {
   const errors = {};
@@ -65,6 +62,19 @@ function registrationId(data) {
     .slice(0, 16);
 }
 
+function randomToken() {
+  return crypto.randomBytes(24).toString("base64url");
+}
+
+function hashToken(token) {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+function eventLabel(eventId) {
+  if (eventId === "heilstaette-grabowsee-2026-07-04") return "Heilstätte Grabowsee";
+  return eventId;
+}
+
 export default async function handler(req, res) {
   applyCors(req, res);
 
@@ -94,6 +104,8 @@ export default async function handler(req, res) {
 
     const id = registrationId(result.data);
     const timestamp = new Date().toISOString();
+    const undoToken = randomToken();
+    const partnerToken = result.data.partnerEmail ? randomToken() : "";
     const sheets = getSheetsClient();
     const range = process.env.REGISTRATION_SHEET_RANGE || "Registrations!A:Z";
 
@@ -120,12 +132,57 @@ export default async function handler(req, res) {
           result.data.pairing,
           result.data.portfolio,
           result.data.whatsappIntent,
-          result.data.notes
+          result.data.notes,
+          result.data.partnerEmail ? "pending_partner" : "pending_review",
+          hashToken(undoToken),
+          partnerToken ? hashToken(partnerToken) : "",
+          "",
+          timestamp
         ]]
       }
     });
 
-    res.status(200).json({ ok: true, registrationId: id });
+    const undoUrl = actionUrl(req, "undo-registration", undoToken);
+    await sendMail({
+      to: identity.email,
+      subject: `Boudoir Collective Berlin: registration received for ${eventLabel(result.data.eventId)}`,
+      text: [
+        `Hi ${result.data.name},`,
+        "",
+        `we received your application for ${eventLabel(result.data.eventId)}.`,
+        result.data.partnerEmail
+          ? `Your suggested partner (${result.data.partnerEmail}) still needs to confirm before the application is valid.`
+          : "The organizer team will review the role mix and come back to you.",
+        "",
+        `If this was not you, undo the registration here: ${undoUrl}`,
+        "",
+        "Boudoir Collective Berlin"
+      ].join("\n"),
+      html: `<p>Hi ${result.data.name},</p><p>We received your application for <strong>${eventLabel(result.data.eventId)}</strong>.</p><p>${result.data.partnerEmail ? `Your suggested partner (${result.data.partnerEmail}) still needs to confirm before the application is valid.` : "The organizer team will review the role mix and come back to you."}</p><p><a href="${undoUrl}">This was not me - undo this registration</a></p><p>Boudoir Collective Berlin</p>`
+    });
+
+    if (result.data.partnerEmail && partnerToken) {
+      const confirmUrl = actionUrl(req, "confirm-partner", partnerToken);
+      const rejectUrl = actionUrl(req, "reject-partner", partnerToken);
+      await sendMail({
+        to: result.data.partnerEmail,
+        subject: `Boudoir Collective Berlin: partner confirmation for ${eventLabel(result.data.eventId)}`,
+        text: [
+          `Hi ${result.data.partnerName || ""},`,
+          "",
+          `${result.data.name} suggested you as a partner for ${eventLabel(result.data.eventId)}.`,
+          "Please create/sign in to your community profile as well. The application is only valid once you confirm.",
+          "",
+          `Confirm partner application: ${confirmUrl}`,
+          `Reject this suggestion: ${rejectUrl}`,
+          "",
+          "Boudoir Collective Berlin"
+        ].join("\n"),
+        html: `<p>Hi ${result.data.partnerName || ""},</p><p>${result.data.name} suggested you as a partner for <strong>${eventLabel(result.data.eventId)}</strong>.</p><p>Please create/sign in to your community profile as well. The application is only valid once you confirm.</p><p><a href="${confirmUrl}">Confirm partner application</a></p><p><a href="${rejectUrl}">Reject this suggestion</a></p><p>Boudoir Collective Berlin</p>`
+      });
+    }
+
+    res.status(200).json({ ok: true, registrationId: id, mailConfigured: Boolean(process.env.RESEND_API_KEY) });
   } catch (error) {
     console.error("registration_failed", { message: error.message });
     res.status(error.statusCode || 500).json({ ok: false, error: "registration_failed" });

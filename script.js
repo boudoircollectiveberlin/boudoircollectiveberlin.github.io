@@ -26,6 +26,11 @@ const joinCopy = document.querySelector("[data-join-copy]");
 const joinNote = document.querySelector("[data-join-note]");
 const joinPrimary = document.querySelector("[data-join-primary]");
 const registerPrimary = document.querySelector("[data-register-primary]");
+const adminPanel = document.querySelector("#admin-panel");
+const adminList = document.querySelector("#admin-registration-list");
+const adminStatus = document.querySelector("#admin-status");
+const adminDeleteEmail = document.querySelector("#admin-delete-email");
+const adminDeleteMember = document.querySelector("#admin-delete-member");
 
 let eventsCache = [];
 let authState = {
@@ -62,6 +67,9 @@ function applyMemberProfile(member) {
   profileForm.elements.lobbyInfo.checked = member.lobbyInfo === true;
   profileForm.elements.communityConsent.checked = member.communityConsent === true;
   profileForm.elements.communityPrivacy.checked = member.communityPrivacy === true;
+  if (profileForm.elements.discoverable) profileForm.elements.discoverable.checked = member.discoverable === true;
+  if (profileForm.elements.discoverableName) profileForm.elements.discoverableName.value = member.discoverableName || member.displayName || "";
+  if (profileForm.elements.discoverableIntro) profileForm.elements.discoverableIntro.value = member.discoverableIntro || "";
   setCheckedValues("functions", member.functions || []);
 }
 
@@ -162,6 +170,7 @@ function eventCard(event) {
         <li>${escapeHtml(localized(event.location))}</li>
         <li>${escapeHtml(localized(event.cost))}</li>
       </ul>
+      ${event.detailUrl ? `<a class="button button--ghost event-card__link" href="${escapeHtml(event.detailUrl)}">${escapeHtml(t("eventDetails"))}</a>` : ""}
     </article>
   `;
 }
@@ -327,6 +336,7 @@ async function handleFirebaseUser(user) {
     profileForm.elements.displayName.value = authState.profile.name || "";
   }
   refreshAuthUi();
+  loadAdminPanel();
 
   if (!authState.profileComplete && !isAccountPage()) {
     window.location.href = "account.html#profile-form";
@@ -347,6 +357,59 @@ function handleSignedOutState() {
   }
 
   refreshAuthUi();
+  if (adminPanel) adminPanel.hidden = true;
+}
+
+function renderAdminRegistrations(registrations) {
+  if (!adminList) return;
+  if (!registrations.length) {
+    adminList.innerHTML = `<p>${escapeHtml(t("adminNoRegistrations"))}</p>`;
+    return;
+  }
+
+  adminList.innerHTML = registrations.map((item) => `
+    <article class="admin-row">
+      <div>
+        <strong>${escapeHtml(item.name || item.email)}</strong>
+        <span>${escapeHtml(item.eventId)} · ${escapeHtml(item.role)} · ${escapeHtml(item.status)}</span>
+        ${item.partnerEmail ? `<span>Partner: ${escapeHtml(item.partnerName || item.partnerEmail)} · ${escapeHtml(item.partnerStatus || "pending")}</span>` : ""}
+      </div>
+      <div class="admin-row__actions">
+        <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminConfirm"))}</button>
+        <button class="button button--ghost" type="button" data-admin-action="reject" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminReject"))}</button>
+        <button class="button button--ghost" type="button" data-admin-action="undo" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminUndo"))}</button>
+      </div>
+    </article>
+  `).join("");
+}
+
+async function adminPost(payload) {
+  const response = await fetch(`${API_BASE}/api/admin`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, idToken: authState.idToken })
+  });
+  if (!response.ok) throw new Error("admin_failed");
+  return response.json();
+}
+
+async function loadAdminPanel() {
+  if (!adminPanel || !authState.idToken) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/admin`, {
+      headers: { Authorization: `Bearer ${authState.idToken}` }
+    });
+    if (!response.ok) {
+      adminPanel.hidden = true;
+      return;
+    }
+    const payload = await response.json();
+    adminPanel.hidden = !payload.admin;
+    renderAdminRegistrations(payload.registrations || []);
+  } catch {
+    adminPanel.hidden = true;
+  }
 }
 
 function refreshAuthUi() {
@@ -501,6 +564,9 @@ function payloadFromProfileForm(formElement) {
     portfolio: data.get("portfolio"),
     futureUpdates: data.get("futureUpdates") === "on",
     lobbyInfo: data.get("lobbyInfo") === "on",
+    discoverable: data.get("discoverable") === "on",
+    discoverableName: data.get("discoverableName"),
+    discoverableIntro: data.get("discoverableIntro"),
     communityConsent: data.get("communityConsent") === "on",
     communityPrivacy: data.get("communityPrivacy") === "on"
   };
@@ -624,6 +690,45 @@ form?.addEventListener("submit", async (event) => {
     setStatus(formStatus, t("signupError"), true);
   } finally {
     submitButton.disabled = false;
+  }
+});
+
+adminList?.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-admin-action]");
+  if (!button) return;
+
+  button.disabled = true;
+  setStatus(adminStatus, t("sending"));
+  try {
+    await adminPost({
+      action: button.dataset.adminAction,
+      registrationId: button.dataset.registrationId
+    });
+    setStatus(adminStatus, t("adminSaved"));
+    await loadAdminPanel();
+  } catch {
+    setStatus(adminStatus, t("signupError"), true);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+adminDeleteMember?.addEventListener("click", async () => {
+  if (!adminDeleteEmail?.value) return;
+
+  adminDeleteMember.disabled = true;
+  setStatus(adminStatus, t("sending"));
+  try {
+    await adminPost({
+      action: "delete-member",
+      email: adminDeleteEmail.value
+    });
+    adminDeleteEmail.value = "";
+    setStatus(adminStatus, t("adminSaved"));
+  } catch {
+    setStatus(adminStatus, t("signupError"), true);
+  } finally {
+    adminDeleteMember.disabled = false;
   }
 });
 

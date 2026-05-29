@@ -7,7 +7,7 @@
   "scripts": {
     "serve": "npx serve .",
     "dev": "npx vercel dev",
-    "check": "node --check api/events.js && node --check api/register.js && node --check api/member.js && node --check api/config.js && node --check api/_google.js"
+    "check": "node --check api/events.js && node --check api/register.js && node --check api/member.js && node --check api/admin.js && node --check api/registration-action.js && node --check api/config.js && node --check api/_google.js && node --check api/_mail.js"
   },
   "dependencies": {
     "googleapis": "^118.0.0",

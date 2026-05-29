@@ -167,6 +167,25 @@ Das benötigt einen Mailprovider oder Google Workspace/Gmail API mit zusätzlich
 
 ## Offizielle Referenzen
 
+## Aktuelle Erweiterung: Mail, Admin und Grabowsee
+
+- `POST /api/register` speichert inzwischen `registration_status`, `applicant_action_hash`, `partner_action_hash`, `admin_status` und `updated_at` hinter den bisherigen Registrierungsfeldern.
+- Es werden nur Hashes der Aktionstoken gespeichert. Der Klartext-Token steht nur im Mail-Link.
+- Wenn `RESEND_API_KEY` gesetzt ist, erhalten Bewerber:innen eine Registrierungsbestätigung mit "this was not me"-Undo-Link.
+- Wenn eine Partner-E-Mail angegeben ist, erhält die vorgeschlagene Person eine Partner-Mail mit Bestätigen-/Ablehnen-Link. Bis zur Bestätigung bleibt die Bewerbung `pending_partner`.
+- `GET /api/registration-action` verarbeitet Undo, Partner-Bestätigung und Partner-Ablehnung.
+- `ADMIN_EMAILS` ist die Vercel-basierte Admin-Definition. `GET/POST /api/admin` ist nur für diese Firebase-verifizierten E-Mail-Adressen nutzbar.
+- Admin-Aktionen: Eventbewerbung bestätigen, ablehnen, zurücksetzen; Mitglied per E-Mail anonymisieren.
+- Mitgliederprofile speichern jetzt ein separates Discoverability-Opt-in mit Anzeigename und kurzem Profiltext. Es gibt noch keine öffentliche Mitgliederliste.
+- Neue Vercel-Variablen:
+
+```text
+ADMIN_EMAILS=admin@example.com
+PUBLIC_SITE_URL=https://boudoircollectiveberlin.github.io
+RESEND_API_KEY=optional-resend-api-key
+MAIL_FROM="Boudoir Collective Berlin <noreply@example.com>"
+```
+
 - Firebase ID Tokens serverseitig verifizieren, inkl. Public-Key/JWT-Variante: https://firebase.google.com/docs/auth/admin/verify-id-tokens
 - Firebase Microsoft Provider für Web: https://firebase.google.com/docs/auth/web/microsoft-oauth
 - Firebase Auth Admin SDK: https://firebase.google.com/docs/auth/admin

@@ -981,7 +981,7 @@ adminCreateDemo?.addEventListener("click", async () => {
       eventId: "heilstaette-grabowsee-2026-07-04"
     });
     renderDemoMailPreviews(payload.demo?.previews || []);
-    setStatus(adminStatus, `Demo erstellt: ${payload.demo?.id || ""}`);
+    setStatus(adminStatus, `Test-Eventregistrierung erstellt: ${payload.demo?.id || ""}`);
     await loadAdminPanel();
   } catch {
     setStatus(adminStatus, t("signupError"), true);

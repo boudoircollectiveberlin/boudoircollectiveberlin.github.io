@@ -71,6 +71,7 @@ async function sendViaResend({ to, subject, text, html }) {
   if (!response.ok) {
     const error = new Error("mail_failed");
     error.statusCode = 502;
+    error.response = await response.text().catch(() => "");
     throw error;
   }
 
@@ -109,6 +110,7 @@ async function m365AccessToken() {
   if (!response.ok) {
     const error = new Error("m365_token_failed");
     error.statusCode = 502;
+    error.response = await response.text().catch(() => "");
     throw error;
   }
 
@@ -155,6 +157,10 @@ async function sendViaM365({ to, subject, text, html }) {
   if (!response.ok) {
     const error = new Error("mail_failed");
     error.statusCode = 502;
+    error.response = await response.text().catch(() => "");
+    error.senderAddress = senderAddress;
+    error.recipient = recipient;
+    error.authMode = m365AuthMode();
     throw error;
   }
 

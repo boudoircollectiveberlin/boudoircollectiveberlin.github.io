@@ -529,6 +529,10 @@ export default async function handler(req, res) {
       statusCode: error.statusCode || 500,
       fields: error.fields || {},
       response: error.response?.data || null,
+      responseText: error.response || null,
+      senderAddress: error.senderAddress || null,
+      recipient: error.recipient || null,
+      authMode: error.authMode || null,
       errors: error.errors || null
     });
     res.status(error.statusCode || 500).json({

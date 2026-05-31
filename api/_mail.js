@@ -123,10 +123,10 @@ async function sendViaM365({ to, subject, text, html }) {
   const accessToken = await m365AccessToken();
   const senderAddress = String(process.env.M365_SENDER_EMAIL || "").trim().toLowerCase();
   if (!senderAddress) {
-    return { ok: false, error: "Missing M365_SENDER_EMAIL" };
+    return { ok: false, provider: "m365", error: "Missing M365_SENDER_EMAIL" };
   }
   if (!recipient || !accessToken) {
-    return { ok: false, skipped: true };
+    return { ok: false, provider: "m365", skipped: true };
   }
 
   const response = await fetch(`https://graph.microsoft.com/v1.0/users/${encodeURIComponent(senderAddress)}/sendMail`, {
@@ -157,17 +157,27 @@ async function sendViaM365({ to, subject, text, html }) {
     })
   });
 
-  if (!response.ok) {
-    const error = new Error("mail_failed");
-    error.statusCode = 502;
-    error.response = await response.text().catch(() => "");
-    error.senderAddress = senderAddress;
-    error.recipient = recipient;
-    error.authMode = m365AuthMode();
-    throw error;
+  const errorBody = await response.text().catch(() => "");
+  console.log("m365_send_result", {
+    provider: "m365",
+    senderAddress,
+    recipient,
+    status: response.status,
+    statusText: response.statusText,
+    errorBody: response.ok ? "" : errorBody
+  });
+
+  if (response.status !== 202) {
+    return {
+      ok: false,
+      provider: "m365",
+      status: response.status,
+      statusText: response.statusText,
+      errorBody
+    };
   }
 
-  return { ok: true, provider: "m365" };
+  return { ok: true, provider: "m365", status: response.status };
 }
 
 export async function sendMail({ to, subject, text, html }) {

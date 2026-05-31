@@ -71,6 +71,15 @@ function demoMailPreview(kind, to, subject, text, html, links) {
   };
 }
 
+function assertMailAccepted(mailResult, context) {
+  if (mailResult?.ok) return;
+  const error = new Error("mail_failed");
+  error.statusCode = 502;
+  error.mailResult = mailResult || null;
+  error.mailContext = context;
+  throw error;
+}
+
 function humanEventLabel(eventId) {
   if (eventId === GRABOWSEE_EVENT_ID) return "Heilstätte Grabowsee";
   return eventId;
@@ -236,14 +245,21 @@ async function createSimulatedRegistration({ req, sheets, spreadsheetId, registr
     ));
   }
 
+  const mailResults = [];
   if (sendDemoMail) {
     for (const preview of previews) {
-      await sendMail({
+      const mailResult = await sendMail({
         to: preview.to,
         subject: preview.subject,
         text: preview.text,
         html: preview.html
       });
+      mailResults.push({
+        kind: preview.kind,
+        to: preview.to,
+        ...mailResult
+      });
+      assertMailAccepted(mailResult, { kind: preview.kind, to: preview.to });
     }
   }
 
@@ -252,6 +268,7 @@ async function createSimulatedRegistration({ req, sheets, spreadsheetId, registr
     previews,
     createProfiles,
     sendDemoMail,
+    mailResults,
     simulation: {
       email: result.data.email,
       displayName: result.data.name,
@@ -372,18 +389,25 @@ async function createDemoRegistration({ req, sheets, spreadsheetId, registration
     ));
   }
 
+  const mailResults = [];
   if (sendDemoMail) {
     for (const preview of previews) {
-      await sendMail({
+      const mailResult = await sendMail({
         to: preview.to,
         subject: preview.subject,
         text: preview.text,
         html: preview.html
       });
+      mailResults.push({
+        kind: preview.kind,
+        to: preview.to,
+        ...mailResult
+      });
+      assertMailAccepted(mailResult, { kind: preview.kind, to: preview.to });
     }
   }
 
-  return { id, previews, createProfiles, sendDemoMail };
+  return { id, previews, createProfiles, sendDemoMail, mailResults };
 }
 
 function publicRegistration(row) {
@@ -480,7 +504,7 @@ export default async function handler(req, res) {
         body,
         identity
       });
-      res.status(200).json({ ok: true, status: "demo_created", demo });
+      res.status(200).json({ ok: true, status: "demo_created", demo, mailResults: demo.mailResults || [] });
       return;
     }
 
@@ -494,7 +518,7 @@ export default async function handler(req, res) {
         body,
         identity
       });
-      res.status(200).json({ ok: true, status: "simulation_created", simulation });
+      res.status(200).json({ ok: true, status: "simulation_created", simulation, mailResults: simulation.mailResults || [] });
       return;
     }
 
@@ -533,13 +557,17 @@ export default async function handler(req, res) {
       senderAddress: error.senderAddress || null,
       recipient: error.recipient || null,
       authMode: error.authMode || null,
+      mailResult: error.mailResult || null,
+      mailContext: error.mailContext || null,
       errors: error.errors || null
     });
     res.status(error.statusCode || 500).json({
       ok: false,
       error: error.message === "validation_failed" ? "validation_failed" : "admin_failed",
       fields: error.fields || {},
-      detail: error.message || "admin_failed"
+      detail: error.message || "admin_failed",
+      mailResult: error.mailResult || null,
+      mailContext: error.mailContext || null
     });
   }
 }

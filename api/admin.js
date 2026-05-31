@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { actionUrl, sendMail } from "./_mail.js";
 import { applyCors, clean, getSheetsClient, isAdminIdentity, readBearerToken, readBody, verifyFirebaseIdToken } from "./_google.js";
+import { GRABOWSEE_EVENT_ID, validate as validateRegistrationPayload } from "./register.js";
 
 function rangeSheet(range, fallback) {
   return (range || fallback).split("!")[0];
@@ -70,6 +71,19 @@ function demoMailPreview(kind, to, subject, text, html, links) {
   };
 }
 
+function humanEventLabel(eventId) {
+  if (eventId === GRABOWSEE_EVENT_ID) return "Heilstätte Grabowsee";
+  return eventId;
+}
+
+function simulatedMarker(email) {
+  return `simulated_by:${email}`;
+}
+
+function isSimulatedRow(row) {
+  return clean(row?.[21], 120).startsWith("simulated_by:");
+}
+
 async function createDemoMemberRows(sheets, spreadsheetId, memberRange, now, adminEmail, participants) {
   const values = participants.map((participant) => [
     now,
@@ -98,6 +112,152 @@ async function createDemoMemberRows(sheets, spreadsheetId, memberRange, now, adm
     valueInputOption: "USER_ENTERED",
     requestBody: { values }
   });
+}
+
+async function createSimulatedRegistration({ req, sheets, spreadsheetId, registrationRange, memberRange, body, identity }) {
+  const simulation = body.simulation && typeof body.simulation === "object" ? body.simulation : {};
+  const payload = body.payload && typeof body.payload === "object" ? body.payload : {};
+  const applicantEmail = clean(simulation.email || payload.email, 180).toLowerCase();
+  const applicantName = clean(simulation.displayName || payload.name, 120) || "Admin Simulation";
+  const applicantRole = clean(simulation.eventFunction || payload.eventFunction, 80);
+  const createProfiles = body.createProfiles === true;
+  const sendDemoMail = body.sendDemoMail === true;
+
+  const result = validateRegistrationPayload({
+    ...payload,
+    email: applicantEmail,
+    name: applicantName,
+    eventFunction: applicantRole
+  });
+
+  if (!result.ok) {
+    const error = new Error("validation_failed");
+    error.statusCode = 400;
+    error.fields = result.errors;
+    throw error;
+  }
+
+  const now = new Date().toISOString();
+  const id = registrationId(`${applicantEmail}:${result.data.eventId}`);
+  const undoToken = randomToken();
+  const inviteTokens = result.data.invitees.map((participant, index) => ({
+    email: participant.email,
+    token: randomToken(),
+    hash: "",
+    index
+  }));
+  inviteTokens.forEach((item) => {
+    item.hash = hashToken(item.token);
+  });
+  const inviteesForSheet = result.data.invitees.map((participant, index) => ({
+    ...participant,
+    status: "pending",
+    invitedAt: now,
+    confirmedAt: "",
+    index
+  }));
+  const inviteHashesForSheet = inviteTokens.map(({ email, hash, index }) => ({ email, hash, index }));
+  const inviteSummary = inviteesForSheet.map((participant) => `${participant.email}:${participant.status}`).join(", ");
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: registrationRange,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [[
+        now,
+        id,
+        result.data.eventId,
+        `sim:${applicantEmail}`,
+        "admin_simulation",
+        result.data.eventFunction,
+        result.data.name,
+        result.data.email,
+        result.data.instagram,
+        result.data.partnerName,
+        result.data.partnerEmail,
+        result.data.partnerInstagram,
+        result.data.partnerFunction,
+        result.data.partnerConsentStatus,
+        result.data.pairing,
+        result.data.portfolio,
+        result.data.whatsappIntent,
+        result.data.notes,
+        result.data.invitees.length ? "pending_invites" : "pending_review",
+        hashToken(undoToken),
+        inviteTokens[0]?.hash || "",
+        simulatedMarker(identity.email),
+        now,
+        JSON.stringify(inviteesForSheet),
+        JSON.stringify(inviteHashesForSheet),
+        inviteSummary
+      ]]
+    }
+  });
+
+  if (createProfiles) {
+    await createDemoMemberRows(sheets, spreadsheetId, memberRange, now, identity.email, [
+      { name: result.data.name, email: result.data.email, role: result.data.eventFunction },
+      ...result.data.invitees.map((invitee) => ({
+        name: invitee.name || invitee.email,
+        email: invitee.email,
+        role: invitee.eventFunction
+      }))
+    ]);
+  }
+
+  const label = humanEventLabel(result.data.eventId);
+  const undoUrl = actionUrl(req, "undo-registration", undoToken);
+  const previews = [
+    demoMailPreview(
+      "applicant",
+      result.data.email,
+      `Boudoir Collective Berlin: simulation for ${label}`,
+      `Simulation ${id} created for ${label}.\nUndo: ${undoUrl}`,
+      `<p>Simulation <strong>${id}</strong> created for <strong>${label}</strong>.</p><p><a href="${undoUrl}">Undo registration</a></p>`,
+      [{ label: "Undo registration", url: undoUrl }]
+    )
+  ];
+
+  for (const invitation of inviteTokens) {
+    const participant = result.data.invitees[invitation.index];
+    const confirmUrl = actionUrl(req, "confirm-partner", invitation.token);
+    const rejectUrl = actionUrl(req, "reject-partner", invitation.token);
+    previews.push(demoMailPreview(
+      "invite",
+      participant.email,
+      `Boudoir Collective Berlin: simulation invite for ${label}`,
+      `${result.data.name} invited ${participant.email}.\nConfirm: ${confirmUrl}\nReject: ${rejectUrl}`,
+      `<p>${result.data.name} invited ${participant.email}.</p><p><a href="${confirmUrl}">Confirm invitation</a></p><p><a href="${rejectUrl}">Reject invitation</a></p>`,
+      [
+        { label: "Confirm invitation", url: confirmUrl },
+        { label: "Reject invitation", url: rejectUrl }
+      ]
+    ));
+  }
+
+  if (sendDemoMail) {
+    for (const preview of previews) {
+      await sendMail({
+        to: preview.to,
+        subject: preview.subject,
+        text: preview.text,
+        html: preview.html
+      });
+    }
+  }
+
+  return {
+    id,
+    previews,
+    createProfiles,
+    sendDemoMail,
+    simulation: {
+      email: result.data.email,
+      displayName: result.data.name,
+      eventFunction: result.data.eventFunction
+    }
+  };
 }
 
 async function createDemoRegistration({ req, sheets, spreadsheetId, registrationRange, memberRange, body, identity }) {
@@ -238,6 +398,7 @@ function publicRegistration(row) {
     partnerStatus: clean(row[13], 60),
     status: clean(row[18], 60) || "pending_review",
     adminStatus: clean(row[21], 60),
+    simulated: isSimulatedRow(row),
     updatedAt: clean(row[22], 80),
     invitees: parseJson(row[23], []).map((participant) => ({
       name: clean(participant?.name, 120),
@@ -323,6 +484,20 @@ export default async function handler(req, res) {
       return;
     }
 
+    if (action === "create-simulated-registration") {
+      const simulation = await createSimulatedRegistration({
+        req,
+        sheets,
+        spreadsheetId,
+        registrationRange,
+        memberRange,
+        body,
+        identity
+      });
+      res.status(200).json({ ok: true, status: "simulation_created", simulation });
+      return;
+    }
+
     if (action === "delete-member") {
       const targetEmail = clean(body.email, 180).toLowerCase();
       const response = await sheets.spreadsheets.values.get({ spreadsheetId, range: memberRange });
@@ -349,6 +524,6 @@ export default async function handler(req, res) {
     res.status(400).json({ ok: false, error: "unknown_action" });
   } catch (error) {
     console.error("admin_failed", { message: error.message });
-    res.status(error.statusCode || 500).json({ ok: false, error: "admin_failed" });
+    res.status(error.statusCode || 500).json({ ok: false, error: error.message === "validation_failed" ? "validation_failed" : "admin_failed", fields: error.fields || {} });
   }
 }

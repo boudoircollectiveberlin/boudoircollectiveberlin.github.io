@@ -39,18 +39,24 @@ const adminDemoProfiles = document.querySelector("#admin-demo-profiles");
 const adminDemoSend = document.querySelector("#admin-demo-send");
 const adminCreateDemo = document.querySelector("#admin-create-demo");
 const adminDemoOutput = document.querySelector("#admin-demo-output");
+const ADMIN_SIMULATION_KEY = "bcb-admin-simulation";
+const ADMIN_BASE_EMAIL_KEY = "bcb-admin-base-email";
 
 let eventsCache = [];
 let authState = {
   idToken: "",
   profile: null,
   member: null,
+  userSummary: null,
   config: null,
   auth: null,
   firebaseHelpers: null,
   providers: {},
   profileComplete: false,
-  pendingAuthLink: null
+  pendingAuthLink: null,
+  isAdmin: false,
+  adminBaseEmail: "",
+  impersonation: null
 };
 
 function isAccountPage() {
@@ -142,6 +148,202 @@ function localized(value) {
   }
 
   return value || "";
+}
+
+function isGmailAddress(email) {
+  return /@gmail\.com$/i.test(String(email || "").trim());
+}
+
+function simulationPresets(baseEmail) {
+  if (!isGmailAddress(baseEmail)) return [];
+  const [local, domain] = baseEmail.trim().toLowerCase().split("@");
+  const baseLocal = local.split("+")[0];
+  return [
+    { label: "Test Fotograf 1", email: `${baseLocal}+testfotograf1@${domain}`, displayName: "Test Fotograf 1", eventFunction: "photographer" },
+    { label: "Test Model 1", email: `${baseLocal}+testmodel1@${domain}`, displayName: "Test Model 1", eventFunction: "model" },
+    { label: "Test Model 2", email: `${baseLocal}+testmodel2@${domain}`, displayName: "Test Model 2", eventFunction: "model" }
+  ];
+}
+
+function adminSimulationActive() {
+  return Boolean(authState.isAdmin && authState.impersonation?.email);
+}
+
+function loadStoredAdminSimulation() {
+  try {
+    const raw = localStorage.getItem(ADMIN_SIMULATION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistAdminSimulation() {
+  if (!authState.impersonation) {
+    localStorage.removeItem(ADMIN_SIMULATION_KEY);
+    return;
+  }
+  localStorage.setItem(ADMIN_SIMULATION_KEY, JSON.stringify(authState.impersonation));
+}
+
+function setAdminSimulation(simulation) {
+  authState.impersonation = simulation && simulation.email ? {
+    email: String(simulation.email).trim().toLowerCase(),
+    displayName: String(simulation.displayName || "").trim(),
+    eventFunction: String(simulation.eventFunction || "").trim()
+  } : null;
+  persistAdminSimulation();
+  renderAdminFlyout();
+  renderSimulationNotice();
+  applySimulationToEventForm();
+}
+
+function resetAdminSimulation() {
+  setAdminSimulation(null);
+}
+
+function renderSimulationNotice() {
+  const existing = document.querySelector("#admin-simulation-notice");
+  if (existing) existing.remove();
+  if (!form || !adminSimulationActive()) return;
+
+  const simulation = authState.impersonation;
+  const note = document.createElement("div");
+  note.id = "admin-simulation-notice";
+  note.className = "admin-simulation-note";
+  note.innerHTML = `
+    <strong>Admin-Simulation aktiv</strong>
+    <span>${escapeHtml(simulation.displayName || simulation.email)} · ${escapeHtml(simulation.email)} · ${escapeHtml(simulation.eventFunction || "open")}</span>
+  `;
+  form.insertAdjacentElement("beforebegin", note);
+}
+
+function applySimulationToEventForm() {
+  if (!form) return;
+  if (!adminSimulationActive()) {
+    if (authState.profile) {
+      form.elements.email.value = authState.profile.email || "";
+      form.elements.name.value = authState.profile.name || "";
+    }
+    return;
+  }
+
+  const simulation = authState.impersonation;
+  if (form.elements.email) form.elements.email.value = simulation.email || "";
+  if (form.elements.name) form.elements.name.value = simulation.displayName || "";
+  if (form.elements.eventFunction && simulation.eventFunction) form.elements.eventFunction.value = simulation.eventFunction;
+}
+
+function renderAdminFlyout() {
+  const flyout = document.querySelector("#global-admin-flyout");
+  if (!flyout) return;
+
+  const baseEmail = authState.adminBaseEmail || (isGmailAddress(authState.profile?.email) ? authState.profile.email : "");
+  const presets = simulationPresets(baseEmail);
+  const activeEmail = authState.impersonation?.email || "";
+  const simulationOutput = document.querySelector("#admin-simulation-output");
+
+  flyout.innerHTML = `
+    <button class="admin-flyout__toggle" type="button" id="admin-flyout-toggle" aria-expanded="false">Admin</button>
+    <div class="admin-flyout__panel" id="admin-flyout-panel" hidden>
+      <div class="admin-flyout__head">
+        <strong>Admin Tools</strong>
+        <span>${escapeHtml(authState.profile?.email || "")}</span>
+      </div>
+      <label>
+        <span>Gmail-Basis für virtuelle Eventnutzer</span>
+        <input id="admin-flyout-base-email" type="email" value="${escapeHtml(baseEmail)}" placeholder="deinname@gmail.com">
+      </label>
+      <div class="admin-flyout__presets">
+        ${presets.length
+          ? presets.map((preset) => `<button class="button ${activeEmail === preset.email ? "button--primary" : "button--ghost"}" type="button" data-admin-sim-email="${escapeHtml(preset.email)}" data-admin-sim-name="${escapeHtml(preset.displayName)}" data-admin-sim-role="${escapeHtml(preset.eventFunction)}">${escapeHtml(preset.label)}</button>`).join("")
+          : `<p>Für Plus-Alias-Simulation bitte eine Gmail-Adresse verwenden.</p>`}
+      </div>
+      <div class="admin-flyout__current">
+        <strong>${adminSimulationActive() ? "Aktive Simulation" : "Keine aktive Simulation"}</strong>
+        <span>${adminSimulationActive() ? `${escapeHtml(authState.impersonation.displayName || "")} · ${escapeHtml(authState.impersonation.email)}` : "Normale Nutzeransicht"}</span>
+      </div>
+      <label class="checkbox">
+        <input id="admin-flyout-create-profiles" type="checkbox" checked>
+        <span>Invite-Profile mit anlegen</span>
+      </label>
+      <label class="checkbox">
+        <input id="admin-flyout-send-mails" type="checkbox">
+        <span>Mails wirklich senden</span>
+      </label>
+      <div class="admin-row__actions">
+        <button class="button button--ghost" type="button" id="admin-flyout-clear">Simulation beenden</button>
+        <a class="button button--ghost" href="account.html#admin-panel">Account-Admin</a>
+      </div>
+      <div class="admin-demo-output" id="admin-simulation-output">${simulationOutput?.innerHTML || ""}</div>
+    </div>
+  `;
+
+  const toggle = flyout.querySelector("#admin-flyout-toggle");
+  const panel = flyout.querySelector("#admin-flyout-panel");
+  toggle?.addEventListener("click", () => {
+    const open = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!open));
+    panel.hidden = open;
+  });
+
+  const baseInput = flyout.querySelector("#admin-flyout-base-email");
+  baseInput?.addEventListener("change", () => {
+    authState.adminBaseEmail = baseInput.value.trim().toLowerCase();
+    localStorage.setItem(ADMIN_BASE_EMAIL_KEY, authState.adminBaseEmail);
+    renderAdminFlyout();
+  });
+
+  flyout.querySelectorAll("[data-admin-sim-email]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setAdminSimulation({
+        email: button.dataset.adminSimEmail,
+        displayName: button.dataset.adminSimName,
+        eventFunction: button.dataset.adminSimRole
+      });
+    });
+  });
+
+  flyout.querySelector("#admin-flyout-clear")?.addEventListener("click", () => {
+    resetAdminSimulation();
+  });
+}
+
+function ensureAdminFlyout() {
+  if (!authState.isAdmin) return;
+  let flyout = document.querySelector("#global-admin-flyout");
+  if (!flyout) {
+    flyout = document.createElement("aside");
+    flyout.id = "global-admin-flyout";
+    flyout.className = "admin-flyout";
+    document.body.append(flyout);
+  }
+  renderAdminFlyout();
+}
+
+function removeAdminFlyout() {
+  document.querySelector("#global-admin-flyout")?.remove();
+}
+
+function renderMailPreviews(previews, target = adminDemoOutput) {
+  if (!target) return;
+  if (!previews?.length) {
+    target.innerHTML = "";
+    return;
+  }
+
+  target.innerHTML = previews.map((preview) => `
+    <article class="admin-mail-preview">
+      <div>
+        <strong>${escapeHtml(preview.kind)} · ${escapeHtml(preview.to)}</strong>
+        <span>${escapeHtml(preview.subject)}</span>
+      </div>
+      <pre>${escapeHtml(preview.text)}</pre>
+      <div class="admin-row__actions">
+        ${(preview.links || []).map((link) => `<a class="button button--ghost" href="${escapeHtml(link.url)}" target="_blank" rel="noopener">${escapeHtml(link.label)}</a>`).join("")}
+      </div>
+    </article>
+  `).join("");
 }
 
 async function loadEvents() {
@@ -448,6 +650,88 @@ async function handleProviderSignInError(error, provider, fetchSignInMethodsForE
   setAuthError(authMessageForError(error, provider));
 }
 
+async function loadUserSummary() {
+  if (!authState.idToken || !authState.profileComplete) {
+    authState.userSummary = null;
+    renderUserSummary();
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/summary`, {
+      headers: { Authorization: `Bearer ${authState.idToken}` }
+    });
+    if (!response.ok) throw new Error("summary_failed");
+    authState.userSummary = await response.json();
+  } catch {
+    authState.userSummary = null;
+  }
+  renderUserSummary();
+}
+
+function ensureUserSummaryHost() {
+  let host = document.querySelector("#member-summary-panel");
+  if (host) return host;
+
+  if (isAccountPage()) {
+    const anchor = document.querySelector(".auth-panel");
+    if (!anchor) return null;
+    host = document.createElement("section");
+    host.id = "member-summary-panel";
+    host.className = "summary-panel";
+    anchor.insertAdjacentElement("afterend", host);
+    return host;
+  }
+
+  if (form) {
+    host = document.createElement("section");
+    host.id = "member-summary-panel";
+    host.className = "summary-panel";
+    form.insertAdjacentElement("afterend", host);
+    return host;
+  }
+
+  return null;
+}
+
+function renderUserSummary() {
+  const host = ensureUserSummaryHost();
+  if (!host) return;
+  if (!authState.profileComplete || !authState.userSummary?.member) {
+    host.hidden = true;
+    host.innerHTML = "";
+    return;
+  }
+
+  const currentEventId = form?.elements?.eventId?.value || "";
+  const registrations = Array.isArray(authState.userSummary.registrations) ? authState.userSummary.registrations : [];
+  const visibleRegistrations = currentEventId ? registrations.filter((item) => item.eventId === currentEventId) : registrations;
+
+  host.hidden = false;
+  host.innerHTML = `
+    <div class="section__heading section__heading--compact">
+      <h3>${lang() === "de" ? "Dein Status" : "Your status"}</h3>
+      <p>${lang() === "de"
+        ? `Aktuell registrierte andere Nutzer im System: ${Number(authState.userSummary.otherRegisteredCount || 0)}`
+        : `Currently registered other users in the system: ${Number(authState.userSummary.otherRegisteredCount || 0)}`}</p>
+    </div>
+    <div class="summary-list">
+      ${visibleRegistrations.length
+        ? visibleRegistrations.map((item) => `
+          <article class="summary-row">
+            <strong>${escapeHtml(item.eventLabel || item.eventId)}</strong>
+            <span>${escapeHtml(item.role || "")} · ${escapeHtml(item.registrationStatus || "")}</span>
+            ${item.applicant && item.invitees?.length
+              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} · ${escapeHtml(invitee.status || "pending")}</span>`).join("")
+              : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} · ${escapeHtml(item.inviteeStatus)}</span>` : "")}
+            ${item.adminStatus ? `<span>Admin · ${escapeHtml(item.adminStatus)}</span>` : ""}
+          </article>
+        `).join("")
+        : `<p>${lang() === "de" ? "Noch keine sichtbaren Eventstatus-Einträge." : "No visible event status entries yet."}</p>`}
+    </div>
+  `;
+}
+
 async function handleFirebaseUser(user) {
   authState.idToken = await user.getIdToken();
   authState.profile = {
@@ -469,11 +753,16 @@ async function handleFirebaseUser(user) {
   } else if (profileForm?.elements.displayName && !profileForm.elements.displayName.value) {
     profileForm.elements.displayName.value = authState.profile.name || "";
   }
+  authState.adminBaseEmail = localStorage.getItem(ADMIN_BASE_EMAIL_KEY) || (isGmailAddress(authState.profile.email) ? authState.profile.email : "");
+  authState.impersonation = loadStoredAdminSimulation();
   refreshAuthUi();
-  loadAdminPanel();
+  await loadAdminPanel();
+  await loadUserSummary();
   await finalizePendingAuthLink(user, authState.firebaseHelpers?.linkWithCredential);
+  renderSimulationNotice();
+  applySimulationToEventForm();
 
-  if (!authState.profileComplete && !isAccountPage()) {
+  if (!authState.profileComplete && !adminSimulationActive() && !isAccountPage()) {
     window.location.href = "account.html#profile-form";
   }
 }
@@ -482,7 +771,9 @@ function handleSignedOutState() {
   authState.idToken = "";
   authState.profile = null;
   authState.member = null;
+  authState.userSummary = null;
   authState.profileComplete = false;
+  authState.isAdmin = false;
 
   if (profileForm) {
     profileForm.hidden = true;
@@ -493,6 +784,8 @@ function handleSignedOutState() {
 
   authState.pendingAuthLink = null;
   refreshAuthUi();
+  renderUserSummary();
+  removeAdminFlyout();
   if (adminPanel) adminPanel.hidden = true;
   setAdminAccessNote("", false);
 }
@@ -522,14 +815,14 @@ function renderAdminRegistrations(registrations) {
   `).join("");
 }
 
-function renderDemoMailPreviews(previews) {
-  if (!adminDemoOutput) return;
+function renderDemoMailPreviews(previews, target = adminDemoOutput) {
+  if (!target) return;
   if (!previews?.length) {
-    adminDemoOutput.innerHTML = "";
+    target.innerHTML = "";
     return;
   }
 
-  adminDemoOutput.innerHTML = previews.map((preview) => `
+  target.innerHTML = previews.map((preview) => `
     <article class="admin-mail-preview">
       <div>
         <strong>${escapeHtml(preview.kind)} · ${escapeHtml(preview.to)}</strong>
@@ -560,28 +853,36 @@ async function adminPost(payload) {
 }
 
 async function loadAdminPanel() {
-  if (!adminPanel || !authState.idToken) return;
+  if (!authState.idToken) return;
 
   try {
     const response = await fetch(`${API_BASE}/api/admin`, {
       headers: { Authorization: `Bearer ${authState.idToken}` }
     });
     if (response.status === 403) {
-      adminPanel.hidden = true;
+      authState.isAdmin = false;
+      if (adminPanel) adminPanel.hidden = true;
+      removeAdminFlyout();
       setAdminAccessNote(`Angemeldet als ${authState.profile?.email || "unbekannt"}, aber diese Adresse ist serverseitig nicht in ADMIN_EMAILS freigeschaltet.`);
       return;
     }
     if (!response.ok) {
-      adminPanel.hidden = true;
+      authState.isAdmin = false;
+      if (adminPanel) adminPanel.hidden = true;
+      removeAdminFlyout();
       setAdminAccessNote("Admin-Status konnte nicht geladen werden. Prüfe API-Domain, Deployment und ADMIN_EMAILS.");
       return;
     }
     const payload = await response.json();
-    adminPanel.hidden = !payload.admin;
+    authState.isAdmin = Boolean(payload.admin);
+    if (adminPanel) adminPanel.hidden = !payload.admin;
     setAdminAccessNote("", false);
     renderAdminRegistrations(payload.registrations || []);
+    ensureAdminFlyout();
   } catch {
-    adminPanel.hidden = true;
+    authState.isAdmin = false;
+    if (adminPanel) adminPanel.hidden = true;
+    removeAdminFlyout();
     setAdminAccessNote("Admin-Status konnte nicht geladen werden. Prüfe API-Erreichbarkeit und Deployment.");
   }
 }
@@ -885,7 +1186,7 @@ form?.addEventListener("submit", async (event) => {
     return;
   }
 
-  if (!authState.profileComplete) {
+  if (!adminSimulationActive() && !authState.profileComplete) {
     setStatus(formStatus, t("accountFlowIncomplete"), true);
     if (!isAccountPage()) window.location.href = "account.html#profile-form";
     return;
@@ -901,25 +1202,42 @@ form?.addEventListener("submit", async (event) => {
   setStatus(formStatus, t("sending"));
 
   try {
-    const response = await fetch(`${API_BASE}/api/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payloadFromEventForm(form))
-    });
+    const formPayload = payloadFromEventForm(form);
+    let payload;
 
-    const payload = await response.json().catch(() => ({}));
-
-    if (!response.ok || !payload.ok) {
-      throw new Error(payload.error || "registration_failed");
+    if (adminSimulationActive()) {
+      payload = await adminPost({
+        action: "create-simulated-registration",
+        payload: formPayload,
+        simulation: authState.impersonation,
+        createProfiles: document.querySelector("#admin-flyout-create-profiles")?.checked === true,
+        sendDemoMail: document.querySelector("#admin-flyout-send-mails")?.checked === true
+      });
+      renderDemoMailPreviews(payload.simulation?.previews || [], document.querySelector("#admin-simulation-output"));
+    } else {
+      const response = await fetch(`${API_BASE}/api/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formPayload)
+      });
+      payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || "registration_failed");
+      }
     }
 
     form.reset();
     resetInviteeControls();
-    if (authState.profile) {
+    if (adminSimulationActive()) {
+      applySimulationToEventForm();
+      setStatus(formStatus, `Admin-Simulation erstellt: ${payload.simulation?.id || ""}`);
+    } else if (authState.profile) {
       form.elements.email.value = authState.profile.email || "";
       form.elements.name.value = authState.profile.name || "";
+      setStatus(formStatus, `${t("signupSuccess")} Referenz: ${payload.registrationId}`);
     }
-    setStatus(formStatus, `${t("signupSuccess")} Referenz: ${payload.registrationId}`);
+    await loadAdminPanel();
+    await loadUserSummary();
   } catch {
     setStatus(formStatus, t("signupError"), true);
   } finally {
@@ -981,6 +1299,7 @@ adminCreateDemo?.addEventListener("click", async () => {
       eventId: "heilstaette-grabowsee-2026-07-04"
     });
     renderDemoMailPreviews(payload.demo?.previews || []);
+    renderDemoMailPreviews(payload.demo?.previews || [], document.querySelector("#admin-simulation-output"));
     setStatus(adminStatus, `Test-Eventregistrierung erstellt: ${payload.demo?.id || ""}`);
     await loadAdminPanel();
   } catch {
@@ -993,6 +1312,9 @@ adminCreateDemo?.addEventListener("click", async () => {
 window.addEventListener("bcb:languagechange", () => {
   if (eventsCache.length) renderEvents(eventsCache);
   refreshAuthUi();
+  renderUserSummary();
+  renderAdminFlyout();
+  renderSimulationNotice();
 });
 
 initMenu();

@@ -6,7 +6,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INSTAGRAM_RE = /^@?[a-zA-Z0-9._]{1,30}$/;
 const ALLOWED_EVENT_FUNCTIONS = new Set(["model", "photographer", "mua", "team", "other"]);
 const MAX_INVITEES = 6;
-const GRABOWSEE_EVENT_ID = "heilstaette-grabowsee-2026-07-04";
+export const GRABOWSEE_EVENT_ID = "heilstaette-grabowsee-2026-07-04";
 
 function normalizeInstagram(value) {
   const instagram = clean(value, 80);
@@ -35,7 +35,7 @@ function invitedParticipants(payload) {
     .filter((participant) => participant.name || participant.email || participant.instagram || participant.eventFunction);
 }
 
-function validate(payload) {
+export function validate(payload) {
   const errors = {};
   const eventFunction = clean(payload.eventFunction, 80);
   const eventId = clean(payload.eventId, 120);
@@ -120,7 +120,7 @@ function hashToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
-function eventLabel(eventId) {
+export function eventLabel(eventId) {
   if (eventId === "heilstaette-grabowsee-2026-07-04") return "Heilstätte Grabowsee";
   return eventId;
 }

@@ -523,7 +523,19 @@ export default async function handler(req, res) {
 
     res.status(400).json({ ok: false, error: "unknown_action" });
   } catch (error) {
-    console.error("admin_failed", { message: error.message });
-    res.status(error.statusCode || 500).json({ ok: false, error: error.message === "validation_failed" ? "validation_failed" : "admin_failed", fields: error.fields || {} });
+    console.error("admin_failed", {
+      message: error.message,
+      stack: error.stack,
+      statusCode: error.statusCode || 500,
+      fields: error.fields || {},
+      response: error.response?.data || null,
+      errors: error.errors || null
+    });
+    res.status(error.statusCode || 500).json({
+      ok: false,
+      error: error.message === "validation_failed" ? "validation_failed" : "admin_failed",
+      fields: error.fields || {},
+      detail: error.message || "admin_failed"
+    });
   }
 }

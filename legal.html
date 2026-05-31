@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="legalPageTitle">Boudoir Collective Berlin | Impressum & Datenschutz</title>
+  <meta name="description" content="Impressum und Datenschutzhinweise für Boudoir Collective Berlin." data-i18n-attrs="content:legalMetaDescription">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__name">Boudoir Collective Berlin</span>
+      <a class="brand__meta" href="https://instagram.com/boudoircollectiveberlin" target="_blank" rel="noopener" aria-label="Instagram @boudoircollectiveberlin">
+        <img src="assets/instagram_glyph_white.svg" alt="" aria-hidden="true">
+        <span>@boudoircollectiveberlin</span>
+      </a>
+    </div>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="sr-only">Menü</span>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Hauptnavigation" data-menu>
+      <a class="nav-home" href="index.html" data-i18n="navHome">Home</a>
+      <a href="index.html#events" data-i18n="navEvents">Events</a>
+      <a href="index.html#codex" data-i18n="navCodex">Codex</a>
+      <a href="account.html" data-i18n="navRegister">Registrierung</a>
+      <a href="legal.html" aria-current="page" data-i18n="navLegal">Rechtliches</a>
+    </nav>
+    <div class="topbar__actions">
+      <div class="lang-switch" aria-label="Language">
+        <span data-i18n="langLabel">Sprache</span>
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="account-menu" data-account-menu>
+        <button class="account-menu__trigger" type="button" aria-expanded="false" aria-controls="account-flyout" data-account-toggle>
+          <span class="sr-only" data-i18n="accountMenu">Account</span>
+          <span class="account-menu__icon" aria-hidden="true"></span>
+        </button>
+        <div class="account-menu__panel" id="account-flyout" hidden data-account-panel>
+          <div class="account-menu__section">
+            <p class="account-menu__eyebrow" data-i18n="accountMenu">Account</p>
+            <p class="account-menu__badge" id="topbar-member-status" hidden></p>
+            <p class="account-menu__status" id="topbar-auth-status" role="status" data-i18n="authFlyoutSignedOut">Login für Profil, Eventanmeldung und spätere Updates.</p>
+          </div>
+          <div class="account-menu__section auth-buttons">
+            <button class="button button--primary" type="button" data-auth-provider="google" data-i18n="authGoogle" disabled>Mit Google einloggen</button>
+            <button class="button button--ghost" type="button" data-auth-provider="microsoft" data-i18n="authMicrosoft" disabled>Mit Microsoft einloggen</button>
+            <button class="button button--ghost" type="button" data-auth-provider="github" data-i18n="authGithub" disabled>Mit GitHub einloggen</button>
+          </div>
+          <div class="account-menu__section account-menu__links">
+            <a class="button button--ghost" href="account.html" data-account-profile-link data-i18n="accountFlyoutRegister">Zur Registrierung</a>
+            <button class="button button--ghost" type="button" data-auth-logout hidden data-i18n="authLogout">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section legal-page__hero">
+      <div class="section__heading">
+        <p class="eyebrow" data-i18n="legalEyebrow">Rechtliches</p>
+        <h1 data-i18n="legalIntroTitle">Impressum & Datenschutzhinweise</h1>
+        <p data-i18n="legalIntroCopy">Hier findest du die verantwortliche Stelle, die Zwecke der Datenverarbeitung, Empfänger, Speicherdauern und deine Rechte rund um diese Website.</p>
+      </div>
+      <div class="legal-page__actions">
+        <a class="button button--primary" href="#imprint" data-i18n="footerImprint">Impressum</a>
+        <a class="button button--ghost" href="#privacy" data-i18n="footerPrivacy">Datenschutz</a>
+      </div>
+    </section>
+
+    <section class="section legal-page__section" id="imprint">
+      <div class="section__heading">
+        <p class="eyebrow" data-i18n="imprintTitle">Impressum</p>
+        <h2 data-i18n="imprintTitle">Impressum</h2>
+      </div>
+      <article class="legal-page__article">
+        <p data-i18n="imprintBody" data-i18n-html="true"></p>
+      </article>
+    </section>
+
+    <section class="section legal-page__section" id="privacy">
+      <div class="section__heading">
+        <p class="eyebrow" data-i18n="privacyTitle">Datenschutz</p>
+        <h2 data-i18n="privacyTitle">Datenschutz</h2>
+        <p data-i18n="privacyBody">Diese Website lädt keine externen Tracker. Für Login, Profil und Eventorganisation werden nur die dafür nötigen Daten verarbeitet.</p>
+      </div>
+      <div class="legal-page__stack">
+        <article class="legal-page__article">
+          <h3 data-i18n="legalControllerTitle">1. Verantwortliche Stelle</h3>
+          <p data-i18n="legalControllerBody" data-i18n-html="true"></p>
+        </article>
+        <article class="legal-page__article">
+          <h3 data-i18n="legalDataTitle">2. Welche Daten wir verarbeiten</h3>
+          <p data-i18n="legalDataBody" data-i18n-html="true"></p>
+        </article>
+        <article class="legal-page__article">
+          <h3 data-i18n="legalRecipientsTitle">3. Empfänger und eingesetzte Dienste</h3>
+          <p data-i18n="legalRecipientsBody" data-i18n-html="true"></p>
+        </article>
+        <article class="legal-page__article">
+          <h3 data-i18n="legalCookiesTitle">4. Cookies, Local Storage und Login</h3>
+          <p data-i18n="legalCookiesBody" data-i18n-html="true"></p>
+        </article>
+        <article class="legal-page__article">
+          <h3 data-i18n="legalStorageTitle">5. Speicherdauer</h3>
+          <p data-i18n="legalStorageBody" data-i18n-html="true"></p>
+        </article>
+        <article class="legal-page__article">
+          <h3 data-i18n="legalRightsSectionTitle">6. Deine Rechte</h3>
+          <p data-i18n="legalRightsSectionBody" data-i18n-html="true"></p>
+        </article>
+        <article class="legal-page__article">
+          <h3 data-i18n="legalComplaintTitle">7. Beschwerderecht</h3>
+          <p data-i18n="legalComplaintBody" data-i18n-html="true"></p>
+        </article>
+        <article class="legal-page__article">
+          <h3 data-i18n="legalExternalTitle">8. Externe Links und soziale Plattformen</h3>
+          <p data-i18n="legalExternalBody" data-i18n-html="true"></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span data-i18n="footerName">Boudoir Collective Berlin</span>
+    <div class="footer__links">
+      <a href="#imprint" data-i18n="footerImprint">Impressum</a>
+      <a href="#privacy" data-i18n="footerPrivacy">Datenschutz</a>
+    </div>
+    <a class="instagram-link" href="https://instagram.com/boudoircollectiveberlin" target="_blank" rel="noopener" aria-label="Instagram @boudoircollectiveberlin">
+      <img src="assets/instagram_glyph_white.svg" alt="" aria-hidden="true">
+      <span>@boudoircollectiveberlin</span>
+    </a>
+  </footer>
+
+  <script src="i18n.js" defer></script>
+  <script src="site-config.js" defer></script>
+  <script src="script.js" defer></script>
+</body>
+</html>

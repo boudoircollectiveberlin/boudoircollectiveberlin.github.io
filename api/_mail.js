@@ -121,8 +121,11 @@ async function m365AccessToken() {
 async function sendViaM365({ to, subject, text, html }) {
   const recipient = clean(to, 200).toLowerCase();
   const accessToken = await m365AccessToken();
-  const senderAddress = clean(process.env.M365_SENDER_EMAIL, 200).toLowerCase() || senderParts().email;
-  if (!recipient || !accessToken || !senderAddress) {
+  const senderAddress = String(process.env.M365_SENDER_EMAIL || "").trim().toLowerCase();
+  if (!senderAddress) {
+    return { ok: false, error: "Missing M365_SENDER_EMAIL" };
+  }
+  if (!recipient || !accessToken) {
     return { ok: false, skipped: true };
   }
 

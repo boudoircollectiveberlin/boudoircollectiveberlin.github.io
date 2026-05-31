@@ -48,6 +48,7 @@ let authState = {
   profile: null,
   member: null,
   userSummary: null,
+  adminRegistrations: [],
   config: null,
   auth: null,
   firebaseHelpers: null,
@@ -169,6 +170,10 @@ function adminSimulationActive() {
   return Boolean(authState.isAdmin && authState.impersonation?.email);
 }
 
+function currentEventId() {
+  return form?.elements?.eventId?.value || "";
+}
+
 function loadStoredAdminSimulation() {
   try {
     const raw = localStorage.getItem(ADMIN_SIMULATION_KEY);
@@ -241,7 +246,6 @@ function renderAdminFlyout() {
   const baseEmail = authState.adminBaseEmail || (isGmailAddress(authState.profile?.email) ? authState.profile.email : "");
   const presets = simulationPresets(baseEmail);
   const activeEmail = authState.impersonation?.email || "";
-  const simulationOutput = document.querySelector("#admin-simulation-output");
 
   flyout.innerHTML = `
     <button class="admin-flyout__toggle" type="button" id="admin-flyout-toggle" aria-expanded="false">Admin</button>
@@ -275,7 +279,6 @@ function renderAdminFlyout() {
         <button class="button button--ghost" type="button" id="admin-flyout-clear">Simulation beenden</button>
         <a class="button button--ghost" href="account.html#admin-panel">Account-Admin</a>
       </div>
-      <div class="admin-demo-output" id="admin-simulation-output">${simulationOutput?.innerHTML || ""}</div>
     </div>
   `;
 
@@ -697,23 +700,24 @@ function ensureUserSummaryHost() {
 function renderUserSummary() {
   const host = ensureUserSummaryHost();
   if (!host) return;
-  if (!authState.profileComplete || !authState.userSummary?.member) {
+  if (!authState.profileComplete && !authState.isAdmin) {
     host.hidden = true;
     host.innerHTML = "";
     return;
   }
 
-  const currentEventId = form?.elements?.eventId?.value || "";
+  const eventId = currentEventId();
   const registrations = Array.isArray(authState.userSummary.registrations) ? authState.userSummary.registrations : [];
-  const visibleRegistrations = currentEventId ? registrations.filter((item) => item.eventId === currentEventId) : registrations;
+  const visibleRegistrations = eventId ? registrations.filter((item) => item.eventId === eventId) : registrations;
+  const adminRegistrations = eventId ? authState.adminRegistrations.filter((item) => item.eventId === eventId) : [];
 
   host.hidden = false;
   host.innerHTML = `
     <div class="section__heading section__heading--compact">
       <h3>${lang() === "de" ? "Dein Status" : "Your status"}</h3>
-      <p>${lang() === "de"
+      <p>${authState.userSummary?.member ? (lang() === "de"
         ? `Aktuell registrierte andere Nutzer im System: ${Number(authState.userSummary.otherRegisteredCount || 0)}`
-        : `Currently registered other users in the system: ${Number(authState.userSummary.otherRegisteredCount || 0)}`}</p>
+        : `Currently registered other users in the system: ${Number(authState.userSummary.otherRegisteredCount || 0)}`) : (lang() === "de" ? "Admin-Sicht auf die aktuelle Teilnehmerliste." : "Admin view of the current participant list.")}</p>
     </div>
     <div class="summary-list">
       ${visibleRegistrations.length
@@ -728,8 +732,68 @@ function renderUserSummary() {
           </article>
         `).join("")
         : `<p>${lang() === "de" ? "Noch keine sichtbaren Eventstatus-Einträge." : "No visible event status entries yet."}</p>`}
+      ${authState.isAdmin && adminRegistrations.length ? `
+        <div class="section__heading section__heading--compact">
+          <h3>${lang() === "de" ? "Teilnehmerliste" : "Participant list"}</h3>
+        </div>
+        ${adminRegistrations.map((item) => `
+          <article class="summary-row">
+            <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " · Simulation" : ""}</strong>
+            <span>${escapeHtml(item.role || "")} · ${escapeHtml(item.status || "")}</span>
+            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} · ${escapeHtml(invitee.status || "pending")}</span>`).join("") || ""}
+            ${item.adminStatus ? `<span>Admin · ${escapeHtml(item.adminStatus)}</span>` : ""}
+          </article>
+        `).join("")}
+      ` : ""}
+      ${authState.isAdmin ? `<div class="admin-demo-output" id="event-admin-preview"></div>` : ""}
     </div>
   `;
+}
+
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function syncGrabowseeRoleChoices() {
+  if (!form || currentEventId() !== "heilstaette-grabowsee-2026-07-04") return;
+  const selects = [
+    form.elements.eventFunction,
+    ...Array.from(form.querySelectorAll('select[name="inviteFunction"]'))
+  ].filter(Boolean);
+  const selectedPhotographer = selects.find((select) => select.value === "photographer");
+  selects.forEach((select) => {
+    const photographerOption = Array.from(select.options).find((option) => option.value === "photographer");
+    if (!photographerOption) return;
+    photographerOption.disabled = Boolean(selectedPhotographer && selectedPhotographer !== select);
+  });
+}
+
+function clientEventValidation(payload) {
+  const emails = [normalizeEmail(payload.email), ...payload.invitedParticipants.map((participant) => normalizeEmail(participant.email))].filter(Boolean);
+  if (new Set(emails).size !== emails.length) {
+    return lang() === "de" ? "Dieselbe Mailadresse darf in einer Bewerbung nur einmal vorkommen." : "The same email address may only appear once in an application.";
+  }
+
+  if (payload.eventId === "heilstaette-grabowsee-2026-07-04") {
+    const roles = [payload.eventFunction, ...payload.invitedParticipants.map((participant) => participant.eventFunction)].filter(Boolean);
+    const photographerCount = roles.filter((role) => role === "photographer").length;
+    if (photographerCount !== 1) {
+      return lang() === "de" ? "Für Grabowsee ist genau ein:e Fotograf:in erlaubt." : "Grabowsee requires exactly one photographer.";
+    }
+  }
+
+  const existingRows = authState.isAdmin
+    ? authState.adminRegistrations.filter((item) => item.eventId === payload.eventId)
+    : (authState.userSummary?.registrations || []).filter((item) => item.eventId === payload.eventId);
+  const existingEmails = new Set(existingRows.flatMap((item) => [
+    normalizeEmail(item.email),
+    ...(item.invitees || []).map((invitee) => normalizeEmail(invitee.email))
+  ]).filter(Boolean));
+  if (emails.some((email) => existingEmails.has(email))) {
+    return lang() === "de" ? "Mindestens eine Mailadresse ist für dieses Event bereits registriert." : "At least one email address is already registered for this event.";
+  }
+
+  return "";
 }
 
 async function handleFirebaseUser(user) {
@@ -875,12 +939,15 @@ async function loadAdminPanel() {
     }
     const payload = await response.json();
     authState.isAdmin = Boolean(payload.admin);
+    authState.adminRegistrations = payload.registrations || [];
     if (adminPanel) adminPanel.hidden = !payload.admin;
     setAdminAccessNote("", false);
     renderAdminRegistrations(payload.registrations || []);
     ensureAdminFlyout();
+    renderUserSummary();
   } catch {
     authState.isAdmin = false;
+    authState.adminRegistrations = [];
     if (adminPanel) adminPanel.hidden = true;
     removeAdminFlyout();
     setAdminAccessNote("Admin-Status konnte nicht geladen werden. Prüfe API-Erreichbarkeit und Deployment.");
@@ -1104,6 +1171,7 @@ function initInviteeControls() {
       if (button) button.hidden = cards.length === 1;
     });
     addButton.disabled = cards.length >= 6;
+    syncGrabowseeRoleChoices();
   }
 
   addButton.addEventListener("click", () => {
@@ -1123,6 +1191,9 @@ function initInviteeControls() {
     updateRemoveButtons();
   });
 
+  list.addEventListener("change", syncGrabowseeRoleChoices);
+  form?.elements?.eventFunction?.addEventListener("change", syncGrabowseeRoleChoices);
+
   updateRemoveButtons();
 }
 
@@ -1132,6 +1203,10 @@ function resetInviteeControls() {
   cards[0]?.querySelector("[data-remove-invitee]")?.setAttribute("hidden", "");
   const addButton = document.querySelector("[data-add-invitee]");
   if (addButton) addButton.disabled = false;
+}
+
+function eventPreviewTarget() {
+  return document.querySelector("#event-admin-preview");
 }
 
 profileForm?.addEventListener("submit", async (event) => {
@@ -1203,6 +1278,11 @@ form?.addEventListener("submit", async (event) => {
 
   try {
     const formPayload = payloadFromEventForm(form);
+    const clientError = clientEventValidation(formPayload);
+    if (clientError) {
+      setStatus(formStatus, clientError, true);
+      return;
+    }
     let payload;
 
     if (adminSimulationActive()) {
@@ -1213,7 +1293,7 @@ form?.addEventListener("submit", async (event) => {
         createProfiles: document.querySelector("#admin-flyout-create-profiles")?.checked === true,
         sendDemoMail: document.querySelector("#admin-flyout-send-mails")?.checked === true
       });
-      renderDemoMailPreviews(payload.simulation?.previews || [], document.querySelector("#admin-simulation-output"));
+      renderDemoMailPreviews(payload.simulation?.previews || [], eventPreviewTarget());
     } else {
       const response = await fetch(`${API_BASE}/api/register`, {
         method: "POST",
@@ -1299,9 +1379,10 @@ adminCreateDemo?.addEventListener("click", async () => {
       eventId: "heilstaette-grabowsee-2026-07-04"
     });
     renderDemoMailPreviews(payload.demo?.previews || []);
-    renderDemoMailPreviews(payload.demo?.previews || [], document.querySelector("#admin-simulation-output"));
+    renderDemoMailPreviews(payload.demo?.previews || [], eventPreviewTarget());
     setStatus(adminStatus, `Test-Eventregistrierung erstellt: ${payload.demo?.id || ""}`);
     await loadAdminPanel();
+    renderUserSummary();
   } catch {
     setStatus(adminStatus, t("signupError"), true);
   } finally {

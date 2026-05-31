@@ -134,6 +134,11 @@ AUTH_PROVIDERS
 REGISTRATION_SHEET_ID
 REGISTRATION_SHEET_RANGE
 MEMBER_SHEET_RANGE
+ADMIN_EMAILS
+PUBLIC_SITE_URL
+RESEND_API_KEY
+MAIL_FROM
+MAIL_REPLY_TO
 ALLOWED_ORIGINS
 ```
 
@@ -143,6 +148,7 @@ Empfohlene Werte:
 AUTH_PROVIDERS=google,microsoft,github
 REGISTRATION_SHEET_RANGE=Registrations!A:Z
 MEMBER_SHEET_RANGE=Members!A:Z
+MAIL_REPLY_TO=sweetseductiveart@outlook.de
 ALLOWED_ORIGINS=https://boudoircollectiveberlin.github.io,https://<projekt>.vercel.app
 ```
 
@@ -207,6 +213,11 @@ Vor Livegang prüfen:
 10. Footer/Header/Instagram/WhatsApp-Links zeigen korrekt.
 11. Impressum und Datenschutz final prüfen.
 12. DSGVO-Orga prüfen: Auftragsverarbeitungsverträge/Datenschutzhinweise für Vercel, Google/Firebase, GitHub Pages und den Mailprovider; Lösch-/Auskunftsprozess; Zugriffsbeschränkung auf Sheet und Vercel.
+13. Admin-Demo-Flow prüfen: im Accountbereich als Admin Basis-Gmail eintragen, Demo erzeugen, Links aus der UI öffnen und Statusänderungen im Panel/Sheet prüfen.
+
+## 10a. Mail-Entscheidung
+
+Persönliche Outlook-Adressen können als `MAIL_REPLY_TO` genutzt werden. Für Versand aus einer persönlichen Outlook-Adresse ist Microsoft Graph aktuell nicht der empfohlene Pfad, weil `user: sendMail` laut Microsoft-Dokumentation keine delegated personal Microsoft accounts unterstützt. Für Produktionsmails daher einen transaktionalen Provider verwenden und die Outlook-Adresse als Reply-To setzen.
 
 ## 11. Was ins Repo gehört
 

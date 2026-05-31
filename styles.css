@@ -1390,13 +1390,34 @@ textarea:focus,
   margin-top: 18px;
 }
 
+.admin-demo {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+}
+
+.section__heading--compact {
+  max-width: 760px;
+}
+
+.section__heading--compact h3 {
+  margin: 0;
+}
+
+.admin-demo-output {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
 .admin-list {
   display: grid;
   gap: 12px;
   margin-top: 18px;
 }
 
-.admin-row {
+.admin-row,
+.admin-mail-preview {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 14px;
@@ -1415,6 +1436,22 @@ textarea:focus,
 .admin-row span {
   color: var(--muted);
   font-size: 12px;
+}
+
+.admin-mail-preview {
+  align-items: start;
+}
+
+.admin-mail-preview pre {
+  grid-column: 1 / -1;
+  max-height: 220px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, .24);
+  color: rgba(255, 255, 255, .76);
+  white-space: pre-wrap;
 }
 
 .admin-row__actions {
@@ -1517,7 +1554,8 @@ textarea:focus,
   .invitee-card,
   .account-steps,
   .admin-tools,
-  .admin-row {
+  .admin-row,
+  .admin-mail-preview {
     grid-template-columns: 1fr;
   }
 

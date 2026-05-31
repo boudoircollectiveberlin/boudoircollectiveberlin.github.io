@@ -4,6 +4,10 @@ function sender() {
   return process.env.MAIL_FROM || "Boudoir Collective Berlin <noreply@boudoircollectiveberlin.de>";
 }
 
+function replyTo() {
+  return clean(process.env.MAIL_REPLY_TO, 200);
+}
+
 export async function sendMail({ to, subject, text, html }) {
   const apiKey = process.env.RESEND_API_KEY;
   const recipient = clean(to, 200).toLowerCase();
@@ -22,7 +26,8 @@ export async function sendMail({ to, subject, text, html }) {
       to: recipient,
       subject,
       text,
-      html
+      html,
+      reply_to: replyTo() || undefined
     })
   });
 

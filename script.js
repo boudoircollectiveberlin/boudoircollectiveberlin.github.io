@@ -31,6 +31,12 @@ const adminList = document.querySelector("#admin-registration-list");
 const adminStatus = document.querySelector("#admin-status");
 const adminDeleteEmail = document.querySelector("#admin-delete-email");
 const adminDeleteMember = document.querySelector("#admin-delete-member");
+const adminDemoEmail = document.querySelector("#admin-demo-email");
+const adminDemoCount = document.querySelector("#admin-demo-count");
+const adminDemoProfiles = document.querySelector("#admin-demo-profiles");
+const adminDemoSend = document.querySelector("#admin-demo-send");
+const adminCreateDemo = document.querySelector("#admin-create-demo");
+const adminDemoOutput = document.querySelector("#admin-demo-output");
 
 let eventsCache = [];
 let authState = {
@@ -380,6 +386,27 @@ function renderAdminRegistrations(registrations) {
         <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminConfirm"))}</button>
         <button class="button button--ghost" type="button" data-admin-action="reject" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminReject"))}</button>
         <button class="button button--ghost" type="button" data-admin-action="undo" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminUndo"))}</button>
+      </div>
+    </article>
+  `).join("");
+}
+
+function renderDemoMailPreviews(previews) {
+  if (!adminDemoOutput) return;
+  if (!previews?.length) {
+    adminDemoOutput.innerHTML = "";
+    return;
+  }
+
+  adminDemoOutput.innerHTML = previews.map((preview) => `
+    <article class="admin-mail-preview">
+      <div>
+        <strong>${escapeHtml(preview.kind)} · ${escapeHtml(preview.to)}</strong>
+        <span>${escapeHtml(preview.subject)}</span>
+      </div>
+      <pre>${escapeHtml(preview.text)}</pre>
+      <div class="admin-row__actions">
+        ${(preview.links || []).map((link) => `<a class="button button--ghost" href="${escapeHtml(link.url)}" target="_blank" rel="noopener">${escapeHtml(link.label)}</a>`).join("")}
       </div>
     </article>
   `).join("");
@@ -788,6 +815,30 @@ adminDeleteMember?.addEventListener("click", async () => {
     setStatus(adminStatus, t("signupError"), true);
   } finally {
     adminDeleteMember.disabled = false;
+  }
+});
+
+adminCreateDemo?.addEventListener("click", async () => {
+  if (!adminDemoEmail?.value) return;
+
+  adminCreateDemo.disabled = true;
+  setStatus(adminStatus, t("sending"));
+  try {
+    const payload = await adminPost({
+      action: "create-demo-registration",
+      baseEmail: adminDemoEmail.value,
+      inviteCount: adminDemoCount?.value || 2,
+      createProfiles: adminDemoProfiles?.checked === true,
+      sendDemoMail: adminDemoSend?.checked === true,
+      eventId: "heilstaette-grabowsee-2026-07-04"
+    });
+    renderDemoMailPreviews(payload.demo?.previews || []);
+    setStatus(adminStatus, `Demo erstellt: ${payload.demo?.id || ""}`);
+    await loadAdminPanel();
+  } catch {
+    setStatus(adminStatus, t("signupError"), true);
+  } finally {
+    adminCreateDemo.disabled = false;
   }
 });
 

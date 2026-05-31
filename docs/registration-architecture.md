@@ -179,7 +179,7 @@ Das benötigt einen Mailprovider oder Google Workspace/Gmail API mit zusätzlich
 - Wenn eingeladene Personen angegeben sind, erhält jede Person eine Mail mit Bestätigen-/Ablehnen-Link. Bis zur vollständigen Bestätigung bleibt die Bewerbung `pending_invites`.
 - `GET /api/registration-action` verarbeitet Undo, Partner-Bestätigung und Partner-Ablehnung.
 - `ADMIN_EMAILS` ist die Vercel-basierte Admin-Definition. `GET/POST /api/admin` ist nur für diese Firebase-verifizierten E-Mail-Adressen nutzbar.
-- Admin-Aktionen: Eventbewerbung bestätigen, ablehnen, zurücksetzen; Mitglied per E-Mail anonymisieren.
+- Admin-Aktionen: Eventbewerbung bestätigen, ablehnen, zurücksetzen; Mitglied per E-Mail anonymisieren; Demo-Registrierung mit Gmail-Plus-Aliassen erzeugen und Mail-Links direkt in der Admin-UI anzeigen.
 - Mitgliederprofile speichern jetzt ein separates Discoverability-Opt-in mit Anzeigename und kurzem Profiltext. Es gibt noch keine öffentliche Mitgliederliste.
 - Neue Vercel-Variablen:
 
@@ -188,7 +188,16 @@ ADMIN_EMAILS=admin@example.com
 PUBLIC_SITE_URL=https://boudoircollectiveberlin.github.io
 RESEND_API_KEY=optional-resend-api-key
 MAIL_FROM="Boudoir Collective Berlin <noreply@example.com>"
+MAIL_REPLY_TO=sweetseductiveart@outlook.de
 ```
+
+## Mail-Provider-Entscheidung
+
+Die gewünschte dedizierte Outlook-Adresse kann als `Reply-To` genutzt werden. Für echtes Senden aus einer persönlichen Outlook-Adresse ist Microsoft Graph aktuell keine belastbare Produktionsbasis, weil `user: sendMail` in der offiziellen Graph-Dokumentation `Delegated (personal Microsoft account)` als `Not available` führt. Deshalb bleibt der pragmatische Pfad: transaktionaler Mailprovider für Versand, persönliche Outlook-Adresse als `MAIL_REPLY_TO`.
+
+## Admin-Demo-Flow
+
+Admins können im Accountbereich eine Demo-Bewerbung erzeugen. Eingabe ist eine echte Basisadresse, z. B. `name@gmail.com`; daraus werden `name+user0@gmail.com`, `name+user1@gmail.com` usw. gebildet. Die API schreibt Demo-Zeilen in `Registrations`, optional passende Demo-Profile in `Members`, und gibt die simulierten Mailtexte inklusive Undo-/Confirm-/Reject-Links direkt an die Admin-UI zurück. Wenn `Mails wirklich senden` aktiv ist und ein Mailprovider konfiguriert ist, werden dieselben Mails zusätzlich verschickt.
 
 - Firebase ID Tokens serverseitig verifizieren, inkl. Public-Key/JWT-Variante: https://firebase.google.com/docs/auth/admin/verify-id-tokens
 - Firebase Microsoft Provider für Web: https://firebase.google.com/docs/auth/web/microsoft-oauth

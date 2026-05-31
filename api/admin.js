@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { actionUrl, sendMail } from "./_mail.js";
 import { applyCors, clean, getSheetsClient, isAdminIdentity, readBearerToken, readBody, verifyFirebaseIdToken } from "./_google.js";
 
 function rangeSheet(range, fallback) {
@@ -26,12 +27,203 @@ async function updateCell(sheets, spreadsheetId, sheetName, rowNumber, columnInd
   });
 }
 
+function randomToken() {
+  return crypto.randomBytes(24).toString("base64url");
+}
+
+function hashToken(token) {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+function registrationId(seed) {
+  return crypto
+    .createHash("sha256")
+    .update(`${seed}:${Date.now()}:${crypto.randomUUID()}`)
+    .digest("hex")
+    .slice(0, 16);
+}
+
 function parseJson(value, fallback) {
   try {
     return value ? JSON.parse(value) : fallback;
   } catch {
     return fallback;
   }
+}
+
+function plusAlias(email, suffix) {
+  const value = clean(email, 180).toLowerCase();
+  const [local, domain] = value.split("@");
+  if (!local || !domain) return "";
+  const baseLocal = local.split("+")[0];
+  return `${baseLocal}+${suffix}@${domain}`;
+}
+
+function demoMailPreview(kind, to, subject, text, html, links) {
+  return {
+    kind,
+    to,
+    subject,
+    text,
+    html,
+    links
+  };
+}
+
+async function createDemoMemberRows(sheets, spreadsheetId, memberRange, now, adminEmail, participants) {
+  const values = participants.map((participant) => [
+    now,
+    `demo:${participant.email}`,
+    participant.email,
+    participant.name,
+    "demo_admin",
+    participant.role,
+    "",
+    "",
+    "no",
+    "no",
+    "yes",
+    "yes",
+    `demo_by:${adminEmail}`,
+    "registered",
+    "orga_only",
+    "no",
+    "",
+    ""
+  ]);
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: memberRange,
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values }
+  });
+}
+
+async function createDemoRegistration({ req, sheets, spreadsheetId, registrationRange, memberRange, body, identity }) {
+  const baseEmail = clean(body.baseEmail, 180).toLowerCase();
+  const inviteCount = Math.min(Math.max(Number(body.inviteCount) || 2, 1), 5);
+  const createProfiles = body.createProfiles === true;
+  const sendDemoMail = body.sendDemoMail === true;
+  const eventId = clean(body.eventId, 120) || "heilstaette-grabowsee-2026-07-04";
+  const now = new Date().toISOString();
+  const id = registrationId(baseEmail || identity.email);
+  const applicantEmail = plusAlias(baseEmail, "user0");
+  const undoToken = randomToken();
+
+  if (!applicantEmail) {
+    const error = new Error("Invalid demo base email");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const invitees = Array.from({ length: inviteCount }, (_, index) => {
+    const role = index % 2 === 0 ? "model" : "photographer";
+    return {
+      name: `Demo User ${index + 1}`,
+      email: plusAlias(baseEmail, `user${index + 1}`),
+      instagram: "",
+      eventFunction: role,
+      status: "pending",
+      invitedAt: now,
+      confirmedAt: "",
+      index
+    };
+  });
+  const inviteTokens = invitees.map((participant) => ({
+    email: participant.email,
+    token: randomToken(),
+    hash: "",
+    index: participant.index
+  }));
+  inviteTokens.forEach((item) => {
+    item.hash = hashToken(item.token);
+  });
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: registrationRange,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [[
+        now,
+        id,
+        eventId,
+        `demo:${applicantEmail}`,
+        "demo_admin",
+        "photographer",
+        "Demo Applicant",
+        applicantEmail,
+        "",
+        invitees[0]?.name || "",
+        invitees[0]?.email || "",
+        "",
+        invitees[0]?.eventFunction || "",
+        invitees.length ? "pending" : "",
+        "demo",
+        "",
+        "yes",
+        `Admin demo created by ${identity.email}`,
+        invitees.length ? "pending_invites" : "pending_review",
+        hashToken(undoToken),
+        inviteTokens[0]?.hash || "",
+        `demo_by:${identity.email}`,
+        now,
+        JSON.stringify(invitees),
+        JSON.stringify(inviteTokens.map(({ email, hash, index }) => ({ email, hash, index }))),
+        invitees.map((participant) => `${participant.email}:${participant.status}`).join(", ")
+      ]]
+    }
+  });
+
+  if (createProfiles) {
+    await createDemoMemberRows(sheets, spreadsheetId, memberRange, now, identity.email, [
+      { name: "Demo Applicant", email: applicantEmail, role: "photographer" },
+      ...invitees.map((invitee) => ({ name: invitee.name, email: invitee.email, role: invitee.eventFunction }))
+    ]);
+  }
+
+  const undoUrl = actionUrl(req, "undo-registration", undoToken);
+  const previews = [
+    demoMailPreview(
+      "applicant",
+      applicantEmail,
+      "Boudoir Collective Berlin: demo registration received",
+      `Demo application ${id} received.\nUndo: ${undoUrl}`,
+      `<p>Demo application <strong>${id}</strong> received.</p><p><a href="${undoUrl}">Undo registration</a></p>`,
+      [{ label: "Undo registration", url: undoUrl }]
+    )
+  ];
+
+  for (const invitation of inviteTokens) {
+    const invitee = invitees[invitation.index];
+    const confirmUrl = actionUrl(req, "confirm-partner", invitation.token);
+    const rejectUrl = actionUrl(req, "reject-partner", invitation.token);
+    previews.push(demoMailPreview(
+      "invite",
+      invitee.email,
+      "Boudoir Collective Berlin: demo invitation",
+      `Demo Applicant invited ${invitee.name}.\nConfirm: ${confirmUrl}\nReject: ${rejectUrl}`,
+      `<p>Demo Applicant invited ${invitee.name}.</p><p><a href="${confirmUrl}">Confirm invitation</a></p><p><a href="${rejectUrl}">Reject invitation</a></p>`,
+      [
+        { label: "Confirm invitation", url: confirmUrl },
+        { label: "Reject invitation", url: rejectUrl }
+      ]
+    ));
+  }
+
+  if (sendDemoMail) {
+    for (const preview of previews) {
+      await sendMail({
+        to: preview.to,
+        subject: preview.subject,
+        text: preview.text,
+        html: preview.html
+      });
+    }
+  }
+
+  return { id, previews, createProfiles, sendDemoMail };
 }
 
 function publicRegistration(row) {
@@ -114,6 +306,20 @@ export default async function handler(req, res) {
       await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 21, `${status}_by:${identity.email}`);
       await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 22, now);
       res.status(200).json({ ok: true, status });
+      return;
+    }
+
+    if (action === "create-demo-registration") {
+      const demo = await createDemoRegistration({
+        req,
+        sheets,
+        spreadsheetId,
+        registrationRange,
+        memberRange,
+        body,
+        identity
+      });
+      res.status(200).json({ ok: true, status: "demo_created", demo });
       return;
     }
 

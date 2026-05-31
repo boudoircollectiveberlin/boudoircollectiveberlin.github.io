@@ -22,7 +22,7 @@ Dadurch müssen Teilnehmende:
 5. Der Browser sendet den Firebase ID Token an `POST /api/member` oder `POST /api/register`.
 6. Die Vercel Function verifiziert den Token anhand der öffentlichen Firebase-Zertifikate und der Firebase Project ID.
 7. `POST /api/member` schreibt privates Community-Profil, kreative Bereiche, Codex-/Datenschutzbestätigung und Update-Wunsch in `Members`.
-8. Eventinteresse entsteht später aus der jeweiligen Eventdetailseite heraus. `POST /api/register` validiert dann Eventdaten, Honeypot, Codex-/Datenschutz-Checkboxen und optionale mitangemeldete Personen und schreibt in `Registrations`.
+8. Eventinteresse entsteht später aus der jeweiligen Eventdetailseite heraus. `POST /api/register` validiert dann Eventdaten, Honeypot, Codex-/Datenschutz-Checkboxen und optionale eingeladene Personen und schreibt in `Registrations`.
 9. Die Orga prüft im Sheet und verschickt Bestätigung, Zahlungsinfos und WhatsApp-Lobby/Community-Infos manuell oder später automatisiert.
 
 ## Google Setup
@@ -133,18 +133,20 @@ Eventinteresse ist nur für registrierte Accounts mit gespeichertem privatem Pro
 4. Zahlungsoption wird verschickt.
 5. Aufnahme in das Event erst nach Zahlungseingang.
 
-Eine eingeloggte Person kann optional eine weitere Person mit anmelden. Diese zweite Person wird nicht aus einer öffentlichen Mitgliederliste ausgewählt, sondern über Name/E-Mail erfasst. Wenn später E-Mail-Versand ergänzt wird, sollte diese Person eine Benachrichtigung mit Bestätigen-/Ablehnen-Link erhalten. Bei Ablehnung wird der zugehörige Partner-Datensatz gelöscht oder als abgelehnt markiert.
-
-Empfohlenes Sheet-Header-Set:
-
-```text
-timestamp | registration_id | event_id | event_function | name | email | instagram | partner_name | partner_email | partner_instagram | partner_function | partner_consent_status | pairing | portfolio | whatsapp_intent | notes
-```
+Eine eingeloggte Person kann optional mehrere weitere Personen einladen. Diese Personen werden nicht aus einer öffentlichen Mitgliederliste ausgewählt, sondern über Name/E-Mail, optionale Rolle und optionale Instagram-Angabe erfasst. Bei Mailversand erhält jede eingeladene Person einen eigenen Bestätigen-/Ablehnen-Link. Token werden nur gehasht gespeichert; der Klartext-Token steht ausschließlich im Mail-Link. Bei Ablehnung bleibt der Datensatz sichtbar, damit Admins die Bewerbung sauber einordnen können.
 
 Aktuelles `Registrations`-Set:
 
 ```text
-timestamp | registration_id | event_id | firebase_uid | provider | event_function | name | verified_email | instagram | partner_name | partner_email | partner_instagram | partner_function | partner_consent_status | pairing | portfolio | whatsapp_intent | notes
+timestamp | registration_id | event_id | firebase_uid | provider | event_function | name | verified_email | instagram | partner_name | partner_email | partner_instagram | partner_function | partner_consent_status | pairing | portfolio | whatsapp_intent | notes | registration_status | applicant_action_hash | partner_action_hash | admin_status | updated_at | invitees_json | invite_action_hashes_json | invite_summary
+```
+
+Legacy-Partnerfelder bleiben für Sheet-Kompatibilität befüllt und enthalten die erste eingeladene Person. Für neue Multi-Invite-Flows sind `invitees_json`, `invite_action_hashes_json` und `invite_summary` maßgeblich.
+
+Statuswerte:
+
+```text
+pending_review | pending_invites | invite_profiles_required | invite_rejected | confirmed | rejected | canceled_by_link
 ```
 
 Empfohlenes `Members`-Set:
@@ -153,15 +155,17 @@ Empfohlenes `Members`-Set:
 timestamp | firebase_uid | verified_email | display_name | provider | functions | instagram | portfolio | future_updates | lobby_info | community_consent | community_privacy | member_status | private_profile_visibility | community_profile_visibility
 ```
 
-## Partner-Bestätigung
+## Einladungsbestätigung
 
-Aktuell wird die mitangemeldete Person mit `partner_consent_status=pending` gespeichert, sobald eine Partner-E-Mail angegeben ist. Für die nächste Ausbaustufe ist vorgesehen:
+Aktuell wird jede eingeladene Person in `invitees_json` mit `status=pending` gespeichert. Für jede Einladung entsteht ein eigener Hash in `invite_action_hashes_json`.
 
-1. Nach Event-Anmeldung erzeugt die API einen zufälligen Bestätigungs-Token.
-2. Die API sendet an `partner_email` eine kurze Mail: wer hat dich für welches Event mitangemeldet?
-3. Link `confirm` setzt `partner_consent_status=confirmed`.
-4. Link `reject` setzt `partner_consent_status=rejected` oder entfernt die Partnerfelder aus dem Datensatz.
-5. Ohne Bestätigung bleibt die Anmeldung organisatorisch unvollständig.
+1. Nach Event-Anmeldung erzeugt die API pro eingeladener Person einen zufälligen Bestätigungs-Token.
+2. Die API sendet eine kurze Mail: wer hat dich für welches Event vorgeschlagen?
+3. Link `confirm` setzt den Einladungsstatus auf `confirmed` oder `confirmed_profile_required`.
+4. Link `reject` setzt den Einladungsstatus auf `rejected`.
+5. Solange Einladungen offen sind, bleibt die Bewerbung `pending_invites`.
+6. Wenn alle angenommen haben, aber mindestens ein Profil fehlt, bleibt sie `invite_profiles_required`.
+7. Erst wenn alle angenommen haben und die Profile existieren, wird die Bewerbung `pending_review`.
 
 Das benötigt einen Mailprovider oder Google Workspace/Gmail API mit zusätzlicher Dokumentation und Datenschutztext.
 
@@ -169,10 +173,10 @@ Das benötigt einen Mailprovider oder Google Workspace/Gmail API mit zusätzlich
 
 ## Aktuelle Erweiterung: Mail, Admin und Grabowsee
 
-- `POST /api/register` speichert inzwischen `registration_status`, `applicant_action_hash`, `partner_action_hash`, `admin_status` und `updated_at` hinter den bisherigen Registrierungsfeldern.
+- `POST /api/register` speichert inzwischen `registration_status`, `applicant_action_hash`, `partner_action_hash`, `admin_status`, `updated_at`, `invitees_json`, `invite_action_hashes_json` und `invite_summary` hinter den bisherigen Registrierungsfeldern.
 - Es werden nur Hashes der Aktionstoken gespeichert. Der Klartext-Token steht nur im Mail-Link.
 - Wenn `RESEND_API_KEY` gesetzt ist, erhalten Bewerber:innen eine Registrierungsbestätigung mit "this was not me"-Undo-Link.
-- Wenn eine Partner-E-Mail angegeben ist, erhält die vorgeschlagene Person eine Partner-Mail mit Bestätigen-/Ablehnen-Link. Bis zur Bestätigung bleibt die Bewerbung `pending_partner`.
+- Wenn eingeladene Personen angegeben sind, erhält jede Person eine Mail mit Bestätigen-/Ablehnen-Link. Bis zur vollständigen Bestätigung bleibt die Bewerbung `pending_invites`.
 - `GET /api/registration-action` verarbeitet Undo, Partner-Bestätigung und Partner-Ablehnung.
 - `ADMIN_EMAILS` ist die Vercel-basierte Admin-Definition. `GET/POST /api/admin` ist nur für diese Firebase-verifizierten E-Mail-Adressen nutzbar.
 - Admin-Aktionen: Eventbewerbung bestätigen, ablehnen, zurücksetzen; Mitglied per E-Mail anonymisieren.

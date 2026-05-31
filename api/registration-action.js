@@ -27,6 +27,34 @@ async function updateCell(sheets, rowNumber, columnIndex, value) {
   });
 }
 
+function parseJson(value, fallback) {
+  try {
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function inviteSummary(invitees) {
+  return invitees.map((participant) => `${clean(participant.email, 180)}:${clean(participant.status, 80)}`).join(", ");
+}
+
+function registrationStatus(invitees) {
+  if (!invitees.length) return "pending_review";
+  if (invitees.some((participant) => participant.status === "rejected")) return "invite_rejected";
+  if (invitees.some((participant) => participant.status === "pending")) return "pending_invites";
+  if (invitees.some((participant) => participant.status === "confirmed_profile_required")) return "invite_profiles_required";
+  return "pending_review";
+}
+
+async function hasMemberProfile(sheets, email) {
+  const memberResponse = await sheets.spreadsheets.values.get({
+    spreadsheetId: process.env.REGISTRATION_SHEET_ID,
+    range: process.env.MEMBER_SHEET_RANGE || "Members!A:Z"
+  }).catch(() => ({ data: { values: [] } }));
+  return (memberResponse.data.values || []).some((row) => clean(row?.[2], 180).toLowerCase() === email);
+}
+
 export default async function handler(req, res) {
   applyCors(req, res);
 
@@ -55,7 +83,11 @@ export default async function handler(req, res) {
 
     const rows = response.data.values || [];
     const hashColumn = action === "undo-registration" ? 19 : 20;
-    const rowIndex = rows.findIndex((row) => clean(row?.[hashColumn], 200) === hashed);
+    const rowIndex = rows.findIndex((row) => {
+      if (clean(row?.[hashColumn], 200) === hashed) return true;
+      if (action === "undo-registration") return false;
+      return parseJson(row?.[24], []).some((invite) => clean(invite?.hash, 200) === hashed);
+    });
     if (rowIndex < 0) {
       res.status(404).send("This action link is invalid or expired.");
       return;
@@ -70,22 +102,39 @@ export default async function handler(req, res) {
     }
 
     if (action === "confirm-partner") {
-      const partnerEmail = clean(rows[rowIndex]?.[10], 180).toLowerCase();
-      const memberResponse = await sheets.spreadsheets.values.get({
-        spreadsheetId: process.env.REGISTRATION_SHEET_ID,
-        range: process.env.MEMBER_SHEET_RANGE || "Members!A:Z"
-      }).catch(() => ({ data: { values: [] } }));
-      const hasPartnerProfile = (memberResponse.data.values || []).some((row) => clean(row?.[2], 180).toLowerCase() === partnerEmail);
+      const invitees = parseJson(rows[rowIndex]?.[23], []);
+      const hashes = parseJson(rows[rowIndex]?.[24], []);
+      const inviteHash = hashes.find((invite) => clean(invite?.hash, 200) === hashed);
+      const inviteIndex = Number.isInteger(inviteHash?.index) ? inviteHash.index : 0;
+      const partnerEmail = clean(invitees[inviteIndex]?.email || rows[rowIndex]?.[10], 180).toLowerCase();
+      const hasPartnerProfile = await hasMemberProfile(sheets, partnerEmail);
+
+      if (invitees.length && invitees[inviteIndex]) {
+        invitees[inviteIndex].status = hasPartnerProfile ? "confirmed" : "confirmed_profile_required";
+        invitees[inviteIndex].confirmedAt = new Date().toISOString();
+        await updateCell(sheets, rowNumber, 23, JSON.stringify(invitees));
+        await updateCell(sheets, rowNumber, 25, inviteSummary(invitees));
+      }
       await updateCell(sheets, rowNumber, 13, "confirmed");
-      await updateCell(sheets, rowNumber, 18, hasPartnerProfile ? "pending_review" : "partner_confirmed_profile_required");
+      await updateCell(sheets, rowNumber, 18, invitees.length ? registrationStatus(invitees) : (hasPartnerProfile ? "pending_review" : "partner_confirmed_profile_required"));
       await updateCell(sheets, rowNumber, 22, new Date().toISOString());
       res.status(200).send("Partner confirmation received. Please also make sure your community profile is registered with the same email; otherwise the application remains incomplete.");
       return;
     }
 
     if (action === "reject-partner") {
+      const invitees = parseJson(rows[rowIndex]?.[23], []);
+      const hashes = parseJson(rows[rowIndex]?.[24], []);
+      const inviteHash = hashes.find((invite) => clean(invite?.hash, 200) === hashed);
+      const inviteIndex = Number.isInteger(inviteHash?.index) ? inviteHash.index : 0;
+      if (invitees.length && invitees[inviteIndex]) {
+        invitees[inviteIndex].status = "rejected";
+        invitees[inviteIndex].confirmedAt = new Date().toISOString();
+        await updateCell(sheets, rowNumber, 23, JSON.stringify(invitees));
+        await updateCell(sheets, rowNumber, 25, inviteSummary(invitees));
+      }
       await updateCell(sheets, rowNumber, 13, "rejected");
-      await updateCell(sheets, rowNumber, 18, "partner_rejected");
+      await updateCell(sheets, rowNumber, 18, invitees.length ? registrationStatus(invitees) : "partner_rejected");
       await updateCell(sheets, rowNumber, 22, new Date().toISOString());
       res.status(200).send("Partner suggestion rejected. The organizer team will see this in the registration list.");
       return;

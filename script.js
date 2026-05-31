@@ -372,7 +372,9 @@ function renderAdminRegistrations(registrations) {
       <div>
         <strong>${escapeHtml(item.name || item.email)}</strong>
         <span>${escapeHtml(item.eventId)} · ${escapeHtml(item.role)} · ${escapeHtml(item.status)}</span>
-        ${item.partnerEmail ? `<span>Partner: ${escapeHtml(item.partnerName || item.partnerEmail)} · ${escapeHtml(item.partnerStatus || "pending")}</span>` : ""}
+        ${item.invitees?.length
+          ? item.invitees.map((invitee) => `<span>Invite: ${escapeHtml(invitee.name || invitee.email)} · ${escapeHtml(invitee.role || "open")} · ${escapeHtml(invitee.status || "pending")}</span>`).join("")
+          : (item.partnerEmail ? `<span>Partner: ${escapeHtml(item.partnerName || item.partnerEmail)} · ${escapeHtml(item.partnerStatus || "pending")}</span>` : "")}
       </div>
       <div class="admin-row__actions">
         <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminConfirm"))}</button>
@@ -576,8 +578,20 @@ function hasSelectedProfileFunction(formElement) {
   return formElement.querySelectorAll('input[name="functions"]:checked').length > 0;
 }
 
+function inviteesFromEventForm(formElement) {
+  return Array.from(formElement.querySelectorAll("[data-invitee-card]"))
+    .map((card) => ({
+      name: card.querySelector('[name="inviteName"]')?.value || "",
+      email: card.querySelector('[name="inviteEmail"]')?.value || "",
+      instagram: card.querySelector('[name="inviteInstagram"]')?.value || "",
+      eventFunction: card.querySelector('[name="inviteFunction"]')?.value || ""
+    }))
+    .filter((invitee) => invitee.name || invitee.email || invitee.instagram || invitee.eventFunction);
+}
+
 function payloadFromEventForm(formElement) {
   const data = new FormData(formElement);
+  const invitedParticipants = inviteesFromEventForm(formElement);
   return {
     idToken: authState.idToken,
     eventId: data.get("eventId"),
@@ -586,10 +600,11 @@ function payloadFromEventForm(formElement) {
     email: data.get("email"),
     instagram: data.get("instagram"),
     portfolio: data.get("portfolio"),
-    partnerName: data.get("partnerName"),
-    partnerEmail: data.get("partnerEmail"),
-    partnerInstagram: data.get("partnerInstagram"),
-    partnerFunction: data.get("partnerFunction"),
+    partnerName: invitedParticipants[0]?.name || "",
+    partnerEmail: invitedParticipants[0]?.email || "",
+    partnerInstagram: invitedParticipants[0]?.instagram || "",
+    partnerFunction: invitedParticipants[0]?.eventFunction || "",
+    invitedParticipants,
     pairing: data.get("pairing"),
     notes: data.get("notes"),
     website: data.get("website"),
@@ -598,6 +613,49 @@ function payloadFromEventForm(formElement) {
     partnerNotice: data.get("partnerNotice") === "on",
     whatsappIntent: true
   };
+}
+
+function initInviteeControls() {
+  const list = document.querySelector("[data-invitee-list]");
+  const addButton = document.querySelector("[data-add-invitee]");
+  const firstCard = document.querySelector("[data-invitee-card]");
+  if (!list || !addButton || !firstCard) return;
+
+  function updateRemoveButtons() {
+    const cards = Array.from(list.querySelectorAll("[data-invitee-card]"));
+    cards.forEach((card) => {
+      const button = card.querySelector("[data-remove-invitee]");
+      if (button) button.hidden = cards.length === 1;
+    });
+    addButton.disabled = cards.length >= 6;
+  }
+
+  addButton.addEventListener("click", () => {
+    const clone = firstCard.cloneNode(true);
+    clone.querySelectorAll("input").forEach((input) => { input.value = ""; });
+    clone.querySelectorAll("select").forEach((select) => { select.selectedIndex = 0; });
+    list.insertBefore(clone, addButton);
+    updateRemoveButtons();
+  });
+
+  list.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-remove-invitee]");
+    if (!button) return;
+    const cards = Array.from(list.querySelectorAll("[data-invitee-card]"));
+    if (cards.length <= 1) return;
+    button.closest("[data-invitee-card]")?.remove();
+    updateRemoveButtons();
+  });
+
+  updateRemoveButtons();
+}
+
+function resetInviteeControls() {
+  const cards = Array.from(document.querySelectorAll("[data-invitee-card]"));
+  cards.slice(1).forEach((card) => card.remove());
+  cards[0]?.querySelector("[data-remove-invitee]")?.setAttribute("hidden", "");
+  const addButton = document.querySelector("[data-add-invitee]");
+  if (addButton) addButton.disabled = false;
 }
 
 profileForm?.addEventListener("submit", async (event) => {
@@ -681,6 +739,7 @@ form?.addEventListener("submit", async (event) => {
     }
 
     form.reset();
+    resetInviteeControls();
     if (authState.profile) {
       form.elements.email.value = authState.profile.email || "";
       form.elements.name.value = authState.profile.name || "";
@@ -740,5 +799,6 @@ window.addEventListener("bcb:languagechange", () => {
 initMenu();
 initAccountMenu();
 initContactFlyout();
+initInviteeControls();
 loadEvents().then(renderEvents);
 initFirebaseLogin();

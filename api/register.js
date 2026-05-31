@@ -5,6 +5,34 @@ import { applyCors, clean, getSheetsClient, readBody, verifyFirebaseIdToken } fr
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INSTAGRAM_RE = /^@?[a-zA-Z0-9._]{1,30}$/;
 const ALLOWED_EVENT_FUNCTIONS = new Set(["model", "photographer", "mua", "team", "other"]);
+const MAX_INVITEES = 6;
+
+function normalizeInstagram(value) {
+  const instagram = clean(value, 80);
+  return instagram ? (instagram.startsWith("@") ? instagram : `@${instagram}`) : "";
+}
+
+function invitedParticipants(payload) {
+  const raw = Array.isArray(payload.invitedParticipants) ? payload.invitedParticipants : [];
+  const legacy = !raw.length && (payload.partnerName || payload.partnerEmail || payload.partnerInstagram || payload.partnerFunction)
+    ? [{
+        name: payload.partnerName,
+        email: payload.partnerEmail,
+        instagram: payload.partnerInstagram,
+        eventFunction: payload.partnerFunction
+      }]
+    : [];
+
+  return [...raw, ...legacy]
+    .slice(0, MAX_INVITEES)
+    .map((participant) => ({
+      name: clean(participant?.name, 120),
+      email: clean(participant?.email, 180).toLowerCase(),
+      instagram: normalizeInstagram(participant?.instagram),
+      eventFunction: clean(participant?.eventFunction || participant?.function, 80)
+    }))
+    .filter((participant) => participant.name || participant.email || participant.instagram || participant.eventFunction);
+}
 
 function validate(payload) {
   const errors = {};
@@ -12,10 +40,8 @@ function validate(payload) {
   const eventId = clean(payload.eventId, 120);
   const name = clean(payload.name, 120);
   const email = clean(payload.email, 180).toLowerCase();
-  const instagram = clean(payload.instagram, 80);
-  const partnerName = clean(payload.partnerName, 120);
-  const partnerEmail = clean(payload.partnerEmail, 180).toLowerCase();
-  const partnerFunction = clean(payload.partnerFunction, 80);
+  const instagram = normalizeInstagram(payload.instagram);
+  const invitees = invitedParticipants(payload);
   const consent = payload.consent === true;
   const privacy = payload.privacy === true;
 
@@ -24,14 +50,22 @@ function validate(payload) {
   if (!name) errors.name = "name_required";
   if (!EMAIL_RE.test(email)) errors.email = "email_invalid";
   if (instagram && !INSTAGRAM_RE.test(instagram)) errors.instagram = "instagram_invalid";
-  if ((partnerName || partnerFunction || clean(payload.partnerInstagram, 80)) && !partnerEmail) errors.partnerEmail = "partner_email_required";
-  if (partnerEmail && !EMAIL_RE.test(partnerEmail)) errors.partnerEmail = "partner_email_invalid";
-  if (partnerFunction && !ALLOWED_EVENT_FUNCTIONS.has(partnerFunction)) errors.partnerFunction = "partner_function_invalid";
-  if ((partnerName || partnerEmail || partnerFunction) && !payload.partnerNotice) errors.partnerNotice = "partner_notice_required";
+  const inviteeEmails = new Set();
+  invitees.forEach((participant, index) => {
+    if (!participant.email) errors[`invitee${index}Email`] = "invitee_email_required";
+    if (participant.email && !EMAIL_RE.test(participant.email)) errors[`invitee${index}Email`] = "invitee_email_invalid";
+    if (participant.email === email) errors[`invitee${index}Email`] = "invitee_email_must_differ";
+    if (participant.email && inviteeEmails.has(participant.email)) errors[`invitee${index}Email`] = "invitee_email_duplicate";
+    inviteeEmails.add(participant.email);
+    if (participant.instagram && !INSTAGRAM_RE.test(participant.instagram)) errors[`invitee${index}Instagram`] = "invitee_instagram_invalid";
+    if (participant.eventFunction && !ALLOWED_EVENT_FUNCTIONS.has(participant.eventFunction)) errors[`invitee${index}Function`] = "invitee_function_invalid";
+  });
+  if (invitees.length && !payload.partnerNotice) errors.partnerNotice = "partner_notice_required";
   if (!consent) errors.consent = "codex_required";
   if (!privacy) errors.privacy = "privacy_required";
   if (payload.website && clean(payload.website)) errors.website = "bot_rejected";
 
+  const primaryInvitee = invitees[0] || {};
   return {
     ok: Object.keys(errors).length === 0,
     errors,
@@ -40,12 +74,13 @@ function validate(payload) {
       eventFunction,
       name,
       email,
-      instagram: instagram ? (instagram.startsWith("@") ? instagram : `@${instagram}`) : "",
-      partnerName,
-      partnerEmail,
-      partnerInstagram: clean(payload.partnerInstagram, 80),
-      partnerFunction,
-      partnerConsentStatus: partnerEmail ? "pending" : "",
+      instagram,
+      invitees,
+      partnerName: primaryInvitee.name || "",
+      partnerEmail: primaryInvitee.email || "",
+      partnerInstagram: primaryInvitee.instagram || "",
+      partnerFunction: primaryInvitee.eventFunction || "",
+      partnerConsentStatus: invitees.length ? "pending" : "",
       pairing: clean(payload.pairing, 120),
       portfolio: clean(payload.portfolio, 300),
       notes: clean(payload.notes, 1000),
@@ -105,9 +140,26 @@ export default async function handler(req, res) {
     const id = registrationId(result.data);
     const timestamp = new Date().toISOString();
     const undoToken = randomToken();
-    const partnerToken = result.data.partnerEmail ? randomToken() : "";
+    const inviteTokens = result.data.invitees.map((participant, index) => ({
+      email: participant.email,
+      token: randomToken(),
+      hash: "",
+      index
+    }));
+    inviteTokens.forEach((item) => {
+      item.hash = hashToken(item.token);
+    });
     const sheets = getSheetsClient();
     const range = process.env.REGISTRATION_SHEET_RANGE || "Registrations!A:Z";
+    const inviteesForSheet = result.data.invitees.map((participant, index) => ({
+      ...participant,
+      status: "pending",
+      invitedAt: timestamp,
+      confirmedAt: "",
+      index
+    }));
+    const inviteHashesForSheet = inviteTokens.map(({ email, hash, index }) => ({ email, hash, index }));
+    const inviteSummary = inviteesForSheet.map((participant) => `${participant.email}:${participant.status}`).join(", ");
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.REGISTRATION_SHEET_ID,
@@ -133,11 +185,14 @@ export default async function handler(req, res) {
           result.data.portfolio,
           result.data.whatsappIntent,
           result.data.notes,
-          result.data.partnerEmail ? "pending_partner" : "pending_review",
+          result.data.invitees.length ? "pending_invites" : "pending_review",
           hashToken(undoToken),
-          partnerToken ? hashToken(partnerToken) : "",
+          inviteTokens[0]?.hash || "",
           "",
-          timestamp
+          timestamp,
+          JSON.stringify(inviteesForSheet),
+          JSON.stringify(inviteHashesForSheet),
+          inviteSummary
         ]]
       }
     });
@@ -150,25 +205,26 @@ export default async function handler(req, res) {
         `Hi ${result.data.name},`,
         "",
         `we received your application for ${eventLabel(result.data.eventId)}.`,
-        result.data.partnerEmail
-          ? `Your suggested partner (${result.data.partnerEmail}) still needs to confirm before the application is valid.`
+        result.data.invitees.length
+          ? `Your invited participants still need to confirm before the application is complete: ${result.data.invitees.map((participant) => participant.email).join(", ")}.`
           : "The organizer team will review the role mix and come back to you.",
         "",
         `If this was not you, undo the registration here: ${undoUrl}`,
         "",
         "Boudoir Collective Berlin"
       ].join("\n"),
-      html: `<p>Hi ${result.data.name},</p><p>We received your application for <strong>${eventLabel(result.data.eventId)}</strong>.</p><p>${result.data.partnerEmail ? `Your suggested partner (${result.data.partnerEmail}) still needs to confirm before the application is valid.` : "The organizer team will review the role mix and come back to you."}</p><p><a href="${undoUrl}">This was not me - undo this registration</a></p><p>Boudoir Collective Berlin</p>`
+      html: `<p>Hi ${result.data.name},</p><p>We received your application for <strong>${eventLabel(result.data.eventId)}</strong>.</p><p>${result.data.invitees.length ? `Your invited participants still need to confirm before the application is complete: ${result.data.invitees.map((participant) => participant.email).join(", ")}.` : "The organizer team will review the role mix and come back to you."}</p><p><a href="${undoUrl}">This was not me - undo this registration</a></p><p>Boudoir Collective Berlin</p>`
     });
 
-    if (result.data.partnerEmail && partnerToken) {
-      const confirmUrl = actionUrl(req, "confirm-partner", partnerToken);
-      const rejectUrl = actionUrl(req, "reject-partner", partnerToken);
+    for (const invitation of inviteTokens) {
+      const participant = result.data.invitees[invitation.index];
+      const confirmUrl = actionUrl(req, "confirm-partner", invitation.token);
+      const rejectUrl = actionUrl(req, "reject-partner", invitation.token);
       await sendMail({
-        to: result.data.partnerEmail,
-        subject: `Boudoir Collective Berlin: partner confirmation for ${eventLabel(result.data.eventId)}`,
+        to: participant.email,
+        subject: `Boudoir Collective Berlin: invitation for ${eventLabel(result.data.eventId)}`,
         text: [
-          `Hi ${result.data.partnerName || ""},`,
+          `Hi ${participant.name || ""},`,
           "",
           `${result.data.name} suggested you as a partner for ${eventLabel(result.data.eventId)}.`,
           "Please create/sign in to your community profile as well. The application is only valid once you confirm.",
@@ -178,7 +234,7 @@ export default async function handler(req, res) {
           "",
           "Boudoir Collective Berlin"
         ].join("\n"),
-        html: `<p>Hi ${result.data.partnerName || ""},</p><p>${result.data.name} suggested you as a partner for <strong>${eventLabel(result.data.eventId)}</strong>.</p><p>Please create/sign in to your community profile as well. The application is only valid once you confirm.</p><p><a href="${confirmUrl}">Confirm partner application</a></p><p><a href="${rejectUrl}">Reject this suggestion</a></p><p>Boudoir Collective Berlin</p>`
+        html: `<p>Hi ${participant.name || ""},</p><p>${result.data.name} suggested you as a partner for <strong>${eventLabel(result.data.eventId)}</strong>.</p><p>Please create/sign in to your community profile as well. The application is only valid once you confirm.</p><p><a href="${confirmUrl}">Confirm partner application</a></p><p><a href="${rejectUrl}">Reject this suggestion</a></p><p>Boudoir Collective Berlin</p>`
       });
     }
 

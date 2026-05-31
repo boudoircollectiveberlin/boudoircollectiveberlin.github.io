@@ -26,6 +26,14 @@ async function updateCell(sheets, spreadsheetId, sheetName, rowNumber, columnInd
   });
 }
 
+function parseJson(value, fallback) {
+  try {
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function publicRegistration(row) {
   return {
     id: clean(row[1], 80),
@@ -38,7 +46,14 @@ function publicRegistration(row) {
     partnerStatus: clean(row[13], 60),
     status: clean(row[18], 60) || "pending_review",
     adminStatus: clean(row[21], 60),
-    updatedAt: clean(row[22], 80)
+    updatedAt: clean(row[22], 80),
+    invitees: parseJson(row[23], []).map((participant) => ({
+      name: clean(participant?.name, 120),
+      email: clean(participant?.email, 180),
+      instagram: clean(participant?.instagram, 80),
+      role: clean(participant?.eventFunction, 60),
+      status: clean(participant?.status, 80)
+    }))
   };
 }
 

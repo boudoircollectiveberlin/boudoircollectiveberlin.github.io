@@ -115,8 +115,10 @@ timestamp | firebase_uid | verified_email | display_name | provider | functions 
 `Registrations`
 
 ```text
-timestamp | registration_id | event_id | firebase_uid | provider | event_function | name | verified_email | instagram | partner_name | partner_email | partner_instagram | partner_function | partner_consent_status | pairing | portfolio | whatsapp_intent | notes
+timestamp | registration_id | event_id | firebase_uid | provider | event_function | name | verified_email | instagram | partner_name | partner_email | partner_instagram | partner_function | partner_consent_status | pairing | portfolio | whatsapp_intent | notes | registration_status | applicant_action_hash | partner_action_hash | admin_status | updated_at | invitees_json | invite_action_hashes_json | invite_summary
 ```
+
+`partner_*` bleibt aus Kompatibilitätsgründen die erste eingeladene Person. Für mehrere eingeladene Personen sind `invitees_json`, `invite_action_hashes_json` und `invite_summary` maßgeblich.
 
 ## 7. Environment Variables in Vercel setzen
 
@@ -204,6 +206,7 @@ Vor Livegang prüfen:
 9. CORS funktioniert von GitHub Pages zur Vercel-Domain.
 10. Footer/Header/Instagram/WhatsApp-Links zeigen korrekt.
 11. Impressum und Datenschutz final prüfen.
+12. DSGVO-Orga prüfen: Auftragsverarbeitungsverträge/Datenschutzhinweise für Vercel, Google/Firebase, GitHub Pages und den Mailprovider; Lösch-/Auskunftsprozess; Zugriffsbeschränkung auf Sheet und Vercel.
 
 ## 11. Was ins Repo gehört
 

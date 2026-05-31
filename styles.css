@@ -892,6 +892,32 @@ textarea:focus,
   grid-column: 1 / -1;
 }
 
+.invitee-list {
+  border-color: rgba(255, 255, 255, .12);
+  padding: 16px;
+}
+
+.invitee-list legend {
+  color: var(--muted);
+}
+
+.invitee-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.invitee-card + .invitee-card {
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  padding-top: 12px;
+}
+
+.invitee-card__remove {
+  align-self: end;
+  width: fit-content;
+}
+
 .checkbox {
   grid-template-columns: 18px 1fr;
   align-items: start;
@@ -1488,6 +1514,7 @@ textarea:focus,
   .event-grid,
   .codex-grid,
   .contact-grid,
+  .invitee-card,
   .account-steps,
   .admin-tools,
   .admin-row {

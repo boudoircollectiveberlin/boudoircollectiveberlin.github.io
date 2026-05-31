@@ -47,8 +47,10 @@ let authState = {
   member: null,
   config: null,
   auth: null,
+  firebaseHelpers: null,
   providers: {},
-  profileComplete: false
+  profileComplete: false,
+  pendingAuthLink: null
 };
 
 function isAccountPage() {
@@ -322,6 +324,125 @@ async function loadAuthConfig() {
   }
 }
 
+function authProviderLabel(providerId) {
+  switch (providerId) {
+    case "google":
+    case "google.com":
+      return "Google";
+    case "microsoft":
+    case "microsoft.com":
+      return "Microsoft";
+    case "password":
+      return lang() === "de" ? "E-Mail und Passwort" : "email and password";
+    default:
+      return providerId || (lang() === "de" ? "diesem Login-Anbieter" : "this sign-in provider");
+  }
+}
+
+function authMethodList(methods) {
+  return (methods || []).map(authProviderLabel).filter(Boolean).join(", ");
+}
+
+function setAuthError(message) {
+  setStatus(authStatus, message, true);
+  setStatus(topbarAuthStatus, message, true);
+}
+
+function logAuthError(context, error, extra = {}) {
+  console.groupCollapsed(`[BCB auth] ${context}${error?.code ? `: ${error.code}` : ""}`);
+  console.error({
+    code: error?.code || "",
+    message: error?.message || "",
+    email: error?.customData?.email || error?.email || "",
+    providerId: error?.customData?.providerId || "",
+    stack: error?.stack || "",
+    extra
+  });
+  console.groupEnd();
+}
+
+function authMessageForError(error, provider) {
+  switch (error?.code) {
+    case "auth/popup-closed-by-user":
+      return t("authPopupClosed");
+    case "auth/popup-blocked":
+      return t("authPopupBlocked");
+    case "auth/cancelled-popup-request":
+      return t("authPopupCancelled");
+    case "auth/network-request-failed":
+      return t("authNetworkError");
+    case "auth/unauthorized-domain":
+      return t("authUnauthorizedDomain");
+    case "auth/operation-not-allowed":
+      return t("authOperationNotAllowed");
+    default:
+      return provider === "microsoft" ? t("authMicrosoftError") : t("authGenericAuthError");
+  }
+}
+
+async function finalizePendingAuthLink(user, linkWithCredential) {
+  const pending = authState.pendingAuthLink;
+  if (!pending?.credential || !user?.email) return;
+  if (pending.email !== user.email.toLowerCase()) return;
+
+  try {
+    const alreadyLinked = user.providerData?.some((entry) => entry.providerId === pending.providerId);
+    if (alreadyLinked) {
+      authState.pendingAuthLink = null;
+      setStatus(authStatus, t("authProviderAlreadyLinked"));
+      return;
+    }
+
+    await linkWithCredential(user, pending.credential);
+    authState.pendingAuthLink = null;
+    authState.idToken = await user.getIdToken(true);
+    setStatus(authStatus, t("authLinkSuccess"));
+  } catch (error) {
+    logAuthError("linkWithCredential", error, {
+      pendingProviderId: pending.providerId,
+      pendingEmail: pending.email
+    });
+    setStatus(authStatus, t("authLinkFailed"), true);
+  }
+}
+
+async function handleProviderSignInError(error, provider, fetchSignInMethodsForEmail) {
+  logAuthError("signInWithPopup", error, { provider });
+
+  if (error?.code === "auth/account-exists-with-different-credential") {
+    try {
+      const email = (error.customData?.email || error.email || "").toLowerCase();
+      const methods = email ? await fetchSignInMethodsForEmail(authState.auth, email) : [];
+      const credential = provider === "microsoft" ? authState.providers.microsoftClass?.credentialFromError(error) : null;
+
+      authState.pendingAuthLink = credential ? {
+        email,
+        providerId: credential.providerId || "microsoft.com",
+        providerName: authProviderLabel(provider),
+        credential,
+        methods
+      } : null;
+
+      if (provider === "microsoft" && methods.includes("google.com")) {
+        setAuthError(t("authMicrosoftConflictGoogle"));
+        return;
+      }
+
+      if (methods.length) {
+        const message = lang() === "de"
+          ? `Diese E-Mail existiert bereits mit ${authMethodList(methods)}. Bitte zuerst damit einloggen und danach ${authProviderLabel(provider)} verknüpfen.`
+          : `This email already exists with ${authMethodList(methods)}. Please sign in with that method first, then link ${authProviderLabel(provider)}.`;
+        setAuthError(message);
+        return;
+      }
+    } catch (resolverError) {
+      logAuthError("fetchSignInMethodsForEmail", resolverError, { provider });
+    }
+  }
+
+  setAuthError(authMessageForError(error, provider));
+}
+
 async function handleFirebaseUser(user) {
   authState.idToken = await user.getIdToken();
   authState.profile = {
@@ -345,6 +466,7 @@ async function handleFirebaseUser(user) {
   }
   refreshAuthUi();
   loadAdminPanel();
+  await finalizePendingAuthLink(user, authState.firebaseHelpers?.linkWithCredential);
 
   if (!authState.profileComplete && !isAccountPage()) {
     window.location.href = "account.html#profile-form";
@@ -364,6 +486,7 @@ function handleSignedOutState() {
     profileLocked.hidden = false;
   }
 
+  authState.pendingAuthLink = null;
   refreshAuthUi();
   if (adminPanel) adminPanel.hidden = true;
   setAdminAccessNote("", false);
@@ -540,8 +663,10 @@ async function initFirebaseLogin() {
       import("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js")
     ]);
     const {
+      fetchSignInMethodsForEmail,
       getAuth,
       GoogleAuthProvider,
+      linkWithCredential,
       OAuthProvider,
       onAuthStateChanged,
       signOut,
@@ -550,9 +675,11 @@ async function initFirebaseLogin() {
 
     const app = initializeApp(firebaseConfig);
     authState.auth = getAuth(app);
+    authState.firebaseHelpers = { linkWithCredential };
     authState.providers = {
       google: new GoogleAuthProvider(),
-      microsoft: new OAuthProvider("microsoft.com")
+      microsoft: new OAuthProvider("microsoft.com"),
+      microsoftClass: OAuthProvider
     };
 
     const enabledProviders = authState.config.authProviders || [];
@@ -564,9 +691,8 @@ async function initFirebaseLogin() {
           const result = await signInWithPopup(authState.auth, authState.providers[provider]);
           await handleFirebaseUser(result.user);
           closeAccountMenu();
-        } catch {
-          setStatus(authStatus, t("signupError"), true);
-          setStatus(topbarAuthStatus, t("signupError"), true);
+        } catch (error) {
+          await handleProviderSignInError(error, provider, fetchSignInMethodsForEmail);
         }
       });
     });
@@ -576,8 +702,9 @@ async function initFirebaseLogin() {
         try {
           await signOut(authState.auth);
           closeAccountMenu();
-        } catch {
-          setStatus(topbarAuthStatus, t("signupError"), true);
+        } catch (error) {
+          logAuthError("signOut", error);
+          setStatus(topbarAuthStatus, t("authSignOutError"), true);
         }
       });
     });
@@ -591,7 +718,8 @@ async function initFirebaseLogin() {
     });
 
     refreshAuthUi();
-  } catch {
+  } catch (error) {
+    logAuthError("initFirebaseLogin", error);
     authButtons.forEach((button) => { button.disabled = true; });
     setStatus(topbarAuthStatus, t("authUnavailable"), true);
     setStatus(authStatus, t("authUnavailable"), true);

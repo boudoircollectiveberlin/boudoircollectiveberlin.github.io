@@ -541,7 +541,6 @@ async function initFirebaseLogin() {
     ]);
     const {
       getAuth,
-      GithubAuthProvider,
       GoogleAuthProvider,
       OAuthProvider,
       onAuthStateChanged,
@@ -553,8 +552,7 @@ async function initFirebaseLogin() {
     authState.auth = getAuth(app);
     authState.providers = {
       google: new GoogleAuthProvider(),
-      microsoft: new OAuthProvider("microsoft.com"),
-      github: new GithubAuthProvider()
+      microsoft: new OAuthProvider("microsoft.com")
     };
 
     const enabledProviders = authState.config.authProviders || [];

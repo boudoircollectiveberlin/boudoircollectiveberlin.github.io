@@ -7,7 +7,9 @@
   "scripts": {
     "serve": "npx serve .",
     "dev": "npx vercel dev",
-    "check": "node --check api/events.js && node --check api/register.js && node --check api/member.js && node --check api/admin.js && node --check api/registration-action.js && node --check api/config.js && node --check api/_google.js && node --check api/_mail.js"
+    "check": "node --check api/events.js && node --check api/register.js && node --check api/member.js && node --check api/admin.js && node --check api/registration-action.js && node --check api/config.js && node --check api/_google.js && node --check api/_mail.js && node --check scripts/m365-oauth-helper.mjs",
+    "m365:auth-url": "node scripts/m365-oauth-helper.mjs url",
+    "m365:exchange-code": "node scripts/m365-oauth-helper.mjs exchange"
   },
   "dependencies": {
     "googleapis": "^118.0.0",

@@ -136,9 +136,17 @@ REGISTRATION_SHEET_RANGE
 MEMBER_SHEET_RANGE
 ADMIN_EMAILS
 PUBLIC_SITE_URL
+MAIL_PROVIDER
 RESEND_API_KEY
 MAIL_FROM
 MAIL_REPLY_TO
+M365_TENANT_ID
+M365_CLIENT_ID
+M365_CLIENT_SECRET
+M365_AUTH_MODE
+M365_REFRESH_TOKEN
+M365_REDIRECT_URI
+M365_SENDER_EMAIL
 ALLOWED_ORIGINS
 ```
 
@@ -148,7 +156,12 @@ Empfohlene Werte:
 AUTH_PROVIDERS=google,microsoft,github
 REGISTRATION_SHEET_RANGE=Registrations!A:Z
 MEMBER_SHEET_RANGE=Members!A:Z
-MAIL_REPLY_TO=sweetseductiveart@outlook.de
+MAIL_PROVIDER=m365
+MAIL_FROM=Boudoir Collective Berlin <bookings@boudoircollectiveberlin.de>
+MAIL_REPLY_TO=hello@boudoircollectiveberlin.de
+M365_AUTH_MODE=application
+M365_REDIRECT_URI=http://localhost
+M365_SENDER_EMAIL=bookings@boudoircollectiveberlin.de
 ALLOWED_ORIGINS=https://boudoircollectiveberlin.github.io,https://<projekt>.vercel.app
 ```
 
@@ -217,7 +230,23 @@ Vor Livegang prüfen:
 
 ## 10a. Mail-Entscheidung
 
-Persönliche Outlook-Adressen können als `MAIL_REPLY_TO` genutzt werden. Für Versand aus einer persönlichen Outlook-Adresse ist Microsoft Graph aktuell nicht der empfohlene Pfad, weil `user: sendMail` laut Microsoft-Dokumentation keine delegated personal Microsoft accounts unterstützt. Für Produktionsmails daher einen transaktionalen Provider verwenden und die Outlook-Adresse als Reply-To setzen.
+Mit Microsoft 365 Business Basic ist Microsoft Graph jetzt der empfohlene Produktionspfad.
+
+Empfohlene Phase 1:
+
+1. `bookings@boudoircollectiveberlin.de` als technische Sender-Mailbox verwenden.
+2. `hello@boudoircollectiveberlin.de` als `MAIL_REPLY_TO` setzen.
+3. Eine Entra App nur für Mailversand anlegen.
+4. `Mail.Send` als **Application** Permission vergeben und Admin Consent erteilen.
+5. `M365_AUTH_MODE=application` setzen.
+6. Optional nur als Fallback: delegated Consent + `M365_REFRESH_TOKEN`.
+
+Lokale Hilfsskripte:
+
+```bash
+npm run m365:auth-url
+npm run m365:exchange-code -- "<code-aus-redirect>"
+```
 
 ## 11. Was ins Repo gehört
 

@@ -186,14 +186,27 @@ Das benötigt einen Mailprovider oder Google Workspace/Gmail API mit zusätzlich
 ```text
 ADMIN_EMAILS=admin@example.com
 PUBLIC_SITE_URL=https://boudoircollectiveberlin.github.io
+MAIL_PROVIDER=m365
 RESEND_API_KEY=optional-resend-api-key
-MAIL_FROM="Boudoir Collective Berlin <noreply@example.com>"
-MAIL_REPLY_TO=sweetseductiveart@outlook.de
+MAIL_FROM="Boudoir Collective Berlin <bookings@boudoircollectiveberlin.de>"
+MAIL_REPLY_TO=hello@boudoircollectiveberlin.de
+M365_TENANT_ID=your-entra-tenant-id
+M365_CLIENT_ID=your-app-client-id
+M365_CLIENT_SECRET=your-app-client-secret
+M365_AUTH_MODE=application
+M365_REFRESH_TOKEN=one-time-generated-refresh-token
+M365_REDIRECT_URI=http://localhost
+M365_SENDER_EMAIL=bookings@boudoircollectiveberlin.de
 ```
 
 ## Mail-Provider-Entscheidung
 
-Die gewünschte dedizierte Outlook-Adresse kann als `Reply-To` genutzt werden. Für echtes Senden aus einer persönlichen Outlook-Adresse ist Microsoft Graph aktuell keine belastbare Produktionsbasis, weil `user: sendMail` in der offiziellen Graph-Dokumentation `Delegated (personal Microsoft account)` als `Not available` führt. Deshalb bleibt der pragmatische Pfad: transaktionaler Mailprovider für Versand, persönliche Outlook-Adresse als `MAIL_REPLY_TO`.
+Mit Microsoft 365 Business Basic ist Microsoft Graph jetzt die primäre Produktionsintegration. Empfohlen ist eine echte Sender-Mailbox wie `bookings@boudoircollectiveberlin.de`; `hello@boudoircollectiveberlin.de` kann parallel als `MAIL_REPLY_TO` laufen. Phase 1 sollte `M365_AUTH_MODE=application` mit App Permission `Mail.Send` und Admin Consent nutzen. Für delegated Fallback oder Tests gibt es lokal:
+
+```bash
+npm run m365:auth-url
+npm run m365:exchange-code -- "<code-aus-redirect>"
+```
 
 ## Admin-Demo-Flow
 

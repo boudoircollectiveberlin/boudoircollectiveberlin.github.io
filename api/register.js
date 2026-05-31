@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { actionUrl, sendMail } from "./_mail.js";
+import { actionUrl, mailConfigured, sendMail } from "./_mail.js";
 import { applyCors, clean, getSheetsClient, readBody, verifyFirebaseIdToken } from "./_google.js";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -238,7 +238,7 @@ export default async function handler(req, res) {
       });
     }
 
-    res.status(200).json({ ok: true, registrationId: id, mailConfigured: Boolean(process.env.RESEND_API_KEY) });
+    res.status(200).json({ ok: true, registrationId: id, mailConfigured: mailConfigured() });
   } catch (error) {
     console.error("registration_failed", { message: error.message });
     res.status(error.statusCode || 500).json({ ok: false, error: "registration_failed" });

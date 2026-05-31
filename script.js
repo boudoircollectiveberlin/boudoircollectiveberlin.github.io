@@ -445,7 +445,7 @@ async function loadAdminPanel() {
     }
     if (!response.ok) {
       adminPanel.hidden = true;
-      setAdminAccessNote("Admin-Status konnte nicht geladen werden. Pruefe API-Domain, Deployment und ADMIN_EMAILS.");
+      setAdminAccessNote("Admin-Status konnte nicht geladen werden. Prüfe API-Domain, Deployment und ADMIN_EMAILS.");
       return;
     }
     const payload = await response.json();
@@ -454,7 +454,7 @@ async function loadAdminPanel() {
     renderAdminRegistrations(payload.registrations || []);
   } catch {
     adminPanel.hidden = true;
-    setAdminAccessNote("Admin-Status konnte nicht geladen werden. Pruefe API-Erreichbarkeit und Deployment.");
+    setAdminAccessNote("Admin-Status konnte nicht geladen werden. Prüfe API-Erreichbarkeit und Deployment.");
   }
 }
 

@@ -118,7 +118,7 @@ async function createDemoRegistration({ req, sheets, spreadsheetId, registration
   }
 
   const invitees = Array.from({ length: inviteCount }, (_, index) => {
-    const role = index % 2 === 0 ? "model" : "photographer";
+    const role = index === 0 ? "photographer" : "model";
     return {
       name: `Demo User ${index + 1}`,
       email: plusAlias(baseEmail, `user${index + 1}`),
@@ -151,7 +151,7 @@ async function createDemoRegistration({ req, sheets, spreadsheetId, registration
         eventId,
         `demo:${applicantEmail}`,
         "demo_admin",
-        "photographer",
+        "model",
         "Demo Applicant",
         applicantEmail,
         "",
@@ -178,7 +178,7 @@ async function createDemoRegistration({ req, sheets, spreadsheetId, registration
 
   if (createProfiles) {
     await createDemoMemberRows(sheets, spreadsheetId, memberRange, now, identity.email, [
-      { name: "Demo Applicant", email: applicantEmail, role: "photographer" },
+      { name: "Demo Applicant", email: applicantEmail, role: "model" },
       ...invitees.map((invitee) => ({ name: invitee.name, email: invitee.email, role: invitee.eventFunction }))
     ]);
   }

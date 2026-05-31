@@ -6,6 +6,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INSTAGRAM_RE = /^@?[a-zA-Z0-9._]{1,30}$/;
 const ALLOWED_EVENT_FUNCTIONS = new Set(["model", "photographer", "mua", "team", "other"]);
 const MAX_INVITEES = 6;
+const GRABOWSEE_EVENT_ID = "heilstaette-grabowsee-2026-07-04";
 
 function normalizeInstagram(value) {
   const instagram = clean(value, 80);
@@ -59,11 +60,25 @@ function validate(payload) {
     inviteeEmails.add(participant.email);
     if (participant.instagram && !INSTAGRAM_RE.test(participant.instagram)) errors[`invitee${index}Instagram`] = "invitee_instagram_invalid";
     if (participant.eventFunction && !ALLOWED_EVENT_FUNCTIONS.has(participant.eventFunction)) errors[`invitee${index}Function`] = "invitee_function_invalid";
+    if (!participant.eventFunction) errors[`invitee${index}Function`] = "invitee_function_required";
   });
   if (invitees.length && !payload.partnerNotice) errors.partnerNotice = "partner_notice_required";
   if (!consent) errors.consent = "codex_required";
   if (!privacy) errors.privacy = "privacy_required";
   if (payload.website && clean(payload.website)) errors.website = "bot_rejected";
+
+  if (eventId === GRABOWSEE_EVENT_ID) {
+    const participantRoles = [eventFunction, ...invitees.map((participant) => participant.eventFunction)].filter(Boolean);
+    const photographerCount = participantRoles.filter((role) => role === "photographer").length;
+    const modelCount = participantRoles.filter((role) => role === "model").length;
+
+    if (!["model", "photographer"].includes(eventFunction)) errors.eventFunction = "grabowsee_role_invalid";
+    if (invitees.some((participant) => !["model", "photographer"].includes(participant.eventFunction))) {
+      errors.invitees = "grabowsee_invite_role_invalid";
+    }
+    if (photographerCount !== 1) errors.roleMix = "grabowsee_one_photographer_required";
+    if (modelCount < 1) errors.roleMix = "grabowsee_model_required";
+  }
 
   const primaryInvitee = invitees[0] || {};
   return {

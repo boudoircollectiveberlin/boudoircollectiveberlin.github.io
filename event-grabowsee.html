@@ -69,7 +69,7 @@
       <div class="event-hero__content">
         <p class="eyebrow" data-i18n="grabowseeHeroEyebrow">04.07.2026 · TFP / Costsharing</p>
         <h1 id="event-title" data-i18n="grabowseeHeroTitle">Heilst&auml;tte Grabowsee: Boudoir &amp; Sensual</h1>
-        <p data-i18n="grabowseeHeroCopy">Community-Shooting in einer besonderen Lost-Place-Location. Eine Person reicht die Bewerbung f&uuml;r das geplante Setup ein; weitere beteiligte Personen werden per Einladungslink eingebunden. Vollst&auml;ndig ist die Bewerbung erst, wenn diese Einladungen mit eingeloggt best&auml;tigten Accounts angenommen wurden.</p>
+        <p data-i18n="grabowseeHeroCopy">Community-Shooting in einer besonderen Lost-Place-Location. Pro Bewerbung brauchen wir genau eine fotografierende Person und ein oder mehrere Models. Eine Person reicht die Bewerbung f&uuml;r das geplante Setup ein; weitere beteiligte Personen werden per Einladungslink eingebunden.</p>
         <div class="hero__actions">
           <a class="button button--primary" href="#application" data-i18n="grabowseeHeroPrimary">Bewerbung starten</a>
           <a class="button button--ghost" href="#location-reference" data-i18n="grabowseeHeroSecondary">Location ansehen</a>
@@ -81,7 +81,7 @@
       <div class="section__heading">
         <p class="eyebrow" data-i18n="grabowseeFlowEyebrow">Bewerbungslogik</p>
         <h2 data-i18n="grabowseeFlowTitle">Bewerbung, Best&auml;tigung, Admin-Freigabe</h2>
-        <p data-i18n="grabowseeFlowCopy">Eine Bewerbung wird immer von einer hauptverantwortlichen Person eingereicht. Weitere beteiligte Personen werden eingeladen und machen die Bewerbung erst vollst&auml;ndig, wenn sie den Link mit eingeloggt best&auml;tigtem Account annehmen. Danach pr&uuml;fen Admins jede Bewerbung einzeln und geben sie frei oder lehnen sie ab.</p>
+        <p data-i18n="grabowseeFlowCopy">Eine Bewerbung wird immer von einer hauptverantwortlichen Person eingereicht. Pro Setup ist genau ein:e Fotograf:in vorgesehen, dazu ein oder mehrere Models. Weitere beteiligte Personen werden eingeladen und machen die Bewerbung erst vollst&auml;ndig, wenn sie den Link mit eingeloggt best&auml;tigtem Account annehmen.</p>
       </div>
       <div class="steps">
         <article><span>1</span><h3 data-i18n="grabowseeStep1Title">Profil</h3><p data-i18n="grabowseeStep1Copy">Login und privates Community-Profil sind Pflicht, weil die E-Mail dar&uuml;ber best&auml;tigt ist.</p></article>
@@ -131,7 +131,7 @@
       <div class="section__heading">
         <p class="eyebrow" data-i18n="grabowseeApplicationEyebrow">Bewerbung</p>
         <h2 data-i18n="grabowseeApplicationTitle">F&uuml;r Grabowsee bewerben</h2>
-        <p data-i18n="grabowseeApplicationCopy">Bitte zuerst einloggen und dein privates Community-Profil speichern. Eine Person reicht die Bewerbung f&uuml;r das geplante Setup ein; weitere Beteiligte werden per Mail eingeladen und m&uuml;ssen mit eingeloggt best&auml;tigtem Account annehmen. Erst danach kann die Bewerbung von Admins gepr&uuml;ft und freigegeben werden.</p>
+        <p data-i18n="grabowseeApplicationCopy">Bitte zuerst einloggen und dein privates Community-Profil speichern. F&uuml;r Grabowsee brauchen wir pro Bewerbung genau eine fotografierende Person und mindestens ein Model. Weitere Beteiligte werden per Mail eingeladen und hinterlegen ihre Detaildaten erst selbst beim Annehmen. MUA bitte nicht hier mit anmelden, sondern separat vorab mitteilen.</p>
       </div>
       <form class="register-form" id="register-form" novalidate>
         <input type="hidden" name="eventId" value="heilstaette-grabowsee-2026-07-04">
@@ -141,7 +141,6 @@
             <option value="" data-i18n="eventFunctionPlaceholder">Funktion ausw&auml;hlen</option>
             <option value="model" data-i18n="roleModel">Model</option>
             <option value="photographer" data-i18n="rolePhotographer">Fotograf:in</option>
-            <option value="mua" data-i18n="roleMua">Make-up Artist</option>
           </select>
         </label>
         <label><span data-i18n="nameLabel">Name</span><input name="name" autocomplete="name" required></label>
@@ -151,16 +150,13 @@
         <fieldset class="invitee-list full" data-invitee-list>
           <legend data-i18n="grabowseeInviteListTitle">Weitere beteiligte Personen</legend>
           <div class="invitee-card" data-invitee-card>
-            <label><span data-i18n="grabowseeInviteLabel">Eingeladene Person</span><input name="inviteName" placeholder="Name" data-i18n-attrs="placeholder:grabowseeInvitePlaceholder"></label>
             <label><span data-i18n="grabowseeInviteEmailLabel">E-Mail der eingeladenen Person</span><input name="inviteEmail" type="email" placeholder="email@example.com" data-i18n-attrs="placeholder:grabowseeInviteEmailPlaceholder"></label>
-            <label><span data-i18n="grabowseeInviteInstagramLabel">Instagram der eingeladenen Person</span><input name="inviteInstagram" placeholder="@username"></label>
             <label>
               <span data-i18n="grabowseeInviteFunctionLabel">Funktion der eingeladenen Person</span>
               <select name="inviteFunction">
-                <option value="" data-i18n="grabowseeInviteFunctionPlaceholder">Keine / offen</option>
+                <option value="" data-i18n="grabowseeInviteFunctionPlaceholder">Funktion ausw&auml;hlen</option>
                 <option value="model" data-i18n="roleModel">Model</option>
                 <option value="photographer" data-i18n="rolePhotographer">Fotograf:in</option>
-                <option value="mua" data-i18n="roleMua">Make-up Artist</option>
               </select>
             </label>
             <button class="button button--ghost invitee-card__remove" type="button" data-remove-invitee hidden data-i18n="grabowseeInviteRemove">Entfernen</button>

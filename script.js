@@ -31,6 +31,8 @@ const adminList = document.querySelector("#admin-registration-list");
 const adminStatus = document.querySelector("#admin-status");
 const adminDeleteEmail = document.querySelector("#admin-delete-email");
 const adminDeleteMember = document.querySelector("#admin-delete-member");
+const adminAccessNote = document.querySelector("#admin-access-note");
+const adminAccessCopy = document.querySelector("#admin-access-copy");
 const adminDemoEmail = document.querySelector("#admin-demo-email");
 const adminDemoCount = document.querySelector("#admin-demo-count");
 const adminDemoProfiles = document.querySelector("#admin-demo-profiles");
@@ -364,6 +366,7 @@ function handleSignedOutState() {
 
   refreshAuthUi();
   if (adminPanel) adminPanel.hidden = true;
+  setAdminAccessNote("", false);
 }
 
 function renderAdminRegistrations(registrations) {
@@ -412,6 +415,12 @@ function renderDemoMailPreviews(previews) {
   `).join("");
 }
 
+function setAdminAccessNote(message, visible = true) {
+  if (!adminAccessNote || !adminAccessCopy) return;
+  adminAccessCopy.textContent = message;
+  adminAccessNote.hidden = !visible;
+}
+
 async function adminPost(payload) {
   const response = await fetch(`${API_BASE}/api/admin`, {
     method: "POST",
@@ -429,15 +438,23 @@ async function loadAdminPanel() {
     const response = await fetch(`${API_BASE}/api/admin`, {
       headers: { Authorization: `Bearer ${authState.idToken}` }
     });
+    if (response.status === 403) {
+      adminPanel.hidden = true;
+      setAdminAccessNote(`Angemeldet als ${authState.profile?.email || "unbekannt"}, aber diese Adresse ist serverseitig nicht in ADMIN_EMAILS freigeschaltet.`);
+      return;
+    }
     if (!response.ok) {
       adminPanel.hidden = true;
+      setAdminAccessNote("Admin-Status konnte nicht geladen werden. Pruefe API-Domain, Deployment und ADMIN_EMAILS.");
       return;
     }
     const payload = await response.json();
     adminPanel.hidden = !payload.admin;
+    setAdminAccessNote("", false);
     renderAdminRegistrations(payload.registrations || []);
   } catch {
     adminPanel.hidden = true;
+    setAdminAccessNote("Admin-Status konnte nicht geladen werden. Pruefe API-Erreichbarkeit und Deployment.");
   }
 }
 
@@ -608,12 +625,12 @@ function hasSelectedProfileFunction(formElement) {
 function inviteesFromEventForm(formElement) {
   return Array.from(formElement.querySelectorAll("[data-invitee-card]"))
     .map((card) => ({
-      name: card.querySelector('[name="inviteName"]')?.value || "",
+      name: "",
       email: card.querySelector('[name="inviteEmail"]')?.value || "",
-      instagram: card.querySelector('[name="inviteInstagram"]')?.value || "",
+      instagram: "",
       eventFunction: card.querySelector('[name="inviteFunction"]')?.value || ""
     }))
-    .filter((invitee) => invitee.name || invitee.email || invitee.instagram || invitee.eventFunction);
+    .filter((invitee) => invitee.email || invitee.eventFunction);
 }
 
 function payloadFromEventForm(formElement) {

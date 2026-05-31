@@ -428,6 +428,11 @@ async function handleProviderSignInError(error, provider, fetchSignInMethodsForE
         return;
       }
 
+      if (provider === "microsoft" && methods.length === 0) {
+        setAuthError(t("authMicrosoftConflictUnknown"));
+        return;
+      }
+
       if (methods.length) {
         const message = lang() === "de"
           ? `Diese E-Mail existiert bereits mit ${authMethodList(methods)}. Bitte zuerst damit einloggen und danach ${authProviderLabel(provider)} verknüpfen.`

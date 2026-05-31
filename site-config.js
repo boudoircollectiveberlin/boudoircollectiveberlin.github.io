@@ -1,1 +1,1 @@
-window.BCB_API_BASE = "https://boudoircollectiveberlin-github-io.vercel.app";
+window.BCB_API_BASE = "https://api.boudoircollectiveberlin.de";

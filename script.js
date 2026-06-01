@@ -90,6 +90,45 @@ function applyMemberProfile(member) {
   setCheckedValues("functions", member.functions || []);
 }
 
+function currentApplicantData() {
+  if (adminSimulationActive()) {
+    return {
+      name: authState.impersonation?.displayName || "",
+      email: authState.impersonation?.email || "",
+      instagram: "",
+      portfolio: ""
+    };
+  }
+
+  return {
+    name: authState.member?.displayName || authState.profile?.name || "",
+    email: authState.profile?.email || "",
+    instagram: authState.member?.instagram || "",
+    portfolio: authState.member?.portfolio || ""
+  };
+}
+
+function syncEventApplicantFields() {
+  if (!form) return;
+  const applicant = currentApplicantData();
+  if (form.elements.name) {
+    form.elements.name.value = applicant.name;
+    form.elements.name.readOnly = true;
+  }
+  if (form.elements.email) {
+    form.elements.email.value = applicant.email;
+    form.elements.email.readOnly = true;
+  }
+  if (form.elements.instagram) {
+    form.elements.instagram.value = applicant.instagram;
+    form.elements.instagram.readOnly = true;
+  }
+  if (form.elements.portfolio) {
+    form.elements.portfolio.value = applicant.portfolio;
+    form.elements.portfolio.readOnly = true;
+  }
+}
+
 function refreshLandingCtas() {
   const hasProfile = authState.profileComplete;
 
@@ -225,18 +264,10 @@ function renderSimulationNotice() {
 
 function applySimulationToEventForm() {
   if (!form) return;
-  if (!adminSimulationActive()) {
-    if (authState.profile) {
-      form.elements.email.value = authState.profile.email || "";
-      form.elements.name.value = authState.profile.name || "";
-    }
-    return;
+  syncEventApplicantFields();
+  if (adminSimulationActive() && form.elements.eventFunction && authState.impersonation?.eventFunction) {
+    form.elements.eventFunction.value = authState.impersonation.eventFunction;
   }
-
-  const simulation = authState.impersonation;
-  if (form.elements.email) form.elements.email.value = simulation.email || "";
-  if (form.elements.name) form.elements.name.value = simulation.displayName || "";
-  if (form.elements.eventFunction && simulation.eventFunction) form.elements.eventFunction.value = simulation.eventFunction;
 }
 
 function renderAdminFlyout() {
@@ -808,8 +839,7 @@ async function handleFirebaseUser(user) {
   authState.profileComplete = Boolean(authState.member);
 
   if (form) {
-    form.elements.email.value = authState.profile.email || "";
-    form.elements.name.value = authState.profile.name || "";
+    syncEventApplicantFields();
   }
   if (authState.member) {
     applyMemberProfile(authState.member);
@@ -1136,14 +1166,15 @@ function inviteesFromEventForm(formElement) {
 function payloadFromEventForm(formElement) {
   const data = new FormData(formElement);
   const invitedParticipants = inviteesFromEventForm(formElement);
+  const applicant = currentApplicantData();
   return {
     idToken: authState.idToken,
     eventId: data.get("eventId"),
     eventFunction: data.get("eventFunction"),
-    name: data.get("name"),
-    email: data.get("email"),
-    instagram: data.get("instagram"),
-    portfolio: data.get("portfolio"),
+    name: applicant.name,
+    email: applicant.email,
+    instagram: applicant.instagram,
+    portfolio: applicant.portfolio,
     partnerName: invitedParticipants[0]?.name || "",
     partnerEmail: invitedParticipants[0]?.email || "",
     partnerInstagram: invitedParticipants[0]?.instagram || "",
@@ -1313,8 +1344,7 @@ form?.addEventListener("submit", async (event) => {
       applySimulationToEventForm();
       setStatus(formStatus, `Admin-Simulation erstellt: ${payload.simulation?.id || ""}`);
     } else if (authState.profile) {
-      form.elements.email.value = authState.profile.email || "";
-      form.elements.name.value = authState.profile.name || "";
+      syncEventApplicantFields();
       setStatus(formStatus, `${t("signupSuccess")} Referenz: ${payload.registrationId}`);
     }
     await loadAdminPanel();

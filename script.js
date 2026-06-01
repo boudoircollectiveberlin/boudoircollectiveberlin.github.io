@@ -921,6 +921,7 @@ async function loadAdminPanel() {
 
   try {
     const response = await fetch(`${API_BASE}/api/admin`, {
+      cache: "no-store",
       headers: { Authorization: `Bearer ${authState.idToken}` }
     });
     if (response.status === 403) {

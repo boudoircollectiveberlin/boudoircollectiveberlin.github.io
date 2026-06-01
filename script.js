@@ -738,7 +738,7 @@ function renderUserSummary() {
   }
 
   const eventId = currentEventId();
-  const registrations = Array.isArray(authState.userSummary.registrations) ? authState.userSummary.registrations : [];
+  const registrations = Array.isArray(authState.userSummary?.registrations) ? authState.userSummary.registrations : [];
   const visibleRegistrations = eventId ? registrations.filter((item) => item.eventId === eventId) : registrations;
   const adminRegistrations = eventId ? authState.adminRegistrations.filter((item) => item.eventId === eventId) : [];
 

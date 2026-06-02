@@ -904,6 +904,7 @@ function renderAdminRegistrations(registrations) {
         <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminConfirm"))}</button>
         <button class="button button--ghost" type="button" data-admin-action="reject" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminReject"))}</button>
         <button class="button button--ghost" type="button" data-admin-action="undo" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminUndo"))}</button>
+        <button class="button button--ghost" type="button" data-admin-action="delete" data-registration-id="${escapeHtml(item.id)}">Delete</button>
       </div>
     </article>
   `).join("");
@@ -1356,7 +1357,7 @@ form?.addEventListener("submit", async (event) => {
   }
 });
 
-adminList?.addEventListener("click", async (event) => {
+document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-admin-action]");
   if (!button) return;
 

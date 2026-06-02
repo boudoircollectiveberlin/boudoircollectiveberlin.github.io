@@ -411,6 +411,7 @@ async function createDemoRegistration({ req, sheets, spreadsheetId, registration
 }
 
 function publicRegistration(row) {
+  const status = clean(row[18], 60) || "pending_review";
   return {
     id: clean(row[1], 80),
     eventId: clean(row[2], 120),
@@ -420,7 +421,7 @@ function publicRegistration(row) {
     partnerName: clean(row[9], 120),
     partnerEmail: clean(row[10], 180),
     partnerStatus: clean(row[13], 60),
-    status: clean(row[18], 60) || "pending_review",
+    status,
     adminStatus: clean(row[21], 60),
     simulated: isSimulatedRow(row),
     updatedAt: clean(row[22], 80),
@@ -467,7 +468,7 @@ export default async function handler(req, res) {
       res.status(200).json({
         ok: true,
         admin: true,
-        registrations: rows.slice(1).map(publicRegistration).filter((item) => item.id).reverse().slice(0, 80)
+        registrations: rows.slice(1).map(publicRegistration).filter((item) => item.id && item.status !== "deleted").reverse().slice(0, 80)
       });
       return;
     }
@@ -476,7 +477,7 @@ export default async function handler(req, res) {
     const action = clean(body.action, 60);
     const now = new Date().toISOString();
 
-    if (["confirm", "reject", "undo"].includes(action)) {
+    if (["confirm", "reject", "undo", "delete"].includes(action)) {
       const response = await sheets.spreadsheets.values.get({ spreadsheetId, range: registrationRange });
       const rows = response.data.values || [];
       const rowIndex = rows.findIndex((row) => clean(row?.[1], 80) === clean(body.registrationId, 80));
@@ -485,7 +486,11 @@ export default async function handler(req, res) {
         return;
       }
 
-      const status = action === "confirm" ? "confirmed" : (action === "reject" ? "rejected" : "pending_review");
+      const status = action === "confirm"
+        ? "confirmed"
+        : (action === "reject"
+          ? "rejected"
+          : (action === "delete" ? "deleted" : "pending_review"));
       const sheetName = rangeSheet(registrationRange, "Registrations!A:Z");
       await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 18, status);
       await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 21, `${status}_by:${identity.email}`);

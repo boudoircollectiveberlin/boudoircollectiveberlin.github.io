@@ -1835,7 +1835,7 @@ textarea:focus,
   .hero__image {
     background:
       linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .86)),
-      url("assets/header.jpg") center / cover no-repeat;
+      url("assets/nale_bb_01.jpg") center 26% / cover no-repeat;
   }
 
   h1 {

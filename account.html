@@ -116,85 +116,87 @@
 
       <div class="account-tabpanel" id="account-tab-profile" role="tabpanel" aria-labelledby="account-tab-button-profile" data-account-panel-section="profile" hidden>
         <div class="account-panel-card">
-          <figure class="account-panel-visual">
-            <img src="assets/nale_bb_02.jpg" alt="Boudoir-Portrait in einem gr&uuml;nen Sitzbereich mit intimer Lichtstimmung.">
+          <div class="account-panel-card__content">
+            <div class="account-panel-card__intro">
+              <strong>Privates Profil</strong>
+              <span>Nur f&uuml;r interne Community-Pr&uuml;fung, Updates und Eventorganisation.</span>
+            </div>
+
+            <div class="account-locked" id="profile-locked">
+              <p class="eyebrow" data-i18n="registerEyebrow">Registrierung</p>
+              <h2 data-i18n="accountLockedTitle">Bitte zuerst rechts oben einloggen</h2>
+              <p data-i18n="accountLockedCopy">Danach kannst du hier dein privates Community-Profil mit Rolle, Instagram oder Portfolio und den n&ouml;tigen Einverst&auml;ndnissen vervollst&auml;ndigen.</p>
+            </div>
+
+            <form class="register-form profile-form" id="profile-form" novalidate hidden>
+              <label>
+                <span data-i18n="profileName">Name / Community-Name</span>
+                <input name="displayName" autocomplete="name" placeholder="Name" required>
+              </label>
+              <fieldset class="checkbox-group full">
+                <legend data-i18n="profileFunctions">Bereiche im kreativen Prozess</legend>
+                <label class="checkbox"><input type="checkbox" name="functions" value="model"><span data-i18n="roleModel">Model</span></label>
+                <label class="checkbox"><input type="checkbox" name="functions" value="photographer"><span data-i18n="rolePhotographer">Fotograf:in</span></label>
+                <label class="checkbox"><input type="checkbox" name="functions" value="mua"><span data-i18n="roleMua">Make-up Artist</span></label>
+              </fieldset>
+              <label>
+                <span data-i18n="profileInstagram">Instagram</span>
+                <input name="instagram" placeholder="@username">
+              </label>
+              <label class="full">
+                <span data-i18n="profilePortfolio">Portfolio / Website</span>
+                <input name="portfolio" type="url" placeholder="https://...">
+              </label>
+
+              <div class="account-subsection full">
+                <strong>Optionale Sichtbarkeit & Updates</strong>
+                <div class="account-subsection__grid">
+                  <label class="checkbox full">
+                    <input type="checkbox" name="futureUpdates">
+                    <span data-i18n="profileUpdates">Ich m&ouml;chte Informationen &uuml;ber zuk&uuml;nftige Events erhalten.</span>
+                  </label>
+                  <label class="checkbox full">
+                    <input type="checkbox" name="lobbyInfo">
+                    <span data-i18n="profileLobby">Ich m&ouml;chte Infos zur WhatsApp-Lobby erhalten.</span>
+                  </label>
+                  <label class="checkbox full">
+                    <input type="checkbox" name="discoverable">
+                    <span data-i18n="profileDiscoverable">Ich m&ouml;chte nach Orga-Best&auml;tigung f&uuml;r andere best&auml;tigte Community-Mitglieder auffindbar sein.</span>
+                  </label>
+                  <label>
+                    <span data-i18n="profileDiscoverableName">Anzeigename f&uuml;r Community-Profil</span>
+                    <input name="discoverableName" autocomplete="nickname" placeholder="Name / Handle">
+                  </label>
+                  <label>
+                    <span data-i18n="profileDiscoverableIntro">Kurzer Profiltext</span>
+                    <input name="discoverableIntro" maxlength="600" placeholder="Model, Fotograf:in, MUA, Stil, Stadt...">
+                  </label>
+                </div>
+              </div>
+
+              <div class="account-subsection full">
+                <strong>Einverst&auml;ndnisse</strong>
+                <div class="account-subsection__grid">
+                  <label class="checkbox full">
+                    <input type="checkbox" name="communityConsent" required>
+                    <span data-i18n="communityConsentCopy">Ich akzeptiere den Community-Codex, insbesondere Consent, respektvollen Umgang, Privatsph&auml;re und finale Bildfreigabe.</span>
+                  </label>
+                  <label class="checkbox full">
+                    <input type="checkbox" name="communityPrivacy" required>
+                    <span data-i18n="communityPrivacyCopy" data-i18n-html="true">Ich bin mit der Verarbeitung meiner Angaben zur Community-Pr&uuml;fung, Kommunikation und Eventorganisation einverstanden.</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-actions full">
+                <button class="button button--primary" type="submit" data-i18n="saveProfile">Profil speichern</button>
+                <p id="profile-status" role="status"></p>
+              </div>
+            </form>
+          </div>
+          <figure class="account-panel-visual" aria-hidden="true">
+            <img src="assets/nale_bb_02.jpg" alt="">
           </figure>
-          <div class="account-panel-card__intro">
-            <strong>Privates Profil</strong>
-            <span>Nur f&uuml;r interne Community-Pr&uuml;fung, Updates und Eventorganisation.</span>
-          </div>
-
-          <div class="account-locked" id="profile-locked">
-            <p class="eyebrow" data-i18n="registerEyebrow">Registrierung</p>
-            <h2 data-i18n="accountLockedTitle">Bitte zuerst rechts oben einloggen</h2>
-            <p data-i18n="accountLockedCopy">Danach kannst du hier dein privates Community-Profil mit Rolle, Instagram oder Portfolio und den n&ouml;tigen Einverst&auml;ndnissen vervollst&auml;ndigen.</p>
-          </div>
-
-          <form class="register-form profile-form" id="profile-form" novalidate hidden>
-            <label>
-              <span data-i18n="profileName">Name / Community-Name</span>
-              <input name="displayName" autocomplete="name" placeholder="Name" required>
-            </label>
-            <fieldset class="checkbox-group full">
-              <legend data-i18n="profileFunctions">Bereiche im kreativen Prozess</legend>
-              <label class="checkbox"><input type="checkbox" name="functions" value="model"><span data-i18n="roleModel">Model</span></label>
-              <label class="checkbox"><input type="checkbox" name="functions" value="photographer"><span data-i18n="rolePhotographer">Fotograf:in</span></label>
-              <label class="checkbox"><input type="checkbox" name="functions" value="mua"><span data-i18n="roleMua">Make-up Artist</span></label>
-            </fieldset>
-            <label>
-              <span data-i18n="profileInstagram">Instagram</span>
-              <input name="instagram" placeholder="@username">
-            </label>
-            <label class="full">
-              <span data-i18n="profilePortfolio">Portfolio / Website</span>
-              <input name="portfolio" type="url" placeholder="https://...">
-            </label>
-
-            <div class="account-subsection full">
-              <strong>Optionale Sichtbarkeit & Updates</strong>
-              <div class="account-subsection__grid">
-                <label class="checkbox full">
-                  <input type="checkbox" name="futureUpdates">
-                  <span data-i18n="profileUpdates">Ich m&ouml;chte Informationen &uuml;ber zuk&uuml;nftige Events erhalten.</span>
-                </label>
-                <label class="checkbox full">
-                  <input type="checkbox" name="lobbyInfo">
-                  <span data-i18n="profileLobby">Ich m&ouml;chte Infos zur WhatsApp-Lobby erhalten.</span>
-                </label>
-                <label class="checkbox full">
-                  <input type="checkbox" name="discoverable">
-                  <span data-i18n="profileDiscoverable">Ich m&ouml;chte nach Orga-Best&auml;tigung f&uuml;r andere best&auml;tigte Community-Mitglieder auffindbar sein.</span>
-                </label>
-                <label>
-                  <span data-i18n="profileDiscoverableName">Anzeigename f&uuml;r Community-Profil</span>
-                  <input name="discoverableName" autocomplete="nickname" placeholder="Name / Handle">
-                </label>
-                <label>
-                  <span data-i18n="profileDiscoverableIntro">Kurzer Profiltext</span>
-                  <input name="discoverableIntro" maxlength="600" placeholder="Model, Fotograf:in, MUA, Stil, Stadt...">
-                </label>
-              </div>
-            </div>
-
-            <div class="account-subsection full">
-              <strong>Einverst&auml;ndnisse</strong>
-              <div class="account-subsection__grid">
-                <label class="checkbox full">
-                  <input type="checkbox" name="communityConsent" required>
-                  <span data-i18n="communityConsentCopy">Ich akzeptiere den Community-Codex, insbesondere Consent, respektvollen Umgang, Privatsph&auml;re und finale Bildfreigabe.</span>
-                </label>
-                <label class="checkbox full">
-                  <input type="checkbox" name="communityPrivacy" required>
-                  <span data-i18n="communityPrivacyCopy" data-i18n-html="true">Ich bin mit der Verarbeitung meiner Angaben zur Community-Pr&uuml;fung, Kommunikation und Eventorganisation einverstanden.</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="form-actions full">
-              <button class="button button--primary" type="submit" data-i18n="saveProfile">Profil speichern</button>
-              <p id="profile-status" role="status"></p>
-            </div>
-          </form>
         </div>
       </div>
 

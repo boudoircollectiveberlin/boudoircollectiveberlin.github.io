@@ -260,6 +260,71 @@ function currentEventId() {
   return form?.elements?.eventId?.value || "";
 }
 
+function actionResultMessage(action, result) {
+  if (lang() === "de") {
+    if (action === "confirm-partner" && result === "confirmed") {
+      return {
+        tone: "success",
+        text: "Einladung bestätigt. Dein Status für dieses Event wurde übernommen."
+      };
+    }
+    if (action === "confirm-partner" && result === "profile-required") {
+      return {
+        tone: "warning",
+        text: "Einladung bestätigt. Bitte melde dich mit derselben E-Mail an und vervollständige dein Community-Profil, damit die Bewerbung vollständig wird."
+      };
+    }
+    if (action === "reject-partner" && result === "rejected") {
+      return {
+        tone: "warning",
+        text: "Einladung abgelehnt. Die Orga sieht den aktualisierten Status direkt in der Eventbewerbung."
+      };
+    }
+    if (action === "undo-registration" && result === "canceled") {
+      return {
+        tone: "warning",
+        text: "Die Bewerbung wurde zurückgezogen."
+      };
+    }
+  }
+
+  if (action === "confirm-partner" && result === "confirmed") {
+    return { tone: "success", text: "Invitation confirmed. Your status for this event has been updated." };
+  }
+  if (action === "confirm-partner" && result === "profile-required") {
+    return { tone: "warning", text: "Invitation confirmed. Please sign in with the same email and complete your community profile so the application can be completed." };
+  }
+  if (action === "reject-partner" && result === "rejected") {
+    return { tone: "warning", text: "Invitation declined. The organizer team will see the updated status in the event application." };
+  }
+  if (action === "undo-registration" && result === "canceled") {
+    return { tone: "warning", text: "The application has been withdrawn." };
+  }
+  return null;
+}
+
+function renderRegistrationActionNotice() {
+  if (!form) return;
+  const params = new URLSearchParams(window.location.search);
+  const action = params.get("registrationAction");
+  const result = params.get("registrationResult");
+  const message = actionResultMessage(action, result);
+  const existing = document.querySelector("#registration-action-notice");
+  if (existing) existing.remove();
+  if (!message) return;
+
+  const note = document.createElement("div");
+  note.id = "registration-action-notice";
+  note.className = `action-notice action-notice--${message.tone}`;
+  note.innerHTML = `<strong>${escapeHtml(lang() === "de" ? "Bewerbungsstatus" : "Application status")}</strong><span>${escapeHtml(message.text)}</span>`;
+  form.insertAdjacentElement("beforebegin", note);
+
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete("registrationAction");
+  cleanUrl.searchParams.delete("registrationResult");
+  window.history.replaceState({}, "", cleanUrl.toString());
+}
+
 function loadStoredAdminSimulation() {
   try {
     const raw = localStorage.getItem(ADMIN_SIMULATION_KEY);
@@ -1537,3 +1602,4 @@ initAccountTabs();
 initInviteeControls();
 loadEvents().then(renderEvents);
 initFirebaseLogin();
+renderRegistrationActionNotice();

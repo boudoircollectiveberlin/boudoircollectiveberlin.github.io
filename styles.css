@@ -1593,6 +1593,30 @@ textarea:focus,
   background: linear-gradient(180deg, rgba(72, 16, 16, .28), rgba(18, 8, 8, .86));
 }
 
+.action-notice {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid rgba(232, 201, 183, .22);
+  border-radius: var(--radius);
+}
+
+.action-notice span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.action-notice--success {
+  border-color: rgba(108, 168, 124, .34);
+  background: linear-gradient(180deg, rgba(28, 66, 36, .36), rgba(12, 18, 12, .88));
+}
+
+.action-notice--warning {
+  border-color: rgba(168, 121, 78, .34);
+  background: linear-gradient(180deg, rgba(74, 42, 16, .34), rgba(18, 10, 8, .88));
+}
+
 .summary-list {
   display: grid;
   gap: 12px;

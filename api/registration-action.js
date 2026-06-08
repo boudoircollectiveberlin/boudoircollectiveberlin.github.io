@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { applyCors, clean, getSheetsClient } from "./_google.js";
+import { applyCors, clean, getSheetsClient, publicBaseUrl } from "./_google.js";
 
 function hashToken(token) {
   return crypto.createHash("sha256").update(clean(token, 200)).digest("hex");
@@ -37,6 +37,30 @@ function parseJson(value, fallback) {
 
 function inviteSummary(invitees) {
   return invitees.map((participant) => `${clean(participant.email, 180)}:${clean(participant.status, 80)}`).join(", ");
+}
+
+function eventDetailPath(eventId) {
+  if (eventId === "heilstaette-grabowsee-2026-07-04") return "event-grabowsee.html";
+  return "account.html";
+}
+
+function frontendBaseUrl(req) {
+  const configured = publicBaseUrl(req);
+  if (configured) return configured;
+  const host = clean(req?.headers?.["x-forwarded-host"] || req?.headers?.host, 240);
+  const proto = clean(req?.headers?.["x-forwarded-proto"], 20) || "https";
+  if (!host) return "";
+  const siteHost = host.startsWith("api.") ? `www.${host.slice(4)}` : host;
+  return `${proto}://${siteHost}`.replace(/\/$/, "");
+}
+
+function redirectToEventPage(req, res, eventId, params = {}) {
+  const base = frontendBaseUrl(req);
+  const target = eventDetailPath(eventId);
+  const search = new URLSearchParams(params);
+  const location = `${base}/${target}?${search.toString()}#application`;
+  res.writeHead(303, { Location: location });
+  res.end();
 }
 
 function registrationStatus(invitees) {
@@ -94,10 +118,14 @@ export default async function handler(req, res) {
     }
 
     const rowNumber = rowIndex + 1;
+    const eventId = clean(rows[rowIndex]?.[2], 120);
     if (action === "undo-registration") {
       await updateCell(sheets, rowNumber, 18, "canceled_by_link");
       await updateCell(sheets, rowNumber, 22, new Date().toISOString());
-      res.status(200).send("Registration canceled. If you have questions, contact the organizer team.");
+      redirectToEventPage(req, res, eventId, {
+        registrationAction: "undo-registration",
+        registrationResult: "canceled"
+      });
       return;
     }
 
@@ -118,7 +146,10 @@ export default async function handler(req, res) {
       await updateCell(sheets, rowNumber, 13, "confirmed");
       await updateCell(sheets, rowNumber, 18, invitees.length ? registrationStatus(invitees) : (hasPartnerProfile ? "pending_review" : "partner_confirmed_profile_required"));
       await updateCell(sheets, rowNumber, 22, new Date().toISOString());
-      res.status(200).send("Partner confirmation received. Please also make sure your community profile is registered with the same email; otherwise the application remains incomplete.");
+      redirectToEventPage(req, res, eventId, {
+        registrationAction: "confirm-partner",
+        registrationResult: hasPartnerProfile ? "confirmed" : "profile-required"
+      });
       return;
     }
 
@@ -136,7 +167,10 @@ export default async function handler(req, res) {
       await updateCell(sheets, rowNumber, 13, "rejected");
       await updateCell(sheets, rowNumber, 18, invitees.length ? registrationStatus(invitees) : "partner_rejected");
       await updateCell(sheets, rowNumber, 22, new Date().toISOString());
-      res.status(200).send("Partner suggestion rejected. The organizer team will see this in the registration list.");
+      redirectToEventPage(req, res, eventId, {
+        registrationAction: "reject-partner",
+        registrationResult: "rejected"
+      });
       return;
     }
 

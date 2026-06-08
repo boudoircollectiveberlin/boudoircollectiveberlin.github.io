@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Boudoir Collective Berlin | Login & Registrierung</title>
-  <meta name="description" content="Login, privates Community-Profil und Eventanmeldung für Boudoir Collective Berlin.">
+  <meta name="description" content="Login, privates Community-Profil und Eventanmeldung f&uuml;r Boudoir Collective Berlin.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,7 +20,7 @@
       <span class="nav-toggle__bar"></span>
       <span class="nav-toggle__bar"></span>
       <span class="nav-toggle__bar"></span>
-      <span class="sr-only">Menü</span>
+      <span class="sr-only">Men&uuml;</span>
     </button>
     <nav class="nav" id="primary-nav" aria-label="Hauptnavigation" data-menu>
       <a class="nav-home" href="index.html" data-i18n="navHome">Home</a>
@@ -44,7 +44,7 @@
           <div class="account-menu__section">
             <p class="account-menu__eyebrow" data-i18n="accountMenu">Account</p>
             <p class="account-menu__badge" id="topbar-member-status" hidden></p>
-            <p class="account-menu__status" id="topbar-auth-status" role="status" data-i18n="authFlyoutSignedOut">Login für Profil, Eventanmeldung und spätere Updates.</p>
+            <p class="account-menu__status" id="topbar-auth-status" role="status" data-i18n="authFlyoutSignedOut">Login f&uuml;r Profil, Eventanmeldung und sp&auml;tere Updates.</p>
           </div>
           <div class="account-menu__section auth-buttons">
             <button class="button button--primary" type="button" data-auth-provider="google" data-i18n="authGoogle" disabled>Mit Google einloggen</button>
@@ -64,154 +64,187 @@
       <div class="section__heading">
         <p class="eyebrow" data-i18n="registerEyebrow">Registrierung</p>
         <h1 class="account-title" data-i18n="loginTitle">Login & privates Community-Profil</h1>
-        <p data-i18n="loginCopy">Melde dich an und hinterlege, in welchen Bereichen du dich im Boudoir-Kontext bewegst. Profile sind nicht öffentlich und dienen vorerst nur Community-Prüfung, Updates und Eventorganisation.</p>
+        <p data-i18n="loginCopy">Melde dich an und hinterlege, in welchen Bereichen du dich im Boudoir-Kontext bewegst. Profile sind nicht &ouml;ffentlich und dienen vorerst nur Community-Pr&uuml;fung, Updates und Eventorganisation.</p>
       </div>
 
-      <div class="auth-panel">
-        <p class="auth-panel__title" data-i18n="accountFlowTitle">1. Einloggen und dann Profil vervollständigen</p>
-        <p id="auth-status" role="status" data-i18n="authFlyoutSignedOut">Login für Profil, Eventanmeldung und spätere Updates.</p>
-        <p class="auth-panel__note" data-i18n="accountFlowCopy">Login allein ist noch keine Registrierung. Erst mit Name, Rolle und Einverständnissen ist dein Community-Profil vollständig.</p>
+      <div class="account-tabs" role="tablist" aria-label="Accountbereiche">
+        <button class="account-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="account-tab-overview" id="account-tab-button-overview" data-account-tab="overview" data-tab-label-de="&Uuml;bersicht" data-tab-label-en="Overview">&Uuml;bersicht</button>
+        <button class="account-tab" type="button" role="tab" aria-selected="false" aria-controls="account-tab-profile" id="account-tab-button-profile" data-account-tab="profile" data-tab-label-de="Profil" data-tab-label-en="Profile">Profil</button>
+        <button class="account-tab" type="button" role="tab" aria-selected="false" aria-controls="account-tab-admin" id="account-tab-button-admin" data-account-tab="admin" data-tab-label-de="Admin" data-tab-label-en="Admin" hidden>Admin</button>
       </div>
 
-      <ol class="account-steps" aria-label="Mitgliedschaftsstatus">
-        <li data-account-stage="profile">
-          <strong data-i18n="stagePrivateTitle">Privates Profil</strong>
-          <span data-i18n="stagePrivateCopy">Erforderlich für Updates und Eventbewerbungen; sichtbar nur für Orga.</span>
-        </li>
-        <li data-account-stage="registered">
-          <strong data-i18n="stageRegisteredTitle">Registriert</strong>
-          <span data-i18n="stageRegisteredCopy">Du kannst dich für Events vormerken und erhältst gewünschte Updates.</span>
-        </li>
-        <li data-account-stage="confirmed">
-          <strong data-i18n="stageConfirmedTitle">Bestätigte Community</strong>
-          <span data-i18n="stageConfirmedCopy">Später: Profile und Eventinteresse anderer bestätigter Mitglieder sehen.</span>
-        </li>
-      </ol>
-
-      <div class="account-locked" id="profile-locked">
-        <p class="eyebrow" data-i18n="registerEyebrow">Registrierung</p>
-        <h2 data-i18n="accountLockedTitle">Bitte zuerst rechts oben einloggen</h2>
-        <p data-i18n="accountLockedCopy">Danach kannst du hier dein privates Community-Profil mit Rolle, Instagram oder Portfolio und den nötigen Einverständnissen vervollständigen.</p>
-      </div>
-
-      <form class="register-form profile-form" id="profile-form" novalidate hidden>
-        <label>
-          <span data-i18n="profileName">Name / Community-Name</span>
-          <input name="displayName" autocomplete="name" placeholder="Name" required>
-        </label>
-        <fieldset class="checkbox-group full">
-          <legend data-i18n="profileFunctions">Bereiche im kreativen Prozess</legend>
-          <label class="checkbox"><input type="checkbox" name="functions" value="model"><span data-i18n="roleModel">Model</span></label>
-          <label class="checkbox"><input type="checkbox" name="functions" value="photographer"><span data-i18n="rolePhotographer">Fotograf:in</span></label>
-          <label class="checkbox"><input type="checkbox" name="functions" value="mua"><span data-i18n="roleMua">Make-up Artist</span></label>
-        </fieldset>
-        <label>
-          <span data-i18n="profileInstagram">Instagram</span>
-          <input name="instagram" placeholder="@username">
-        </label>
-        <label class="full">
-          <span data-i18n="profilePortfolio">Portfolio / Website</span>
-          <input name="portfolio" type="url" placeholder="https://...">
-        </label>
-        <label class="checkbox full">
-          <input type="checkbox" name="futureUpdates">
-          <span data-i18n="profileUpdates">Ich möchte Informationen über zukünftige Events erhalten.</span>
-        </label>
-        <label class="checkbox full">
-          <input type="checkbox" name="lobbyInfo">
-          <span data-i18n="profileLobby">Ich möchte Infos zur WhatsApp-Lobby erhalten.</span>
-        </label>
-        <label class="checkbox full">
-          <input type="checkbox" name="discoverable">
-          <span data-i18n="profileDiscoverable">Ich möchte nach Orga-Bestätigung für andere bestätigte Community-Mitglieder auffindbar sein.</span>
-        </label>
-        <label>
-          <span data-i18n="profileDiscoverableName">Anzeigename für Community-Profil</span>
-          <input name="discoverableName" autocomplete="nickname" placeholder="Name / Handle">
-        </label>
-        <label>
-          <span data-i18n="profileDiscoverableIntro">Kurzer Profiltext</span>
-          <input name="discoverableIntro" maxlength="600" placeholder="Model, Fotograf:in, MUA, Stil, Stadt...">
-        </label>
-        <label class="checkbox full">
-          <input type="checkbox" name="communityConsent" required>
-          <span data-i18n="communityConsentCopy">Ich akzeptiere den Community-Codex, insbesondere Consent, respektvollen Umgang, Privatsphäre und finale Bildfreigabe.</span>
-        </label>
-        <label class="checkbox full">
-          <input type="checkbox" name="communityPrivacy" required>
-          <span data-i18n="communityPrivacyCopy" data-i18n-html="true">Ich bin mit der Verarbeitung meiner Angaben zur Community-Prüfung, Kommunikation und Eventorganisation einverstanden.</span>
-        </label>
-        <div class="form-actions full">
-          <button class="button button--primary" type="submit" data-i18n="saveProfile">Profil speichern</button>
-          <p id="profile-status" role="status"></p>
+      <div class="account-tabpanel is-active" id="account-tab-overview" role="tabpanel" aria-labelledby="account-tab-button-overview" data-account-panel-section="overview">
+        <div class="auth-panel">
+          <p class="auth-panel__title" data-i18n="accountFlowTitle">1. Einloggen und dann Profil vervollst&auml;ndigen</p>
+          <p id="auth-status" role="status" data-i18n="authFlyoutSignedOut">Login f&uuml;r Profil, Eventanmeldung und sp&auml;tere Updates.</p>
+          <p class="auth-panel__note" data-i18n="accountFlowCopy">Login allein ist noch keine Registrierung. Erst mit Name, Rolle und Einverst&auml;ndnissen ist dein Community-Profil vollst&auml;ndig.</p>
         </div>
-      </form>
 
-      <div class="future-profile" id="community-profile-preview">
-        <strong data-i18n="communityProfileFutureTitle">Community-sichtbares Profil später separat erstellen</strong>
-        <span data-i18n="communityProfileFutureCopy">Dieses private Profil ist keine öffentliche Mitgliederseite. Wenn die Bestätigungsstufe aktiv ist, soll ein separates Opt-in-Profil möglich werden, sichtbar nur für bestätigte Community-Mitglieder und jederzeit deaktivierbar.</span>
-      </div>
+        <ol class="account-steps" aria-label="Mitgliedschaftsstatus">
+          <li data-account-stage="profile">
+            <strong data-i18n="stagePrivateTitle">Privates Profil</strong>
+            <span data-i18n="stagePrivateCopy">Erforderlich f&uuml;r Updates und Eventbewerbungen; sichtbar nur f&uuml;r Orga.</span>
+          </li>
+          <li data-account-stage="registered">
+            <strong data-i18n="stageRegisteredTitle">Registriert</strong>
+            <span data-i18n="stageRegisteredCopy">Du kannst dich f&uuml;r Events vormerken und erh&auml;ltst gew&uuml;nschte Updates.</span>
+          </li>
+          <li data-account-stage="confirmed">
+            <strong data-i18n="stageConfirmedTitle">Best&auml;tigte Community</strong>
+            <span data-i18n="stageConfirmedCopy">Sp&auml;ter: Profile und Eventinteresse anderer best&auml;tigter Mitglieder sehen.</span>
+          </li>
+        </ol>
 
-      <div class="privacy-actions">
-        <strong data-i18n="privacyRightsTitle">Datenschutz & Löschung</strong>
-        <span data-i18n="privacyRightsCopy">Du kannst Auskunft, Korrektur oder Löschung deiner gespeicherten Community-Daten anfragen. Wir löschen nicht mehr benötigte Daten und prüfen gesetzliche Aufbewahrungspflichten getrennt.</span>
-        <div class="privacy-actions__buttons">
-          <a class="button button--ghost" href="mailto:sweetseductiveart@outlook.de?subject=BCB%20Datenloeschung%20oder%20Auskunft" data-i18n="privacyRightsButton">Datenlöschung oder Auskunft anfragen</a>
-          <a class="button button--ghost" href="legal.html#privacy" data-i18n="privacyFullPolicyButton">Vollständige Datenschutzhinweise öffnen</a>
+        <div class="future-profile" id="community-profile-preview">
+          <strong data-i18n="communityProfileFutureTitle">Community-sichtbares Profil sp&auml;ter separat erstellen</strong>
+          <span data-i18n="communityProfileFutureCopy">Dieses private Profil ist keine &ouml;ffentliche Mitgliederseite. Wenn die Best&auml;tigungsstufe aktiv ist, soll ein separates Opt-in-Profil m&ouml;glich werden, sichtbar nur f&uuml;r best&auml;tigte Community-Mitglieder und jederzeit deaktivierbar.</span>
+        </div>
+
+        <div class="privacy-actions">
+          <strong data-i18n="privacyRightsTitle">Datenschutz & L&ouml;schung</strong>
+          <span data-i18n="privacyRightsCopy">Du kannst Auskunft, Korrektur oder L&ouml;schung deiner gespeicherten Community-Daten anfragen. Wir l&ouml;schen nicht mehr ben&ouml;tigte Daten und pr&uuml;fen gesetzliche Aufbewahrungspflichten getrennt.</span>
+          <div class="privacy-actions__buttons">
+            <a class="button button--ghost" href="mailto:sweetseductiveart@outlook.de?subject=BCB%20Datenloeschung%20oder%20Auskunft" data-i18n="privacyRightsButton">Datenl&ouml;schung oder Auskunft anfragen</a>
+            <a class="button button--ghost" href="legal.html#privacy" data-i18n="privacyFullPolicyButton">Vollst&auml;ndige Datenschutzhinweise &ouml;ffnen</a>
+          </div>
+        </div>
+
+        <div class="section__heading section__heading--secondary account-section-heading">
+          <h2 data-i18n="eventSignupTitle">Eventanmeldung</h2>
+          <p data-i18n="eventSignupCopy">Eventinteresse wird sp&auml;ter auf der jeweiligen Eventdetailseite m&ouml;glich sein. Daraus entsteht noch keine Teilnahme: Erst wenn Rahmenbedingungen und Rollenmix passen, erh&auml;ltst du Zahlungsinformationen. In das Event aufgenommen wird, wer bezahlt hat.</p>
         </div>
       </div>
 
-      <div class="section__heading section__heading--secondary">
-        <h2 data-i18n="eventSignupTitle">Eventanmeldung</h2>
-        <p data-i18n="eventSignupCopy">Eventinteresse wird später auf der jeweiligen Eventdetailseite möglich sein. Daraus entsteht noch keine Teilnahme: Erst wenn Rahmenbedingungen und Rollenmix passen, erhältst du Zahlungsinformationen. In das Event aufgenommen wird, wer bezahlt hat.</p>
-      </div>
-      <div class="future-profile" id="admin-access-note" hidden>
-        <strong>Admin-Bereich</strong>
-        <span id="admin-access-copy">Angemeldet, aber noch ohne bestätigten Admin-Zugriff.</span>
-      </div>
-    </section>
-      <section class="admin-panel full" id="admin-panel" hidden>
-        <div class="section__heading">
-          <p class="eyebrow">Admin</p>
-          <h2>Registrierungen verwalten</h2>
-          <p>Dieses Panel ist nur für in Vercel definierte Admin-E-Mail-Adressen sichtbar. Aktionen werden im privaten Google Sheet markiert.</p>
+      <div class="account-tabpanel" id="account-tab-profile" role="tabpanel" aria-labelledby="account-tab-button-profile" data-account-panel-section="profile" hidden>
+        <div class="account-panel-card">
+          <div class="account-panel-card__intro">
+            <strong>Privates Profil</strong>
+            <span>Nur f&uuml;r interne Community-Pr&uuml;fung, Updates und Eventorganisation.</span>
+          </div>
+
+          <div class="account-locked" id="profile-locked">
+            <p class="eyebrow" data-i18n="registerEyebrow">Registrierung</p>
+            <h2 data-i18n="accountLockedTitle">Bitte zuerst rechts oben einloggen</h2>
+            <p data-i18n="accountLockedCopy">Danach kannst du hier dein privates Community-Profil mit Rolle, Instagram oder Portfolio und den n&ouml;tigen Einverst&auml;ndnissen vervollst&auml;ndigen.</p>
+          </div>
+
+          <form class="register-form profile-form" id="profile-form" novalidate hidden>
+            <label>
+              <span data-i18n="profileName">Name / Community-Name</span>
+              <input name="displayName" autocomplete="name" placeholder="Name" required>
+            </label>
+            <fieldset class="checkbox-group full">
+              <legend data-i18n="profileFunctions">Bereiche im kreativen Prozess</legend>
+              <label class="checkbox"><input type="checkbox" name="functions" value="model"><span data-i18n="roleModel">Model</span></label>
+              <label class="checkbox"><input type="checkbox" name="functions" value="photographer"><span data-i18n="rolePhotographer">Fotograf:in</span></label>
+              <label class="checkbox"><input type="checkbox" name="functions" value="mua"><span data-i18n="roleMua">Make-up Artist</span></label>
+            </fieldset>
+            <label>
+              <span data-i18n="profileInstagram">Instagram</span>
+              <input name="instagram" placeholder="@username">
+            </label>
+            <label class="full">
+              <span data-i18n="profilePortfolio">Portfolio / Website</span>
+              <input name="portfolio" type="url" placeholder="https://...">
+            </label>
+
+            <div class="account-subsection full">
+              <strong>Optionale Sichtbarkeit & Updates</strong>
+              <div class="account-subsection__grid">
+                <label class="checkbox full">
+                  <input type="checkbox" name="futureUpdates">
+                  <span data-i18n="profileUpdates">Ich m&ouml;chte Informationen &uuml;ber zuk&uuml;nftige Events erhalten.</span>
+                </label>
+                <label class="checkbox full">
+                  <input type="checkbox" name="lobbyInfo">
+                  <span data-i18n="profileLobby">Ich m&ouml;chte Infos zur WhatsApp-Lobby erhalten.</span>
+                </label>
+                <label class="checkbox full">
+                  <input type="checkbox" name="discoverable">
+                  <span data-i18n="profileDiscoverable">Ich m&ouml;chte nach Orga-Best&auml;tigung f&uuml;r andere best&auml;tigte Community-Mitglieder auffindbar sein.</span>
+                </label>
+                <label>
+                  <span data-i18n="profileDiscoverableName">Anzeigename f&uuml;r Community-Profil</span>
+                  <input name="discoverableName" autocomplete="nickname" placeholder="Name / Handle">
+                </label>
+                <label>
+                  <span data-i18n="profileDiscoverableIntro">Kurzer Profiltext</span>
+                  <input name="discoverableIntro" maxlength="600" placeholder="Model, Fotograf:in, MUA, Stil, Stadt...">
+                </label>
+              </div>
+            </div>
+
+            <div class="account-subsection full">
+              <strong>Einverst&auml;ndnisse</strong>
+              <div class="account-subsection__grid">
+                <label class="checkbox full">
+                  <input type="checkbox" name="communityConsent" required>
+                  <span data-i18n="communityConsentCopy">Ich akzeptiere den Community-Codex, insbesondere Consent, respektvollen Umgang, Privatsph&auml;re und finale Bildfreigabe.</span>
+                </label>
+                <label class="checkbox full">
+                  <input type="checkbox" name="communityPrivacy" required>
+                  <span data-i18n="communityPrivacyCopy" data-i18n-html="true">Ich bin mit der Verarbeitung meiner Angaben zur Community-Pr&uuml;fung, Kommunikation und Eventorganisation einverstanden.</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions full">
+              <button class="button button--primary" type="submit" data-i18n="saveProfile">Profil speichern</button>
+              <p id="profile-status" role="status"></p>
+            </div>
+          </form>
         </div>
-        <div class="admin-tools">
-          <label>
-            <span>Mitglied per E-Mail anonymisieren</span>
-            <input id="admin-delete-email" type="email" placeholder="email@example.com">
-          </label>
-          <button class="button button--ghost" type="button" id="admin-delete-member">Account löschen/anonymisieren</button>
+      </div>
+
+      <div class="account-tabpanel" id="account-tab-admin" role="tabpanel" aria-labelledby="account-tab-button-admin" data-account-panel-section="admin" hidden>
+        <div class="future-profile account-admin-note" id="admin-access-note" hidden>
+          <strong>Admin-Bereich</strong>
+          <span id="admin-access-copy">Angemeldet, aber noch ohne best&auml;tigten Admin-Zugriff.</span>
         </div>
-        <div class="admin-demo">
-          <div class="section__heading section__heading--compact">
-            <h3>Eventregistrierung simulieren</h3>
-            <p>Erstellt eine Test-Eventregistrierung mit Gmail-Plus-Aliassen und zeigt die Mail-Links direkt hier an.</p>
+        <section class="admin-panel full" id="admin-panel" hidden>
+          <div class="section__heading">
+            <p class="eyebrow">Admin</p>
+            <h2>Admin-Tools</h2>
+            <p>Nur f&uuml;r in Vercel definierte Admin-E-Mail-Adressen sichtbar. Bewerbungen verwaltest du direkt auf den Eventseiten.</p>
           </div>
           <div class="admin-tools">
             <label>
-              <span>Basis-E-Mail</span>
-              <input id="admin-demo-email" type="email" placeholder="deinname@gmail.com">
+              <span>Mitglied per E-Mail anonymisieren</span>
+              <input id="admin-delete-email" type="email" placeholder="email@example.com">
             </label>
-            <label>
-              <span>Einladungen</span>
-              <input id="admin-demo-count" type="number" min="1" max="5" value="2">
-            </label>
-            <label class="checkbox">
-              <input id="admin-demo-profiles" type="checkbox" checked>
-              <span>Profile für Invite-Test mit anlegen</span>
-            </label>
-            <label class="checkbox">
-              <input id="admin-demo-send" type="checkbox">
-              <span>Mails wirklich senden</span>
-            </label>
-            <button class="button button--ghost" type="button" id="admin-create-demo">Simulation erzeugen</button>
+            <button class="button button--ghost" type="button" id="admin-delete-member">Account l&ouml;schen/anonymisieren</button>
           </div>
-          <div class="admin-demo-output" id="admin-demo-output" aria-live="polite"></div>
-        </div>
-        <div class="admin-list" id="admin-registration-list" aria-live="polite"></div>
-        <p id="admin-status" role="status"></p>
-      </section>
+          <div class="admin-demo">
+            <div class="section__heading section__heading--compact">
+              <h3>Eventregistrierung simulieren</h3>
+              <p>Erstellt eine Test-Eventregistrierung mit Gmail-Plus-Aliassen und zeigt die Mail-Links direkt hier an.</p>
+            </div>
+            <div class="admin-tools">
+              <label>
+                <span>Basis-E-Mail</span>
+                <input id="admin-demo-email" type="email" placeholder="deinname@gmail.com">
+              </label>
+              <label>
+                <span>Einladungen</span>
+                <input id="admin-demo-count" type="number" min="1" max="5" value="2">
+              </label>
+              <label class="checkbox">
+                <input id="admin-demo-profiles" type="checkbox" checked>
+                <span>Profile f&uuml;r Invite-Test mit anlegen</span>
+              </label>
+              <label class="checkbox">
+                <input id="admin-demo-send" type="checkbox">
+                <span>Mails wirklich senden</span>
+              </label>
+              <button class="button button--ghost" type="button" id="admin-create-demo">Simulation erzeugen</button>
+            </div>
+            <div class="admin-demo-output" id="admin-demo-output" aria-live="polite"></div>
+          </div>
+          <div class="admin-list" id="admin-registration-list" aria-live="polite"></div>
+          <p id="admin-status" role="status"></p>
+        </section>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">

@@ -39,6 +39,8 @@ const adminDemoProfiles = document.querySelector("#admin-demo-profiles");
 const adminDemoSend = document.querySelector("#admin-demo-send");
 const adminCreateDemo = document.querySelector("#admin-create-demo");
 const adminDemoOutput = document.querySelector("#admin-demo-output");
+const accountTabButtons = Array.from(document.querySelectorAll("[data-account-tab]"));
+const accountTabPanels = Array.from(document.querySelectorAll("[data-account-panel-section]"));
 const ADMIN_SIMULATION_KEY = "bcb-admin-simulation";
 const ADMIN_BASE_EMAIL_KEY = "bcb-admin-base-email";
 
@@ -62,6 +64,51 @@ let authState = {
 
 function isAccountPage() {
   return window.location.pathname.endsWith("/account.html") || window.location.pathname.endsWith("account.html");
+}
+
+function setAccountTab(name) {
+  if (!isAccountPage() || !accountTabButtons.length) return;
+  const next = accountTabButtons.find((button) => button.dataset.accountTab === name && !button.hidden)
+    || accountTabButtons.find((button) => !button.hidden);
+  if (!next) return;
+  accountTabButtons.forEach((button) => {
+    const active = button === next;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", active ? "true" : "false");
+  });
+  accountTabPanels.forEach((panel) => {
+    const active = panel.id === next.getAttribute("aria-controls");
+    panel.hidden = !active;
+    panel.classList.toggle("is-active", active);
+  });
+}
+
+function syncAccountTabLabels() {
+  accountTabButtons.forEach((button) => {
+    button.textContent = lang() === "de" ? (button.dataset.tabLabelDe || button.textContent) : (button.dataset.tabLabelEn || button.textContent);
+  });
+}
+
+function syncAccountAdminTab() {
+  const adminTabButton = document.querySelector('[data-account-tab="admin"]');
+  if (!adminTabButton) return;
+  adminTabButton.hidden = !authState.isAdmin;
+  if (!authState.isAdmin && adminTabButton.classList.contains("is-active")) {
+    setAccountTab("overview");
+  }
+}
+
+function initAccountTabs() {
+  if (!isAccountPage() || !accountTabButtons.length) return;
+  syncAccountTabLabels();
+  accountTabButtons.forEach((button) => {
+    button.addEventListener("click", () => setAccountTab(button.dataset.accountTab));
+  });
+  if (window.location.hash === "#profile-form") {
+    setAccountTab("profile");
+    return;
+  }
+  setAccountTab("overview");
 }
 
 function profileStorageKey(uid) {
@@ -917,6 +964,7 @@ function handleSignedOutState() {
   renderUserSummary();
   removeAdminFlyout();
   if (adminPanel) adminPanel.hidden = true;
+  syncAccountAdminTab();
   setAdminAccessNote("", false);
 }
 
@@ -1003,6 +1051,7 @@ async function loadAdminPanel() {
       authState.isAdmin = false;
       if (adminPanel) adminPanel.hidden = true;
       removeAdminFlyout();
+      syncAccountAdminTab();
       setAdminAccessNote(`Angemeldet als ${authState.profile?.email || "unbekannt"}, aber diese Adresse ist serverseitig nicht in ADMIN_EMAILS freigeschaltet.`);
       return;
     }
@@ -1010,6 +1059,7 @@ async function loadAdminPanel() {
       authState.isAdmin = false;
       if (adminPanel) adminPanel.hidden = true;
       removeAdminFlyout();
+      syncAccountAdminTab();
       setAdminAccessNote("Admin-Status konnte nicht geladen werden. PrÃƒÂ¼fe API-Domain, Deployment und ADMIN_EMAILS.");
       return;
     }
@@ -1018,6 +1068,7 @@ async function loadAdminPanel() {
     authState.adminRegistrations = payload.registrations || [];
     if (adminPanel) adminPanel.hidden = !payload.admin;
     setAdminAccessNote("", false);
+    syncAccountAdminTab();
     renderAdminRegistrations(payload.registrations || []);
     ensureAdminFlyout();
     renderUserSummary();
@@ -1026,6 +1077,7 @@ async function loadAdminPanel() {
     authState.adminRegistrations = [];
     if (adminPanel) adminPanel.hidden = true;
     removeAdminFlyout();
+    syncAccountAdminTab();
     setAdminAccessNote("Admin-Status konnte nicht geladen werden. PrÃƒÂ¼fe API-Erreichbarkeit und Deployment.");
   }
 }
@@ -1471,6 +1523,7 @@ adminCreateDemo?.addEventListener("click", async () => {
 
 window.addEventListener("bcb:languagechange", () => {
   if (eventsCache.length) renderEvents(eventsCache);
+  syncAccountTabLabels();
   refreshAuthUi();
   renderUserSummary();
   renderAdminFlyout();
@@ -1480,6 +1533,7 @@ window.addEventListener("bcb:languagechange", () => {
 initMenu();
 initAccountMenu();
 initContactFlyout();
+initAccountTabs();
 initInviteeControls();
 loadEvents().then(renderEvents);
 initFirebaseLogin();

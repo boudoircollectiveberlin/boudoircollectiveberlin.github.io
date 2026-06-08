@@ -76,8 +76,10 @@ export function validate(payload) {
     if (invitees.some((participant) => !["model", "photographer"].includes(participant.eventFunction))) {
       errors.invitees = "grabowsee_invite_role_invalid";
     }
+    if (invitees.length > 3) errors.invitees = "grabowsee_max_invitees";
     if (photographerCount !== 1) errors.roleMix = "grabowsee_one_photographer_required";
     if (modelCount < 1) errors.roleMix = "grabowsee_model_required";
+    if (modelCount > 3) errors.roleMix = "grabowsee_model_max";
   }
 
   const primaryInvitee = invitees[0] || {};

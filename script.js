@@ -257,7 +257,7 @@ function renderSimulationNotice() {
   note.className = "admin-simulation-note";
   note.innerHTML = `
     <strong>Admin-Simulation aktiv</strong>
-    <span>${escapeHtml(simulation.displayName || simulation.email)} · ${escapeHtml(simulation.email)} · ${escapeHtml(simulation.eventFunction || "open")}</span>
+    <span>${escapeHtml(simulation.displayName || simulation.email)} Ã‚Â· ${escapeHtml(simulation.email)} Ã‚Â· ${escapeHtml(simulation.eventFunction || "open")}</span>
   `;
   form.insertAdjacentElement("beforebegin", note);
 }
@@ -286,17 +286,17 @@ function renderAdminFlyout() {
         <span>${escapeHtml(authState.profile?.email || "")}</span>
       </div>
       <label>
-        <span>Gmail-Basis für virtuelle Eventnutzer</span>
+        <span>Gmail-Basis fÃƒÂ¼r virtuelle Eventnutzer</span>
         <input id="admin-flyout-base-email" type="email" value="${escapeHtml(baseEmail)}" placeholder="deinname@gmail.com">
       </label>
       <div class="admin-flyout__presets">
         ${presets.length
           ? presets.map((preset) => `<button class="button ${activeEmail === preset.email ? "button--primary" : "button--ghost"}" type="button" data-admin-sim-email="${escapeHtml(preset.email)}" data-admin-sim-name="${escapeHtml(preset.displayName)}" data-admin-sim-role="${escapeHtml(preset.eventFunction)}">${escapeHtml(preset.label)}</button>`).join("")
-          : `<p>Für Plus-Alias-Simulation bitte eine Gmail-Adresse verwenden.</p>`}
+          : `<p>FÃƒÂ¼r Plus-Alias-Simulation bitte eine Gmail-Adresse verwenden.</p>`}
       </div>
       <div class="admin-flyout__current">
         <strong>${adminSimulationActive() ? "Aktive Simulation" : "Keine aktive Simulation"}</strong>
-        <span>${adminSimulationActive() ? `${escapeHtml(authState.impersonation.displayName || "")} · ${escapeHtml(authState.impersonation.email)}` : "Normale Nutzeransicht"}</span>
+        <span>${adminSimulationActive() ? `${escapeHtml(authState.impersonation.displayName || "")} Ã‚Â· ${escapeHtml(authState.impersonation.email)}` : "Normale Nutzeransicht"}</span>
       </div>
       <label class="checkbox">
         <input id="admin-flyout-create-profiles" type="checkbox" checked>
@@ -369,7 +369,7 @@ function renderMailPreviews(previews, target = adminDemoOutput) {
   target.innerHTML = previews.map((preview) => `
     <article class="admin-mail-preview">
       <div>
-        <strong>${escapeHtml(preview.kind)} · ${escapeHtml(preview.to)}</strong>
+        <strong>${escapeHtml(preview.kind)} Ã‚Â· ${escapeHtml(preview.to)}</strong>
         <span>${escapeHtml(preview.subject)}</span>
       </div>
       <pre>${escapeHtml(preview.text)}</pre>
@@ -671,7 +671,7 @@ async function handleProviderSignInError(error, provider, fetchSignInMethodsForE
 
       if (methods.length) {
         const message = lang() === "de"
-          ? `Diese E-Mail existiert bereits mit ${authMethodList(methods)}. Bitte zuerst damit einloggen und danach ${authProviderLabel(provider)} verknüpfen.`
+          ? `Diese E-Mail existiert bereits mit ${authMethodList(methods)}. Bitte zuerst damit einloggen und danach ${authProviderLabel(provider)} verknÃƒÂ¼pfen.`
           : `This email already exists with ${authMethodList(methods)}. Please sign in with that method first, then link ${authProviderLabel(provider)}.`;
         setAuthError(message);
         return;
@@ -755,24 +755,24 @@ function renderUserSummary() {
         ? visibleRegistrations.map((item) => `
           <article class="summary-row">
             <strong>${escapeHtml(item.eventLabel || item.eventId)}</strong>
-            <span>${escapeHtml(item.role || "")} · ${escapeHtml(item.registrationStatus || "")}</span>
+            <span>${escapeHtml(item.role || "")} Ã‚Â· ${escapeHtml(item.registrationStatus || "")}</span>
             ${item.applicant && item.invitees?.length
-              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} · ${escapeHtml(invitee.status || "pending")}</span>`).join("")
-              : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} · ${escapeHtml(item.inviteeStatus)}</span>` : "")}
-            ${item.adminStatus ? `<span>Admin · ${escapeHtml(item.adminStatus)}</span>` : ""}
+              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} Ã‚Â· ${escapeHtml(invitee.status || "pending")}</span>`).join("")
+              : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} Ã‚Â· ${escapeHtml(item.inviteeStatus)}</span>` : "")}
+            ${item.adminStatus ? `<span>Admin Ã‚Â· ${escapeHtml(item.adminStatus)}</span>` : ""}
           </article>
         `).join("")
-        : `<p>${lang() === "de" ? "Noch keine sichtbaren Eventstatus-Einträge." : "No visible event status entries yet."}</p>`}
+        : `<p>${lang() === "de" ? "Noch keine sichtbaren Eventstatus-EintrÃƒÂ¤ge." : "No visible event status entries yet."}</p>`}
       ${authState.isAdmin && adminRegistrations.length ? `
         <div class="section__heading section__heading--compact">
           <h3>${lang() === "de" ? "Teilnehmerliste" : "Participant list"}</h3>
         </div>
         ${adminRegistrations.map((item) => `
           <article class="summary-row">
-            <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " · Simulation" : ""}</strong>
-            <span>${escapeHtml(item.role || "")} · ${escapeHtml(item.status || "")}</span>
-            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} · ${escapeHtml(invitee.status || "pending")}</span>`).join("") || ""}
-            ${item.adminStatus ? `<span>Admin · ${escapeHtml(item.adminStatus)}</span>` : ""}
+            <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " Ã‚Â· Simulation" : ""}</strong>
+            <span>${escapeHtml(item.role || "")} Ã‚Â· ${escapeHtml(item.status || "")}</span>
+            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} Ã‚Â· ${escapeHtml(invitee.status || "pending")}</span>`).join("") || ""}
+            ${item.adminStatus ? `<span>Admin Ã‚Â· ${escapeHtml(item.adminStatus)}</span>` : ""}
           </article>
         `).join("")}
       ` : ""}
@@ -792,11 +792,33 @@ function syncGrabowseeRoleChoices() {
     ...Array.from(form.querySelectorAll('select[name="inviteFunction"]'))
   ].filter(Boolean);
   const selectedPhotographer = selects.find((select) => select.value === "photographer");
+  const addButton = document.querySelector("[data-add-invitee]");
   selects.forEach((select) => {
+    const modelCountExcludingCurrent = selects.filter((item) => item !== select && item.value === "model").length;
     const photographerOption = Array.from(select.options).find((option) => option.value === "photographer");
-    if (!photographerOption) return;
-    photographerOption.disabled = Boolean(selectedPhotographer && selectedPhotographer !== select);
+    const modelOption = Array.from(select.options).find((option) => option.value === "model");
+    const placeholderOption = Array.from(select.options).find((option) => option.value === "");
+    const canBePhotographer = Boolean(photographerOption) && !(selectedPhotographer && selectedPhotographer !== select);
+    const canBeModel = Boolean(modelOption) && modelCountExcludingCurrent < 3;
+    if (photographerOption) photographerOption.disabled = !canBePhotographer;
+    if (modelOption) modelOption.disabled = !canBeModel;
+    if (placeholderOption) placeholderOption.disabled = canBePhotographer !== canBeModel;
+    if (!canBePhotographer && canBeModel) {
+      select.value = "model";
+      return;
+    }
+    if (canBePhotographer && !canBeModel) {
+      select.value = "photographer";
+      return;
+    }
+    if ((select.value === "photographer" && !canBePhotographer) || (select.value === "model" && !canBeModel)) {
+      select.value = canBeModel ? "model" : (canBePhotographer ? "photographer" : "");
+    }
   });
+  if (addButton) {
+    const cards = Array.from(form.querySelectorAll("[data-invitee-card]"));
+    addButton.disabled = cards.length >= 3;
+  }
 }
 
 function clientEventValidation(payload) {
@@ -808,8 +830,15 @@ function clientEventValidation(payload) {
   if (payload.eventId === "heilstaette-grabowsee-2026-07-04") {
     const roles = [payload.eventFunction, ...payload.invitedParticipants.map((participant) => participant.eventFunction)].filter(Boolean);
     const photographerCount = roles.filter((role) => role === "photographer").length;
+    const modelCount = roles.filter((role) => role === "model").length;
+    if (payload.invitedParticipants.length > 3) {
+      return lang() === "de" ? "F\u00fcr Grabowsee sind neben der bewerbenden Person h\u00f6chstens drei weitere Personen m\u00f6glich." : "Grabowsee allows at most three additional participants besides the applicant.";
+    }
     if (photographerCount !== 1) {
-      return lang() === "de" ? "Für Grabowsee ist genau ein:e Fotograf:in erlaubt." : "Grabowsee requires exactly one photographer.";
+      return lang() === "de" ? "F\u00fcr Grabowsee ist genau ein:e Fotograf:in erlaubt." : "Grabowsee requires exactly one photographer.";
+    }
+    if (modelCount < 1 || modelCount > 3) {
+      return lang() === "de" ? "F\u00fcr Grabowsee sind genau ein:e Fotograf:in und ein bis drei Models m\u00f6glich." : "Grabowsee requires exactly one photographer and one to three models.";
     }
   }
 
@@ -821,7 +850,7 @@ function clientEventValidation(payload) {
     ...(item.invitees || []).map((invitee) => normalizeEmail(invitee.email))
   ]).filter(Boolean));
   if (emails.some((email) => existingEmails.has(email))) {
-    return lang() === "de" ? "Mindestens eine Mailadresse ist für dieses Event bereits registriert." : "At least one email address is already registered for this event.";
+    return lang() === "de" ? "Mindestens eine Mailadresse ist f\u00fcr dieses Event bereits registriert." : "At least one email address is already registered for this event.";
   }
 
   return "";
@@ -895,10 +924,10 @@ function renderAdminRegistrations(registrations) {
     <article class="admin-row">
       <div>
         <strong>${escapeHtml(item.name || item.email)}</strong>
-        <span>${escapeHtml(item.eventId)} · ${escapeHtml(item.role)} · ${escapeHtml(item.status)}</span>
+        <span>${escapeHtml(item.eventId)} Ã‚Â· ${escapeHtml(item.role)} Ã‚Â· ${escapeHtml(item.status)}</span>
         ${item.invitees?.length
-          ? item.invitees.map((invitee) => `<span>Invite: ${escapeHtml(invitee.name || invitee.email)} · ${escapeHtml(invitee.role || "open")} · ${escapeHtml(invitee.status || "pending")}</span>`).join("")
-          : (item.partnerEmail ? `<span>Partner: ${escapeHtml(item.partnerName || item.partnerEmail)} · ${escapeHtml(item.partnerStatus || "pending")}</span>` : "")}
+          ? item.invitees.map((invitee) => `<span>Invite: ${escapeHtml(invitee.name || invitee.email)} Ã‚Â· ${escapeHtml(invitee.role || "open")} Ã‚Â· ${escapeHtml(invitee.status || "pending")}</span>`).join("")
+          : (item.partnerEmail ? `<span>Partner: ${escapeHtml(item.partnerName || item.partnerEmail)} Ã‚Â· ${escapeHtml(item.partnerStatus || "pending")}</span>` : "")}
       </div>
       <div class="admin-row__actions">
         <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminConfirm"))}</button>
@@ -920,7 +949,7 @@ function renderDemoMailPreviews(previews, target = adminDemoOutput) {
   target.innerHTML = previews.map((preview) => `
     <article class="admin-mail-preview">
       <div>
-        <strong>${escapeHtml(preview.kind)} · ${escapeHtml(preview.to)}</strong>
+        <strong>${escapeHtml(preview.kind)} Ã‚Â· ${escapeHtml(preview.to)}</strong>
         <span>${escapeHtml(preview.subject)}</span>
       </div>
       <pre>${escapeHtml(preview.text)}</pre>
@@ -966,7 +995,7 @@ async function loadAdminPanel() {
       authState.isAdmin = false;
       if (adminPanel) adminPanel.hidden = true;
       removeAdminFlyout();
-      setAdminAccessNote("Admin-Status konnte nicht geladen werden. Prüfe API-Domain, Deployment und ADMIN_EMAILS.");
+      setAdminAccessNote("Admin-Status konnte nicht geladen werden. PrÃƒÂ¼fe API-Domain, Deployment und ADMIN_EMAILS.");
       return;
     }
     const payload = await response.json();
@@ -982,7 +1011,7 @@ async function loadAdminPanel() {
     authState.adminRegistrations = [];
     if (adminPanel) adminPanel.hidden = true;
     removeAdminFlyout();
-    setAdminAccessNote("Admin-Status konnte nicht geladen werden. Prüfe API-Erreichbarkeit und Deployment.");
+    setAdminAccessNote("Admin-Status konnte nicht geladen werden. PrÃƒÂ¼fe API-Erreichbarkeit und Deployment.");
   }
 }
 
@@ -1203,7 +1232,7 @@ function initInviteeControls() {
       const button = card.querySelector("[data-remove-invitee]");
       if (button) button.hidden = cards.length === 1;
     });
-    addButton.disabled = cards.length >= 6;
+    addButton.disabled = currentEventId() === "heilstaette-grabowsee-2026-07-04" ? cards.length >= 3 : cards.length >= 6;
     syncGrabowseeRoleChoices();
   }
 
@@ -1236,6 +1265,7 @@ function resetInviteeControls() {
   cards[0]?.querySelector("[data-remove-invitee]")?.setAttribute("hidden", "");
   const addButton = document.querySelector("[data-add-invitee]");
   if (addButton) addButton.disabled = false;
+  syncGrabowseeRoleChoices();
 }
 
 function eventPreviewTarget() {

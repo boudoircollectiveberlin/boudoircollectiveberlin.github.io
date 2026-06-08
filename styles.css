@@ -335,7 +335,7 @@ main {
   background:
     linear-gradient(90deg, rgba(0, 0, 0, .78), rgba(0, 0, 0, .36) 48%, rgba(0, 0, 0, .12)),
     linear-gradient(180deg, rgba(0, 0, 0, .08), rgba(0, 0, 0, .74)),
-    url("assets/header.jpg") center / cover no-repeat;
+    url("assets/nale_bb_01.jpg") center 28% / cover no-repeat;
   transform: scale(1.01);
 }
 
@@ -736,22 +736,6 @@ h3 {
 
 .account-shell {
   margin-top: 18px;
-}
-
-.account-hero-media {
-  margin: 20px 0 0;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, .12);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, .18);
-}
-
-.account-hero-media img {
-  display: block;
-  width: 100%;
-  max-height: 440px;
-  object-fit: cover;
-  object-position: center 32%;
 }
 
 .auth-buttons {

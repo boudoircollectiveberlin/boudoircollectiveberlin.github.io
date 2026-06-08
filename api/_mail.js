@@ -1,4 +1,4 @@
-import { clean, publicBaseUrl } from "./_google.js";
+import { clean, publicApiBaseUrl } from "./_google.js";
 
 function sender() {
   return process.env.MAIL_FROM || "Boudoir Collective Berlin <noreply@boudoircollectiveberlin.de>";
@@ -192,6 +192,6 @@ export async function sendMail({ to, subject, text, html }) {
 }
 
 export function actionUrl(req, action, token) {
-  const base = publicBaseUrl(req);
+  const base = publicApiBaseUrl(req);
   return `${base}/api/registration-action?action=${encodeURIComponent(action)}&token=${encodeURIComponent(token)}`;
 }

@@ -121,7 +121,7 @@ function hashToken(token) {
 }
 
 export function eventLabel(eventId) {
-  if (eventId === "heilstaette-grabowsee-2026-07-04") return "Heilstätte Grabowsee";
+  if (eventId === "heilstaette-grabowsee-2026-07-04") return "Heilst\u00e4tte Grabowsee";
   return eventId;
 }
 
@@ -215,20 +215,20 @@ export default async function handler(req, res) {
     const undoUrl = actionUrl(req, "undo-registration", undoToken);
     await sendMail({
       to: identity.email,
-      subject: `Boudoir Collective Berlin: registration received for ${eventLabel(result.data.eventId)}`,
+      subject: `Boudoir Collective Berlin: Bewerbung erhalten f\u00fcr ${eventLabel(result.data.eventId)}`,
       text: [
-        `Hi ${result.data.name},`,
+        `Hallo ${result.data.name},`,
         "",
-        `we received your application for ${eventLabel(result.data.eventId)}.`,
+        `wir haben deine Bewerbung f\u00fcr ${eventLabel(result.data.eventId)} bei Boudoir Collective Berlin erhalten.`,
         result.data.invitees.length
-          ? `Your invited participants still need to confirm before the application is complete: ${result.data.invitees.map((participant) => participant.email).join(", ")}.`
-          : "The organizer team will review the role mix and come back to you.",
+          ? `Die Einladung ist erst vollst\u00e4ndig, wenn diese Personen best\u00e4tigt haben: ${result.data.invitees.map((participant) => participant.email).join(", ")}.`
+          : "Das Orga-Team pr\u00fcft jetzt Rollenmix und Verf\u00fcgbarkeit und meldet sich anschlie\u00dfend bei dir.",
         "",
-        `If this was not you, undo the registration here: ${undoUrl}`,
+        `Falls das nicht deine Bewerbung war, kannst du sie hier zur\u00fcckziehen: ${undoUrl}`,
         "",
         "Boudoir Collective Berlin"
       ].join("\n"),
-      html: `<p>Hi ${result.data.name},</p><p>We received your application for <strong>${eventLabel(result.data.eventId)}</strong>.</p><p>${result.data.invitees.length ? `Your invited participants still need to confirm before the application is complete: ${result.data.invitees.map((participant) => participant.email).join(", ")}.` : "The organizer team will review the role mix and come back to you."}</p><p><a href="${undoUrl}">This was not me - undo this registration</a></p><p>Boudoir Collective Berlin</p>`
+      html: `<p>Hallo ${result.data.name},</p><p>wir haben deine Bewerbung f\u00fcr <strong>${eventLabel(result.data.eventId)}</strong> bei Boudoir Collective Berlin erhalten.</p><p>${result.data.invitees.length ? `Die Einladung ist erst vollst\u00e4ndig, wenn diese Personen best\u00e4tigt haben: ${result.data.invitees.map((participant) => participant.email).join(", ")}.` : "Das Orga-Team pr\u00fcft jetzt Rollenmix und Verf\u00fcgbarkeit und meldet sich anschlie\u00dfend bei dir."}</p><p><a href="${undoUrl}">Bewerbung zur\u00fcckziehen</a></p><p>Boudoir Collective Berlin</p>`
     });
 
     for (const invitation of inviteTokens) {
@@ -237,19 +237,20 @@ export default async function handler(req, res) {
       const rejectUrl = actionUrl(req, "reject-partner", invitation.token);
       await sendMail({
         to: participant.email,
-        subject: `Boudoir Collective Berlin: invitation for ${eventLabel(result.data.eventId)}`,
+        subject: `Boudoir Collective Berlin: Einladung zu ${eventLabel(result.data.eventId)}`,
         text: [
-          `Hi ${participant.name || ""},`,
+          `Hallo ${participant.name || participant.email},`,
           "",
-          `${result.data.name} suggested you as a partner for ${eventLabel(result.data.eventId)}.`,
-          "Please create/sign in to your community profile as well. The application is only valid once you confirm.",
+          `${result.data.name} hat dich zu ${eventLabel(result.data.eventId)} von Boudoir Collective Berlin eingeladen.`,
+          "Bitte melde dich mit deiner Community-Mailadresse an oder erstelle dein Profil, damit wir deine Best\u00e4tigung zuordnen k\u00f6nnen.",
+          "Die Bewerbung gilt erst, wenn du die Einladung best\u00e4tigst.",
           "",
-          `Confirm partner application: ${confirmUrl}`,
-          `Reject this suggestion: ${rejectUrl}`,
+          `Einladung best\u00e4tigen: ${confirmUrl}`,
+          `Einladung ablehnen: ${rejectUrl}`,
           "",
           "Boudoir Collective Berlin"
         ].join("\n"),
-        html: `<p>Hi ${participant.name || ""},</p><p>${result.data.name} suggested you as a partner for <strong>${eventLabel(result.data.eventId)}</strong>.</p><p>Please create/sign in to your community profile as well. The application is only valid once you confirm.</p><p><a href="${confirmUrl}">Confirm partner application</a></p><p><a href="${rejectUrl}">Reject this suggestion</a></p><p>Boudoir Collective Berlin</p>`
+        html: `<p>Hallo ${participant.name || participant.email},</p><p>${result.data.name} hat dich zu <strong>${eventLabel(result.data.eventId)}</strong> von Boudoir Collective Berlin eingeladen.</p><p>Bitte melde dich mit deiner Community-Mailadresse an oder erstelle dein Profil, damit wir deine Best\u00e4tigung zuordnen k\u00f6nnen.</p><p>Die Bewerbung gilt erst, wenn du die Einladung best\u00e4tigst.</p><p><a href="${confirmUrl}">Einladung best\u00e4tigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p><p>Boudoir Collective Berlin</p>`
       });
     }
 
@@ -259,3 +260,4 @@ export default async function handler(req, res) {
     res.status(error.statusCode || 500).json({ ok: false, error: "registration_failed" });
   }
 }
+

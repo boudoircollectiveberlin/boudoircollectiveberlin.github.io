@@ -75,6 +75,15 @@ export function publicBaseUrl(req) {
   return (process.env.PUBLIC_SITE_URL || req.headers.origin || "").replace(/\/$/, "");
 }
 
+export function publicApiBaseUrl(req) {
+  const configured = clean(process.env.PUBLIC_API_URL, 240);
+  if (configured) return configured.replace(/\/$/, "");
+  const host = clean(req?.headers?.["x-forwarded-host"] || req?.headers?.host, 240);
+  const proto = clean(req?.headers?.["x-forwarded-proto"], 20) || "https";
+  if (host) return `${proto}://${host}`.replace(/\/$/, "");
+  return publicBaseUrl(req);
+}
+
 export async function verifyFirebaseIdToken(idToken) {
   if (!process.env.FIREBASE_PROJECT_ID) {
     throw new Error("Missing FIREBASE_PROJECT_ID");

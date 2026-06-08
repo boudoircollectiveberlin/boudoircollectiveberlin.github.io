@@ -5,3 +5,5 @@ node_modules
 !.env.example
 service-account*.json
 *.local
+.codex/handovers/*.md
+!.codex/handovers/.gitkeep

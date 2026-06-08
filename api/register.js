@@ -127,6 +127,12 @@ export function eventLabel(eventId) {
   return eventId;
 }
 
+function eventDateLabel(eventId) {
+  if (eventId === "heilstaette-grabowsee-2026-07-04") return "04.07.2026";
+  if (eventId === "schloss-wrodow-2026-08-08") return "08.08.2026";
+  return "";
+}
+
 export default async function handler(req, res) {
   applyCors(req, res);
 
@@ -237,13 +243,15 @@ export default async function handler(req, res) {
       const participant = result.data.invitees[invitation.index];
       const confirmUrl = actionUrl(req, "confirm-partner", invitation.token);
       const rejectUrl = actionUrl(req, "reject-partner", invitation.token);
+      const eventDate = eventDateLabel(result.data.eventId);
+      const eventWithDate = eventDate ? `${eventLabel(result.data.eventId)} am ${eventDate}` : eventLabel(result.data.eventId);
       await sendMail({
         to: participant.email,
-        subject: `Boudoir Collective Berlin: Einladung zu ${eventLabel(result.data.eventId)}`,
+        subject: `Boudoir Collective Berlin: Einladung zu ${eventWithDate}`,
         text: [
           `Hallo ${participant.name || participant.email},`,
           "",
-          `${result.data.name} hat dich zu ${eventLabel(result.data.eventId)} von Boudoir Collective Berlin eingeladen.`,
+          `${result.data.name} hat dich zu ${eventWithDate} von Boudoir Collective Berlin eingeladen.`,
           "Bitte melde dich mit deiner Community-Mailadresse an oder erstelle dein Profil, damit wir deine Best\u00e4tigung zuordnen k\u00f6nnen.",
           "Die Bewerbung gilt erst, wenn du die Einladung best\u00e4tigst.",
           "",
@@ -252,7 +260,7 @@ export default async function handler(req, res) {
           "",
           "Boudoir Collective Berlin"
         ].join("\n"),
-        html: `<p>Hallo ${participant.name || participant.email},</p><p>${result.data.name} hat dich zu <strong>${eventLabel(result.data.eventId)}</strong> von Boudoir Collective Berlin eingeladen.</p><p>Bitte melde dich mit deiner Community-Mailadresse an oder erstelle dein Profil, damit wir deine Best\u00e4tigung zuordnen k\u00f6nnen.</p><p>Die Bewerbung gilt erst, wenn du die Einladung best\u00e4tigst.</p><p><a href="${confirmUrl}">Einladung best\u00e4tigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p><p>Boudoir Collective Berlin</p>`
+        html: `<p>Hallo ${participant.name || participant.email},</p><p>${result.data.name} hat dich zu <strong>${eventLabel(result.data.eventId)}</strong>${eventDate ? ` am <strong>${eventDate}</strong>` : ""} von Boudoir Collective Berlin eingeladen.</p><p>Bitte melde dich mit deiner Community-Mailadresse an oder erstelle dein Profil, damit wir deine Best\u00e4tigung zuordnen k\u00f6nnen.</p><p>Die Bewerbung gilt erst, wenn du die Einladung best\u00e4tigst.</p><p><a href="${confirmUrl}">Einladung best\u00e4tigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p><p>Boudoir Collective Berlin</p>`
       });
     }
 

@@ -85,6 +85,12 @@ function humanEventLabel(eventId) {
   return eventId;
 }
 
+function humanEventDateLabel(eventId) {
+  if (eventId === GRABOWSEE_EVENT_ID) return "04.07.2026";
+  if (eventId === "schloss-wrodow-2026-08-08") return "08.08.2026";
+  return "";
+}
+
 function simulatedMarker(email) {
   return `simulated_by:${email}`;
 }
@@ -232,12 +238,14 @@ async function createSimulatedRegistration({ req, sheets, spreadsheetId, registr
     const participant = result.data.invitees[invitation.index];
     const confirmUrl = actionUrl(req, "confirm-partner", invitation.token);
     const rejectUrl = actionUrl(req, "reject-partner", invitation.token);
+    const eventDate = humanEventDateLabel(result.data.eventId);
+    const labelWithDate = eventDate ? `${label} am ${eventDate}` : label;
     previews.push(demoMailPreview(
       "invite",
       participant.email,
-      `Boudoir Collective Berlin: Simulationseinladung zu ${label}`,
-      `Hallo ${participant.name || participant.email},\n\n${result.data.name} hat dich testweise zu ${label} von Boudoir Collective Berlin eingeladen.\n\nEinladung best\u00e4tigen: ${confirmUrl}\nEinladung ablehnen: ${rejectUrl}`,
-      `<p>Hallo ${participant.name || participant.email},</p><p>${result.data.name} hat dich testweise zu <strong>${label}</strong> von Boudoir Collective Berlin eingeladen.</p><p><a href="${confirmUrl}">Einladung best\u00e4tigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p>`,
+      `Boudoir Collective Berlin: Simulationseinladung zu ${labelWithDate}`,
+      `Hallo ${participant.name || participant.email},\n\n${result.data.name} hat dich testweise zu ${labelWithDate} von Boudoir Collective Berlin eingeladen.\n\nEinladung best\u00e4tigen: ${confirmUrl}\nEinladung ablehnen: ${rejectUrl}`,
+      `<p>Hallo ${participant.name || participant.email},</p><p>${result.data.name} hat dich testweise zu <strong>${label}</strong>${eventDate ? ` am <strong>${eventDate}</strong>` : ""} von Boudoir Collective Berlin eingeladen.</p><p><a href="${confirmUrl}">Einladung best\u00e4tigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p>`,
       [
         { label: "Einladung best\u00e4tigen", url: confirmUrl },
         { label: "Einladung ablehnen", url: rejectUrl }
@@ -376,12 +384,14 @@ async function createDemoRegistration({ req, sheets, spreadsheetId, registration
     const invitee = invitees[invitation.index];
     const confirmUrl = actionUrl(req, "confirm-partner", invitation.token);
     const rejectUrl = actionUrl(req, "reject-partner", invitation.token);
+    const eventDate = humanEventDateLabel(eventId);
+    const eventLabelWithDate = eventDate ? `${humanEventLabel(eventId)} am ${eventDate}` : humanEventLabel(eventId);
     previews.push(demoMailPreview(
       "invite",
       invitee.email,
-      `Boudoir Collective Berlin: Demo-Einladung zu ${humanEventLabel(eventId)}`,
-      `Hallo ${invitee.name},\n\nDemo Applicant hat dich testweise zu ${humanEventLabel(eventId)} von Boudoir Collective Berlin eingeladen.\n\nEinladung best\u00e4tigen: ${confirmUrl}\nEinladung ablehnen: ${rejectUrl}`,
-      `<p>Hallo ${invitee.name},</p><p>Demo Applicant hat dich testweise zu <strong>${humanEventLabel(eventId)}</strong> von Boudoir Collective Berlin eingeladen.</p><p><a href="${confirmUrl}">Einladung best\u00e4tigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p>`,
+      `Boudoir Collective Berlin: Demo-Einladung zu ${eventLabelWithDate}`,
+      `Hallo ${invitee.name},\n\nDemo Applicant hat dich testweise zu ${eventLabelWithDate} von Boudoir Collective Berlin eingeladen.\n\nEinladung best\u00e4tigen: ${confirmUrl}\nEinladung ablehnen: ${rejectUrl}`,
+      `<p>Hallo ${invitee.name},</p><p>Demo Applicant hat dich testweise zu <strong>${humanEventLabel(eventId)}</strong>${eventDate ? ` am <strong>${eventDate}</strong>` : ""} von Boudoir Collective Berlin eingeladen.</p><p><a href="${confirmUrl}">Einladung best\u00e4tigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p>`,
       [
         { label: "Einladung best\u00e4tigen", url: confirmUrl },
         { label: "Einladung ablehnen", url: rejectUrl }

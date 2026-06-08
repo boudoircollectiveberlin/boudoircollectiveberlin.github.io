@@ -486,6 +486,13 @@ export default async function handler(req, res) {
         return;
       }
 
+      const invitees = parseJson(rows[rowIndex]?.[23], []);
+      const readyForConfirmation = !invitees.length || invitees.every((invitee) => clean(invitee?.status, 80) === "confirmed");
+      if (action === "confirm" && !readyForConfirmation) {
+        res.status(409).json({ ok: false, error: "registration_incomplete" });
+        return;
+      }
+
       const status = action === "confirm"
         ? "confirmed"
         : (action === "reject"

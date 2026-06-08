@@ -1638,6 +1638,18 @@ textarea:focus,
   font-size: 13px;
 }
 
+.summary-row__completion {
+  font-weight: 700;
+}
+
+.summary-row__completion.is-complete {
+  color: #a8d9b0;
+}
+
+.summary-row__completion.is-incomplete {
+  color: #f1c38f;
+}
+
 .admin-simulation-note {
   display: grid;
   gap: 6px;

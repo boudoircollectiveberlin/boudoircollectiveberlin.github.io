@@ -260,6 +260,68 @@ function currentEventId() {
   return form?.elements?.eventId?.value || "";
 }
 
+function registrationStatusLabel(status) {
+  const mapDe = {
+    pending_invites: "Invites offen",
+    pending_review: "Vollständig, wartet auf Admin-Freigabe",
+    invite_profiles_required: "Bestätigt, Profile fehlen noch",
+    invite_rejected: "Invite abgelehnt",
+    confirmed: "Bestätigt",
+    rejected: "Abgelehnt",
+    deleted: "Gelöscht",
+    canceled_by_link: "Zurückgezogen"
+  };
+  const mapEn = {
+    pending_invites: "Invites pending",
+    pending_review: "Complete, waiting for admin review",
+    invite_profiles_required: "Confirmed, profiles still required",
+    invite_rejected: "Invite rejected",
+    confirmed: "Confirmed",
+    rejected: "Rejected",
+    deleted: "Deleted",
+    canceled_by_link: "Withdrawn"
+  };
+  return (lang() === "de" ? mapDe : mapEn)[status] || status || "";
+}
+
+function inviteStatusLabel(status) {
+  const mapDe = {
+    pending: "offen",
+    confirmed: "bestätigt",
+    confirmed_profile_required: "bestätigt, Profil fehlt",
+    rejected: "abgelehnt"
+  };
+  const mapEn = {
+    pending: "pending",
+    confirmed: "confirmed",
+    confirmed_profile_required: "confirmed, profile missing",
+    rejected: "rejected"
+  };
+  return (lang() === "de" ? mapDe : mapEn)[status] || status || "";
+}
+
+function registrationCompletionMeta(item) {
+  const invitees = Array.isArray(item?.invitees) ? item.invitees : [];
+  if (!invitees.length) {
+    return {
+      complete: true,
+      label: lang() === "de" ? "Vollständig" : "Complete"
+    };
+  }
+  const confirmedCount = invitees.filter((invitee) => invitee.status === "confirmed").length;
+  const complete = confirmedCount === invitees.length;
+  return {
+    complete,
+    label: lang() === "de"
+      ? (complete
+        ? `Vollständig - ${confirmedCount}/${invitees.length} Invites bestätigt`
+        : `Unvollständig - ${confirmedCount}/${invitees.length} Invites bestätigt`)
+      : (complete
+        ? `Complete - ${confirmedCount}/${invitees.length} invites confirmed`
+        : `Incomplete - ${confirmedCount}/${invitees.length} invites confirmed`)
+  };
+}
+
 function actionResultMessage(action, result) {
   if (lang() === "de") {
     if (action === "confirm-partner" && result === "confirmed") {
@@ -880,19 +942,23 @@ function renderUserSummary() {
           <h3>${lang() === "de" ? "Teilnehmerliste" : "Participant list"}</h3>
         </div>
         ${adminRegistrations.map((item) => `
+          ${(() => {
+            const completion = registrationCompletionMeta(item);
+            return `
           <article class="summary-row">
             <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " \u00b7 Simulation" : ""}</strong>
-            <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(item.status || "")}</span>
-            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} \u00b7 ${escapeHtml(invitee.status || "pending")}</span>`).join("") || ""}
+            <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.status || ""))}</span>
+            <span class="summary-row__completion ${completion.complete ? "is-complete" : "is-incomplete"}">${escapeHtml(completion.label)}</span>
+            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}</span>`).join("") || ""}
             ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
             <div class="admin-row__actions">
-              <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminConfirm"))}</button>
+              <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}" ${completion.complete ? "" : "disabled"}>${escapeHtml(t("adminConfirm"))}</button>
               <button class="button button--ghost" type="button" data-admin-action="reject" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminReject"))}</button>
               <button class="button button--ghost" type="button" data-admin-action="undo" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminUndo"))}</button>
               <button class="button button--ghost" type="button" data-admin-action="delete" data-registration-id="${escapeHtml(item.id)}">Delete</button>
             </div>
           </article>
-        `).join("")}
+        `; })()}`).join("")}
         <p id="event-admin-status" role="status"></p>
       ` : ""}
       ${authState.isAdmin ? `<div class="admin-demo-output" id="event-admin-preview"></div>` : ""}

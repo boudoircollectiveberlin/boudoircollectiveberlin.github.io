@@ -304,7 +304,7 @@ function renderSimulationNotice() {
   note.className = "admin-simulation-note";
   note.innerHTML = `
     <strong>Admin-Simulation aktiv</strong>
-    <span>${escapeHtml(simulation.displayName || simulation.email)} Ã‚Â· ${escapeHtml(simulation.email)} Ã‚Â· ${escapeHtml(simulation.eventFunction || "open")}</span>
+    <span>${escapeHtml(simulation.displayName || simulation.email)} \u00b7 ${escapeHtml(simulation.email)} \u00b7 ${escapeHtml(simulation.eventFunction || "open")}</span>
   `;
   form.insertAdjacentElement("beforebegin", note);
 }
@@ -333,17 +333,17 @@ function renderAdminFlyout() {
         <span>${escapeHtml(authState.profile?.email || "")}</span>
       </div>
       <label>
-        <span>Gmail-Basis fÃƒÂ¼r virtuelle Eventnutzer</span>
+        <span>Gmail-Basis für virtuelle Eventnutzer</span>
         <input id="admin-flyout-base-email" type="email" value="${escapeHtml(baseEmail)}" placeholder="deinname@gmail.com">
       </label>
       <div class="admin-flyout__presets">
         ${presets.length
           ? presets.map((preset) => `<button class="button ${activeEmail === preset.email ? "button--primary" : "button--ghost"}" type="button" data-admin-sim-email="${escapeHtml(preset.email)}" data-admin-sim-name="${escapeHtml(preset.displayName)}" data-admin-sim-role="${escapeHtml(preset.eventFunction)}">${escapeHtml(preset.label)}</button>`).join("")
-          : `<p>FÃƒÂ¼r Plus-Alias-Simulation bitte eine Gmail-Adresse verwenden.</p>`}
+          : `<p>Für Plus-Alias-Simulation bitte eine Gmail-Adresse verwenden.</p>`}
       </div>
       <div class="admin-flyout__current">
         <strong>${adminSimulationActive() ? "Aktive Simulation" : "Keine aktive Simulation"}</strong>
-        <span>${adminSimulationActive() ? `${escapeHtml(authState.impersonation.displayName || "")} Ã‚Â· ${escapeHtml(authState.impersonation.email)}` : "Normale Nutzeransicht"}</span>
+        <span>${adminSimulationActive() ? `${escapeHtml(authState.impersonation.displayName || "")} \u00b7 ${escapeHtml(authState.impersonation.email)}` : "Normale Nutzeransicht"}</span>
       </div>
       <label class="checkbox">
         <input id="admin-flyout-create-profiles" type="checkbox" checked>
@@ -416,7 +416,7 @@ function renderMailPreviews(previews, target = adminDemoOutput) {
   target.innerHTML = previews.map((preview) => `
     <article class="admin-mail-preview">
       <div>
-        <strong>${escapeHtml(preview.kind)} Ã‚Â· ${escapeHtml(preview.to)}</strong>
+        <strong>${escapeHtml(preview.kind)} \u00b7 ${escapeHtml(preview.to)}</strong>
         <span>${escapeHtml(preview.subject)}</span>
       </div>
       <pre>${escapeHtml(preview.text)}</pre>
@@ -718,7 +718,7 @@ async function handleProviderSignInError(error, provider, fetchSignInMethodsForE
 
       if (methods.length) {
         const message = lang() === "de"
-          ? `Diese E-Mail existiert bereits mit ${authMethodList(methods)}. Bitte zuerst damit einloggen und danach ${authProviderLabel(provider)} verknÃƒÂ¼pfen.`
+          ? `Diese E-Mail existiert bereits mit ${authMethodList(methods)}. Bitte zuerst damit einloggen und danach ${authProviderLabel(provider)} verknüpfen.`
           : `This email already exists with ${authMethodList(methods)}. Please sign in with that method first, then link ${authProviderLabel(provider)}.`;
         setAuthError(message);
         return;
@@ -802,24 +802,24 @@ function renderUserSummary() {
         ? visibleRegistrations.map((item) => `
           <article class="summary-row">
             <strong>${escapeHtml(item.eventLabel || item.eventId)}</strong>
-            <span>${escapeHtml(item.role || "")} Ã‚Â· ${escapeHtml(item.registrationStatus || "")}</span>
+            <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(item.registrationStatus || "")}</span>
             ${item.applicant && item.invitees?.length
-              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} Ã‚Â· ${escapeHtml(invitee.status || "pending")}</span>`).join("")
-              : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} Ã‚Â· ${escapeHtml(item.inviteeStatus)}</span>` : "")}
-            ${item.adminStatus ? `<span>Admin Ã‚Â· ${escapeHtml(item.adminStatus)}</span>` : ""}
+              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} \u00b7 ${escapeHtml(invitee.status || "pending")}</span>`).join("")
+              : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} \u00b7 ${escapeHtml(item.inviteeStatus)}</span>` : "")}
+            ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
           </article>
         `).join("")
-        : `<p>${lang() === "de" ? "Noch keine sichtbaren Eventstatus-EintrÃƒÂ¤ge." : "No visible event status entries yet."}</p>`}
+        : `<p>${lang() === "de" ? "Noch keine sichtbaren Eventstatus-Einträge." : "No visible event status entries yet."}</p>`}
       ${authState.isAdmin && adminRegistrations.length ? `
         <div class="section__heading section__heading--compact">
           <h3>${lang() === "de" ? "Teilnehmerliste" : "Participant list"}</h3>
         </div>
         ${adminRegistrations.map((item) => `
           <article class="summary-row">
-            <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " Ã‚Â· Simulation" : ""}</strong>
-            <span>${escapeHtml(item.role || "")} Ã‚Â· ${escapeHtml(item.status || "")}</span>
-            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} Ã‚Â· ${escapeHtml(invitee.status || "pending")}</span>`).join("") || ""}
-            ${item.adminStatus ? `<span>Admin Ã‚Â· ${escapeHtml(item.adminStatus)}</span>` : ""}
+            <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " \u00b7 Simulation" : ""}</strong>
+            <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(item.status || "")}</span>
+            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} \u00b7 ${escapeHtml(invitee.status || "pending")}</span>`).join("") || ""}
+            ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
             <div class="admin-row__actions">
               <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminConfirm"))}</button>
               <button class="button button--ghost" type="button" data-admin-action="reject" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminReject"))}</button>
@@ -983,10 +983,10 @@ function renderAdminRegistrations(registrations) {
     <article class="admin-row">
       <div>
         <strong>${escapeHtml(item.name || item.email)}</strong>
-        <span>${escapeHtml(item.eventId)} Ã‚Â· ${escapeHtml(item.role)} Ã‚Â· ${escapeHtml(item.status)}</span>
+        <span>${escapeHtml(item.eventId)} \u00b7 ${escapeHtml(item.role)} \u00b7 ${escapeHtml(item.status)}</span>
         ${item.invitees?.length
-          ? item.invitees.map((invitee) => `<span>Invite: ${escapeHtml(invitee.name || invitee.email)} Ã‚Â· ${escapeHtml(invitee.role || "open")} Ã‚Â· ${escapeHtml(invitee.status || "pending")}</span>`).join("")
-          : (item.partnerEmail ? `<span>Partner: ${escapeHtml(item.partnerName || item.partnerEmail)} Ã‚Â· ${escapeHtml(item.partnerStatus || "pending")}</span>` : "")}
+          ? item.invitees.map((invitee) => `<span>Invite: ${escapeHtml(invitee.name || invitee.email)} \u00b7 ${escapeHtml(invitee.role || "open")} \u00b7 ${escapeHtml(invitee.status || "pending")}</span>`).join("")
+          : (item.partnerEmail ? `<span>Partner: ${escapeHtml(item.partnerName || item.partnerEmail)} \u00b7 ${escapeHtml(item.partnerStatus || "pending")}</span>` : "")}
       </div>
       <div class="admin-row__actions">
         <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminConfirm"))}</button>
@@ -1008,7 +1008,7 @@ function renderDemoMailPreviews(previews, target = adminDemoOutput) {
   target.innerHTML = previews.map((preview) => `
     <article class="admin-mail-preview">
       <div>
-        <strong>${escapeHtml(preview.kind)} Ã‚Â· ${escapeHtml(preview.to)}</strong>
+        <strong>${escapeHtml(preview.kind)} \u00b7 ${escapeHtml(preview.to)}</strong>
         <span>${escapeHtml(preview.subject)}</span>
       </div>
       <pre>${escapeHtml(preview.text)}</pre>
@@ -1060,7 +1060,7 @@ async function loadAdminPanel() {
       if (adminPanel) adminPanel.hidden = true;
       removeAdminFlyout();
       syncAccountAdminTab();
-      setAdminAccessNote("Admin-Status konnte nicht geladen werden. PrÃƒÂ¼fe API-Domain, Deployment und ADMIN_EMAILS.");
+      setAdminAccessNote("Admin-Status konnte nicht geladen werden. Prüfe API-Domain, Deployment und ADMIN_EMAILS.");
       return;
     }
     const payload = await response.json();
@@ -1078,7 +1078,7 @@ async function loadAdminPanel() {
     if (adminPanel) adminPanel.hidden = true;
     removeAdminFlyout();
     syncAccountAdminTab();
-    setAdminAccessNote("Admin-Status konnte nicht geladen werden. PrÃƒÂ¼fe API-Erreichbarkeit und Deployment.");
+    setAdminAccessNote("Admin-Status konnte nicht geladen werden. Prüfe API-Erreichbarkeit und Deployment.");
   }
 }
 

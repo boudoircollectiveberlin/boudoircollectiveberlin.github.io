@@ -907,6 +907,11 @@ h3 {
   margin-top: 0;
 }
 
+.account-admin-note {
+  border-color: rgba(158, 73, 73, .34);
+  background: linear-gradient(180deg, rgba(72, 16, 16, .28), rgba(18, 8, 8, .82));
+}
+
 .privacy-actions .button {
   width: fit-content;
 }
@@ -1495,9 +1500,9 @@ textarea:focus,
 .admin-panel {
   margin-top: 24px;
   padding: 20px;
-  border: 1px solid rgba(232, 201, 183, .32);
+  border: 1px solid rgba(158, 73, 73, .42);
   border-radius: var(--radius);
-  background: rgba(0, 0, 0, .18);
+  background: linear-gradient(180deg, rgba(74, 16, 16, .34), rgba(24, 8, 8, .9));
 }
 
 .admin-tools {
@@ -1511,7 +1516,7 @@ textarea:focus,
 .admin-demo {
   margin-top: 20px;
   padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, .12);
+  border-top: 1px solid rgba(158, 73, 73, .28);
 }
 
 .section__heading--compact {
@@ -1541,9 +1546,9 @@ textarea:focus,
   gap: 14px;
   align-items: center;
   padding: 14px;
-  border: 1px solid rgba(255, 255, 255, .12);
+  border: 1px solid rgba(158, 73, 73, .24);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, .04);
+  background: rgba(92, 24, 24, .16);
 }
 
 .admin-row strong,
@@ -1583,9 +1588,9 @@ textarea:focus,
 .admin-simulation-note {
   margin-top: 18px;
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, .12);
+  border: 1px solid rgba(158, 73, 73, .28);
   border-radius: var(--radius);
-  background: rgba(0, 0, 0, .16);
+  background: linear-gradient(180deg, rgba(72, 16, 16, .28), rgba(18, 8, 8, .86));
 }
 
 .summary-list {
@@ -1628,9 +1633,9 @@ textarea:focus,
   min-width: 84px;
   min-height: 42px;
   padding: 10px 14px;
-  border: 1px solid rgba(232, 201, 183, .36);
+  border: 1px solid rgba(158, 73, 73, .42);
   border-radius: 8px;
-  background: rgba(8, 8, 8, .94);
+  background: rgba(52, 14, 14, .95);
   color: var(--ink);
   font: inherit;
   font-weight: 760;
@@ -1644,9 +1649,9 @@ textarea:focus,
   display: grid;
   gap: 12px;
   padding: 16px;
-  border: 1px solid rgba(232, 201, 183, .28);
+  border: 1px solid rgba(158, 73, 73, .36);
   border-radius: 8px;
-  background: rgba(12, 12, 12, .97);
+  background: linear-gradient(180deg, rgba(78, 18, 18, .96), rgba(16, 8, 8, .98));
   box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
 }
 

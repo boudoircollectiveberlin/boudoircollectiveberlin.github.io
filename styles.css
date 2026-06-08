@@ -1359,6 +1359,36 @@ textarea:focus,
   overflow-wrap: anywhere;
 }
 
+.event-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: min(760px, 100%);
+}
+
+.event-facts__item {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .22);
+}
+
+.event-facts__item strong {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 760;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.event-facts__item span {
+  color: rgba(255, 255, 255, .82);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .reference-section {
   overflow: hidden;
   background:
@@ -1730,6 +1760,7 @@ textarea:focus,
   .contact-grid,
   .invitee-card,
   .account-steps,
+  .event-facts,
   .account-subsection__grid,
   .admin-tools,
   .admin-row,

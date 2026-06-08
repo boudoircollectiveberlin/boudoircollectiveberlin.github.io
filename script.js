@@ -10,6 +10,10 @@ const profileStatus = document.querySelector("#profile-status");
 const authStatus = document.querySelector("#auth-status");
 const topbarAuthStatus = document.querySelector("#topbar-auth-status");
 const topbarMemberStatus = document.querySelector("#topbar-member-status");
+const eventAuthGate = document.querySelector("[data-event-auth-gate]");
+const eventAuthGateTitle = document.querySelector("[data-event-auth-gate-title]");
+const eventAuthGateCopy = document.querySelector("[data-event-auth-gate-copy]");
+const eventAuthGateLink = document.querySelector("[data-event-auth-gate-link]");
 const authButtons = Array.from(document.querySelectorAll("[data-auth-provider]"));
 const authButtonSections = Array.from(document.querySelectorAll(".account-menu .auth-buttons"));
 const logoutButtons = Array.from(document.querySelectorAll("[data-auth-logout]"));
@@ -155,6 +159,23 @@ function currentApplicantData() {
   };
 }
 
+function accountNextTarget() {
+  const next = new URLSearchParams(window.location.search).get("next");
+  if (!next) return "";
+  try {
+    const resolved = new URL(next, window.location.origin);
+    if (resolved.origin !== window.location.origin) return "";
+    return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+  } catch {
+    return "";
+  }
+}
+
+function eventRegistrationAccountHref() {
+  const returnTarget = `${window.location.pathname}${window.location.search}#application`;
+  return `account.html?next=${encodeURIComponent(returnTarget)}#profile-form`;
+}
+
 function syncEventApplicantFields() {
   if (!form) return;
   const applicant = currentApplicantData();
@@ -195,6 +216,60 @@ function refreshLandingCtas() {
     link.href = hasProfile ? "#events" : "account.html";
     link.hidden = false;
   });
+}
+
+function refreshEventApplicationUi() {
+  if (!form) return;
+
+  const isSignedIn = Boolean(authState.profile?.email);
+  const eventId = currentEventId();
+  const existingEventEntry = eventId
+    ? (Array.isArray(authState.userSummary?.registrations) ? authState.userSummary.registrations : []).find((item) => item.eventId === eventId)
+    : null;
+  const canUseEventForm = adminSimulationActive() || (isSignedIn && authState.profileComplete && !existingEventEntry);
+  const needsProfile = isSignedIn && !authState.profileComplete && !adminSimulationActive();
+
+  form.hidden = !canUseEventForm;
+
+  if (!eventAuthGate) return;
+
+  eventAuthGate.hidden = canUseEventForm;
+  if (eventAuthGateLink) {
+    eventAuthGateLink.href = eventRegistrationAccountHref();
+  }
+
+  if (adminSimulationActive()) return;
+
+  if (existingEventEntry) {
+    if (eventAuthGateTitle) eventAuthGateTitle.textContent = lang() === "de" ? "Dein Status für dieses Event" : "Your status for this event";
+    if (eventAuthGateCopy) {
+      const role = existingEventEntry.role || "";
+      const status = existingEventEntry.applicant
+        ? registrationStatusLabel(existingEventEntry.registrationStatus || "")
+        : inviteStatusLabel(existingEventEntry.inviteeStatus || "");
+      eventAuthGateCopy.textContent = lang() === "de"
+        ? `Für dieses Event gibt es bereits einen Eintrag für deinen Account: ${role} · ${status}. Wenn du dich stattdessen neu bewerben möchtest, ziehe zuerst unten deine aktuelle Einladung oder Bewerbung zurück.`
+        : `There is already an entry for your account for this event: ${role} · ${status}. If you want to apply again instead, withdraw your current invitation or application below first.`;
+    }
+    if (eventAuthGateLink) {
+      eventAuthGateLink.textContent = lang() === "de" ? "Status unten ansehen" : "View status below";
+      eventAuthGateLink.href = "#member-summary-panel";
+    }
+    return;
+  }
+
+  if (!isSignedIn) {
+    if (eventAuthGateTitle) eventAuthGateTitle.textContent = t("grabowseeLoginRequiredTitle");
+    if (eventAuthGateCopy) eventAuthGateCopy.textContent = t("grabowseeLoginRequiredCopy");
+    if (eventAuthGateLink) eventAuthGateLink.textContent = t("grabowseeLoginRequiredAction");
+    return;
+  }
+
+  if (needsProfile) {
+    if (eventAuthGateTitle) eventAuthGateTitle.textContent = t("grabowseeProfileRequiredTitle");
+    if (eventAuthGateCopy) eventAuthGateCopy.textContent = t("grabowseeProfileRequiredCopy");
+    if (eventAuthGateLink) eventAuthGateLink.textContent = t("grabowseeProfileRequiredAction");
+  }
 }
 
 async function loadMemberProfile() {
@@ -269,7 +344,8 @@ function registrationStatusLabel(status) {
     confirmed: "Bestätigt",
     rejected: "Abgelehnt",
     deleted: "Gelöscht",
-    canceled_by_link: "Zurückgezogen"
+    canceled_by_link: "Zurückgezogen",
+    canceled_by_user: "Zurückgezogen"
   };
   const mapEn = {
     pending_invites: "Invites pending",
@@ -279,7 +355,8 @@ function registrationStatusLabel(status) {
     confirmed: "Confirmed",
     rejected: "Rejected",
     deleted: "Deleted",
-    canceled_by_link: "Withdrawn"
+    canceled_by_link: "Withdrawn",
+    canceled_by_user: "Withdrawn"
   };
   return (lang() === "de" ? mapDe : mapEn)[status] || status || "";
 }
@@ -298,6 +375,20 @@ function inviteStatusLabel(status) {
     rejected: "rejected"
   };
   return (lang() === "de" ? mapDe : mapEn)[status] || status || "";
+}
+
+function userActionStatusMessage(action, status) {
+  if (lang() === "de") {
+    if (action === "withdraw-registration" && status === "canceled_by_user") return "Deine Bewerbung wurde zurückgezogen.";
+    if (action === "confirm-invite" && status === "confirmed") return "Deine Einladung wurde bestätigt.";
+    if (action === "confirm-invite" && status === "confirmed_profile_required") return "Einladung bestätigt. Bitte vervollständige noch dein Profil, damit die Bewerbung vollständig wird.";
+    if (action === "reject-invite" && status === "rejected") return "Deine Einladung wurde abgelehnt.";
+  }
+  if (action === "withdraw-registration" && status === "canceled_by_user") return "Your application has been withdrawn.";
+  if (action === "confirm-invite" && status === "confirmed") return "Your invitation has been confirmed.";
+  if (action === "confirm-invite" && status === "confirmed_profile_required") return "Invitation confirmed. Please complete your profile so the application can be completed.";
+  if (action === "reject-invite" && status === "rejected") return "Your invitation has been declined.";
+  return "";
 }
 
 function registrationCompletionMeta(item) {
@@ -859,7 +950,7 @@ async function handleProviderSignInError(error, provider, fetchSignInMethodsForE
 }
 
 async function loadUserSummary() {
-  if (!authState.idToken || !authState.profileComplete) {
+  if (!authState.idToken) {
     authState.userSummary = null;
     renderUserSummary();
     return;
@@ -905,7 +996,7 @@ function ensureUserSummaryHost() {
 function renderUserSummary() {
   const host = ensureUserSummaryHost();
   if (!host) return;
-  if (!authState.profileComplete && !authState.isAdmin) {
+  if (!authState.idToken && !authState.isAdmin) {
     host.hidden = true;
     host.innerHTML = "";
     return;
@@ -929,11 +1020,18 @@ function renderUserSummary() {
         ? visibleRegistrations.map((item) => `
           <article class="summary-row">
             <strong>${escapeHtml(item.eventLabel || item.eventId)}</strong>
-            <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(item.registrationStatus || "")}</span>
+            <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.registrationStatus || ""))}${item.simulated ? " \u00b7 Simulation" : ""}</span>
             ${item.applicant && item.invitees?.length
-              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} \u00b7 ${escapeHtml(invitee.status || "pending")}</span>`).join("")
-              : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} \u00b7 ${escapeHtml(item.inviteeStatus)}</span>` : "")}
+              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}</span>`).join("")
+              : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} \u00b7 ${escapeHtml(inviteStatusLabel(item.inviteeStatus))}</span>` : "")}
             ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
+            ${(item.canWithdraw || item.canRespondInvite) ? `
+              <div class="admin-row__actions">
+                ${item.canWithdraw ? `<button class="button button--ghost" type="button" data-user-action="withdraw-registration" data-registration-id="${escapeHtml(item.registrationId)}">${lang() === "de" ? "Bewerbung zurückziehen" : "Withdraw application"}</button>` : ""}
+                ${item.canRespondInvite && (item.inviteeStatus === "pending" || item.inviteeStatus === "confirmed_profile_required") ? `<button class="button button--ghost" type="button" data-user-action="confirm-invite" data-registration-id="${escapeHtml(item.registrationId)}">${lang() === "de" ? "Einladung bestätigen" : "Confirm invitation"}</button>` : ""}
+                ${item.canRespondInvite && item.inviteeStatus === "pending" ? `<button class="button button--ghost" type="button" data-user-action="reject-invite" data-registration-id="${escapeHtml(item.registrationId)}">${lang() === "de" ? "Einladung ablehnen" : "Decline invitation"}</button>` : ""}
+              </div>
+            ` : ""}
           </article>
         `).join("")
         : `<p>${lang() === "de" ? "Noch keine sichtbaren Eventstatus-Einträge." : "No visible event status entries yet."}</p>`}
@@ -962,6 +1060,7 @@ function renderUserSummary() {
         <p id="event-admin-status" role="status"></p>
       ` : ""}
       ${authState.isAdmin ? `<div class="admin-demo-output" id="event-admin-preview"></div>` : ""}
+      <p id="event-user-status" role="status"></p>
     </div>
   `;
 }
@@ -1070,6 +1169,14 @@ async function handleFirebaseUser(user) {
   renderSimulationNotice();
   applySimulationToEventForm();
 
+  if (isAccountPage() && authState.profileComplete) {
+    const nextTarget = accountNextTarget();
+    if (nextTarget) {
+      window.location.href = nextTarget;
+      return;
+    }
+  }
+
   if (!authState.profileComplete && !adminSimulationActive() && !isAccountPage()) {
     window.location.href = "account.html#profile-form";
   }
@@ -1170,6 +1277,24 @@ async function adminPost(payload) {
   return response.json();
 }
 
+async function userSummaryPost(payload) {
+  const response = await fetch(`${API_BASE}/api/summary`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authState.idToken}`
+    },
+    body: JSON.stringify(payload)
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(result.error || "summary_action_failed");
+    error.payload = result;
+    throw error;
+  }
+  return result;
+}
+
 async function loadAdminPanel() {
   if (!authState.idToken) return;
 
@@ -1268,6 +1393,7 @@ function refreshAuthUi() {
   }
 
   refreshLandingCtas();
+  refreshEventApplicationUi();
 }
 
 async function initFirebaseLogin() {
@@ -1507,6 +1633,11 @@ profileForm?.addEventListener("submit", async (event) => {
       refreshAuthUi();
     }
     setStatus(profileStatus, t("profileSaved"));
+    const nextTarget = accountNextTarget();
+    if (nextTarget) {
+      window.location.href = nextTarget;
+      return;
+    }
   } catch {
     setStatus(profileStatus, t("signupError"), true);
   } finally {
@@ -1586,6 +1717,27 @@ form?.addEventListener("submit", async (event) => {
 });
 
 document.addEventListener("click", async (event) => {
+  const userButton = event.target.closest("[data-user-action]");
+  if (userButton) {
+    userButton.disabled = true;
+    const statusTarget = document.querySelector("#event-user-status") || formStatus;
+    setStatus(statusTarget, t("sending"));
+    try {
+      const result = await userSummaryPost({
+        action: userButton.dataset.userAction,
+        registrationId: userButton.dataset.registrationId
+      });
+      setStatus(statusTarget, userActionStatusMessage(userButton.dataset.userAction, result.status) || (lang() === "de" ? "Status aktualisiert." : "Status updated."));
+      await loadUserSummary();
+      await loadAdminPanel();
+    } catch {
+      setStatus(statusTarget, t("signupError"), true);
+    } finally {
+      userButton.disabled = false;
+    }
+    return;
+  }
+
   const button = event.target.closest("[data-admin-action]");
   if (!button) return;
 

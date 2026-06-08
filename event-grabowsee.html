@@ -146,7 +146,13 @@
         <h2 data-i18n="grabowseeApplicationTitle">F&uuml;r Grabowsee bewerben</h2>
         <p data-i18n="grabowseeApplicationCopy">Bitte zuerst einloggen und dein privates Community-Profil speichern. F&uuml;r Grabowsee brauchen wir pro Bewerbung genau eine fotografierende Person und mindestens ein Model. Weitere Beteiligte werden per Mail eingeladen und hinterlegen ihre Detaildaten erst selbst beim Annehmen. MUA bitte nicht hier mit anmelden, sondern separat vorab mitteilen.</p>
       </div>
-      <form class="register-form" id="register-form" novalidate>
+      <div class="account-locked" data-event-auth-gate>
+        <p class="eyebrow" data-i18n="registerEyebrow">Registrierung</p>
+        <strong data-event-auth-gate-title data-i18n="grabowseeLoginRequiredTitle">Bitte zuerst einloggen</strong>
+        <p data-event-auth-gate-copy data-i18n="grabowseeLoginRequiredCopy">Fuer die Eventbewerbung brauchst du zuerst deinen Login und danach dein privates Community-Profil. Name und E-Mail werden dann aus deinem Account uebernommen.</p>
+        <a class="button button--primary" href="account.html#profile-form" data-event-auth-gate-link data-i18n="grabowseeLoginRequiredAction">Zum Login und Profil</a>
+      </div>
+      <form class="register-form" id="register-form" novalidate hidden>
         <input type="hidden" name="eventId" value="heilstaette-grabowsee-2026-07-04">
         <label>
           <span data-i18n="eventFunctions">Ich melde mich f&uuml;r dieses Event an als</span>
@@ -156,10 +162,7 @@
             <option value="photographer" data-i18n="rolePhotographer">Fotograf:in</option>
           </select>
         </label>
-        <label><span data-i18n="nameLabel">Name</span><input name="name" autocomplete="name" required readonly></label>
-        <label><span data-i18n="emailLabel">E-Mail</span><input name="email" type="email" autocomplete="email" required readonly></label>
-        <label><span data-i18n="profileInstagram">Instagram</span><input name="instagram" placeholder="@username" readonly></label>
-        <label class="full"><span data-i18n="profilePortfolio">Portfolio / Website</span><input name="portfolio" type="url" placeholder="https://..." readonly></label>
+        <p class="full" data-i18n="grabowseeProfileAutoCopy">Name, E-Mail und vorhandene Profildaten werden automatisch aus deinem Community-Profil &uuml;bernommen.</p>
         <fieldset class="invitee-list full" data-invitee-list>
           <legend data-i18n="grabowseeInviteListTitle">Weitere beteiligte Personen</legend>
           <div class="invitee-card" data-invitee-card>

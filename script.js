@@ -773,8 +773,15 @@ function renderUserSummary() {
             <span>${escapeHtml(item.role || "")} Ã‚Â· ${escapeHtml(item.status || "")}</span>
             ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} Ã‚Â· ${escapeHtml(invitee.status || "pending")}</span>`).join("") || ""}
             ${item.adminStatus ? `<span>Admin Ã‚Â· ${escapeHtml(item.adminStatus)}</span>` : ""}
+            <div class="admin-row__actions">
+              <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminConfirm"))}</button>
+              <button class="button button--ghost" type="button" data-admin-action="reject" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminReject"))}</button>
+              <button class="button button--ghost" type="button" data-admin-action="undo" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminUndo"))}</button>
+              <button class="button button--ghost" type="button" data-admin-action="delete" data-registration-id="${escapeHtml(item.id)}">Delete</button>
+            </div>
           </article>
         `).join("")}
+        <p id="event-admin-status" role="status"></p>
       ` : ""}
       ${authState.isAdmin ? `<div class="admin-demo-output" id="event-admin-preview"></div>` : ""}
     </div>
@@ -915,6 +922,10 @@ function handleSignedOutState() {
 
 function renderAdminRegistrations(registrations) {
   if (!adminList) return;
+  if (isAccountPage()) {
+    adminList.innerHTML = `<p>${escapeHtml(lang() === "de" ? "Bewerbungen werden direkt auf der jeweiligen Eventseite verwaltet." : "Applications are managed directly on the corresponding event page.")}</p>`;
+    return;
+  }
   if (!registrations.length) {
     adminList.innerHTML = `<p>${escapeHtml(t("adminNoRegistrations"))}</p>`;
     return;
@@ -964,6 +975,10 @@ function setAdminAccessNote(message, visible = true) {
   if (!adminAccessNote || !adminAccessCopy) return;
   adminAccessCopy.textContent = message;
   adminAccessNote.hidden = !visible;
+}
+
+function currentAdminStatusTarget(trigger) {
+  return trigger?.closest("#member-summary-panel")?.querySelector("#event-admin-status") || adminStatus;
 }
 
 async function adminPost(payload) {
@@ -1392,16 +1407,18 @@ document.addEventListener("click", async (event) => {
   if (!button) return;
 
   button.disabled = true;
-  setStatus(adminStatus, t("sending"));
+  const statusTarget = currentAdminStatusTarget(button);
+  setStatus(statusTarget, t("sending"));
   try {
     await adminPost({
       action: button.dataset.adminAction,
       registrationId: button.dataset.registrationId
     });
-    setStatus(adminStatus, t("adminSaved"));
+    setStatus(statusTarget, t("adminSaved"));
     await loadAdminPanel();
+    await loadUserSummary();
   } catch {
-    setStatus(adminStatus, t("signupError"), true);
+    setStatus(statusTarget, t("signupError"), true);
   } finally {
     button.disabled = false;
   }

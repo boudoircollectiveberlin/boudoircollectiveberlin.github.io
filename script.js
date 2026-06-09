@@ -456,6 +456,22 @@ function inviteLine(invitee, index, registrationId, editable) {
   `;
 }
 
+function lateInviteOptions(item) {
+  if (!item?.applicant) return [];
+  const terminal = new Set(["confirmed", "rejected", "deleted"]);
+  if (terminal.has(item.registrationStatus)) return [];
+  const roles = [item.role, ...(item.invitees || []).map((invitee) => invitee.role)].filter(Boolean);
+  if (item.eventId === "heilstaette-grabowsee-2026-07-04") {
+    const photographerCount = roles.filter((role) => role === "photographer").length;
+    const modelCount = roles.filter((role) => role === "model").length;
+    return [
+      ...(modelCount < 3 ? [{ value: "model", label: "Model" }] : []),
+      ...(photographerCount < 1 ? [{ value: "photographer", label: "Fotograf:in" }] : [])
+    ];
+  }
+  return [{ value: "model", label: "Model" }, { value: "photographer", label: "Fotograf:in" }];
+}
+
 function actionResultMessage(action, result) {
   if (lang() === "de") {
     if (action === "confirm-partner" && result === "confirmed") {
@@ -1090,12 +1106,11 @@ function renderUserSummary() {
                 ${item.canRespondInvite && item.inviteeStatus === "pending" ? `<button class="button button--ghost" type="button" data-user-action="reject-invite" data-registration-id="${escapeHtml(item.registrationId)}">${lang() === "de" ? "Einladung ablehnen" : "Decline invitation"}</button>` : ""}
               </div>
             ` : ""}
-            ${item.applicant && item.registrationStatus !== "confirmed" && item.registrationStatus !== "canceled_by_user" ? `
+            ${lateInviteOptions(item).length ? `
               <form class="inline-invite-form" data-add-late-invite data-registration-id="${escapeHtml(item.registrationId)}">
                 <input name="email" type="email" placeholder="email@example.com" required>
                 <select name="role" required>
-                  <option value="model">Model</option>
-                  <option value="photographer">Fotograf:in</option>
+                  ${lateInviteOptions(item).map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`).join("")}
                 </select>
                 <button class="button button--ghost" type="submit">${lang() === "de" ? "Invite hinzufügen" : "Add invite"}</button>
               </form>

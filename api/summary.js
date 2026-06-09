@@ -69,6 +69,7 @@ function humanEventLabel(eventId) {
 function registrationSummary(row, identityEmail) {
   const email = clean(row?.[7], 180).toLowerCase();
   const invitees = parseJson(row?.[23], []).map((participant) => ({
+    name: clean(participant?.name, 120),
     email: clean(participant?.email, 180).toLowerCase(),
     role: clean(participant?.eventFunction, 60),
     status: clean(participant?.status, 60) || "pending"

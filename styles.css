@@ -1608,6 +1608,37 @@ textarea:focus,
   margin-top: 10px;
 }
 
+.admin-member-tools {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-member-tools input {
+  max-width: 340px;
+}
+
+.admin-member-table-wrap {
+  max-height: 420px;
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 8px;
+}
+
+.admin-member-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-member-table th,
+.admin-member-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  text-align: left;
+}
+
 .action-notice {
   display: grid;
   gap: 6px;

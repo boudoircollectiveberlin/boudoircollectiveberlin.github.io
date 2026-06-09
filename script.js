@@ -63,7 +63,9 @@ let authState = {
   pendingAuthLink: null,
   isAdmin: false,
   adminBaseEmail: "",
-  impersonation: null
+  impersonation: null,
+  adminMemberSearch: "",
+  adminMemberPage: 0
 };
 
 function isAccountPage() {
@@ -334,6 +336,11 @@ function adminSimulationActive() {
 
 function currentEventId() {
   return form?.elements?.eventId?.value || "";
+}
+
+function eventDetailUrl(eventId) {
+  if (eventId === "heilstaette-grabowsee-2026-07-04") return "event-grabowsee.html";
+  return "";
 }
 
 function registrationStatusLabel(status) {
@@ -969,6 +976,7 @@ async function loadUserSummary() {
     authState.userSummary = null;
   }
   renderUserSummary();
+  refreshEventApplicationUi();
 }
 
 function ensureUserSummaryHost() {
@@ -1009,24 +1017,29 @@ function renderUserSummary() {
   const registrations = Array.isArray(authState.userSummary?.registrations) ? authState.userSummary.registrations : [];
   const visibleRegistrations = eventId ? registrations.filter((item) => item.eventId === eventId) : registrations;
   const adminRegistrations = eventId ? authState.adminRegistrations.filter((item) => item.eventId === eventId) : [];
-  const adminMembers = Array.isArray(authState.adminMembers) ? authState.adminMembers : [];
+  const adminMembers = [];
+  const isAdminOverview = isAccountPage() && authState.isAdmin;
+  const openAdminCount = (authState.adminRegistrations || []).filter((item) => item.status === "pending_review").length;
+  const incompleteCount = (authState.adminRegistrations || []).filter((item) => (item.invitees || []).some((invitee) => invitee.status !== "confirmed")).length;
 
   host.hidden = false;
   host.innerHTML = `
     <div class="section__heading section__heading--compact">
-      <h3>${lang() === "de" ? "Dein Status" : "Your status"}</h3>
-      <p>${authState.userSummary?.member ? (lang() === "de"
+      <h3>${isAdminOverview ? (lang() === "de" ? "Orga-Übersicht" : "Organizer overview") : (lang() === "de" ? "Dein Status" : "Your status")}</h3>
+      <p>${isAdminOverview ? (lang() === "de"
+        ? `${openAdminCount} Bewerbungen warten auf Admin-Freigabe, ${incompleteCount} Bewerbungen haben offene Invites/Profile.`
+        : `${openAdminCount} applications await admin approval, ${incompleteCount} applications have open invites/profiles.`) : (authState.userSummary?.member ? (lang() === "de"
         ? `Aktuell registrierte andere Nutzer im System: ${Number(authState.userSummary.otherRegisteredCount || 0)}`
-        : `Currently registered other users in the system: ${Number(authState.userSummary.otherRegisteredCount || 0)}`) : (lang() === "de" ? "Admin-Sicht auf die aktuelle Teilnehmerliste." : "Admin view of the current participant list.")}</p>
+        : `Currently registered other users in the system: ${Number(authState.userSummary.otherRegisteredCount || 0)}`) : (lang() === "de" ? "Admin-Sicht auf die aktuelle Teilnehmerliste." : "Admin view of the current participant list."))}</p>
     </div>
     <div class="summary-list">
       ${visibleRegistrations.length
         ? visibleRegistrations.map((item) => `
           <article class="summary-row">
-            <strong>${escapeHtml(item.eventLabel || item.eventId)}</strong>
+            <strong>${eventDetailUrl(item.eventId) ? `<a href="${escapeHtml(eventDetailUrl(item.eventId))}">${escapeHtml(item.eventLabel || item.eventId)}</a>` : escapeHtml(item.eventLabel || item.eventId)}</strong>
             <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.registrationStatus || ""))}${item.simulated ? " \u00b7 Simulation" : ""}</span>
             ${item.applicant && item.invitees?.length
-              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}</span>`).join("")
+              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.name || invitee.email)}${invitee.name ? ` (${escapeHtml(invitee.email)})` : ""} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}</span>`).join("")
               : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} \u00b7 ${escapeHtml(inviteStatusLabel(item.inviteeStatus))}</span>` : "")}
             ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
             ${(item.canWithdraw || item.canRespondInvite) ? `
@@ -1059,6 +1072,11 @@ function renderUserSummary() {
             <span>${escapeHtml(member.email)} · ${escapeHtml(member.role || "")} · ${escapeHtml(member.status || "")}</span>
           </article>
         `).join("") : `<p>${lang() === "de" ? "Keine Nutzer gefunden." : "No users found."}</p>`}
+        <div class="admin-member-tools">
+          <input type="search" data-admin-member-search placeholder="${lang() === "de" ? "Nutzer suchen" : "Search users"}" value="${escapeHtml(authState.adminMemberSearch)}">
+          <div><button class="button button--ghost" type="button" data-admin-member-page="prev">‹</button><span data-admin-member-page-label></span><button class="button button--ghost" type="button" data-admin-member-page="next">›</button></div>
+        </div>
+        <div class="admin-member-table-wrap"><table class="admin-member-table"><thead><tr><th>Name</th><th>E-Mail</th><th>Rolle</th><th>Status</th></tr></thead><tbody data-admin-member-body></tbody></table></div>
       ` : ""}
       ${authState.isAdmin && adminRegistrations.length ? `
         <div class="section__heading section__heading--compact">
@@ -1072,7 +1090,7 @@ function renderUserSummary() {
             <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " \u00b7 Simulation" : ""}</strong>
             <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.status || ""))}</span>
             <span class="summary-row__completion ${completion.complete ? "is-complete" : "is-incomplete"}">${escapeHtml(completion.label)}</span>
-            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.email)} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}</span>`).join("") || ""}
+            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.name || invitee.email)}${invitee.name ? ` (${escapeHtml(invitee.email)})` : ""} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}</span>`).join("") || ""}
             ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
             <div class="admin-row__actions">
               <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}" ${completion.complete ? "" : "disabled"}>${escapeHtml(t("adminConfirm"))}</button>
@@ -1088,6 +1106,29 @@ function renderUserSummary() {
       <p id="event-user-status" role="status"></p>
     </div>
   `;
+  renderAdminMemberTable();
+}
+
+function renderAdminMemberTable() {
+  const body = document.querySelector("[data-admin-member-body]");
+  if (!body) return;
+  const tools = document.querySelector(".admin-member-tools");
+  const oldEmpty = tools?.previousElementSibling;
+  if (oldEmpty?.tagName === "P") oldEmpty.remove();
+  const pageSize = 10;
+  const query = normalizeEmail(authState.adminMemberSearch);
+  const members = (authState.adminMembers || []).filter((member) => {
+    const haystack = `${member.name || ""} ${member.email || ""} ${member.role || ""} ${member.status || ""}`.toLowerCase();
+    return !query || haystack.includes(query);
+  });
+  const pageCount = Math.max(1, Math.ceil(members.length / pageSize));
+  authState.adminMemberPage = Math.min(authState.adminMemberPage, pageCount - 1);
+  const page = members.slice(authState.adminMemberPage * pageSize, (authState.adminMemberPage + 1) * pageSize);
+  body.innerHTML = page.length ? page.map((member) => `
+    <tr><td>${escapeHtml(member.name || member.email)}</td><td>${escapeHtml(member.email)}</td><td>${escapeHtml(member.role || "")}</td><td>${escapeHtml(member.status || "")}</td></tr>
+  `).join("") : `<tr><td colspan="4">${escapeHtml(lang() === "de" ? "Keine Nutzer gefunden." : "No users found.")}</td></tr>`;
+  const label = document.querySelector("[data-admin-member-page-label]");
+  if (label) label.textContent = `${authState.adminMemberPage + 1}/${pageCount} · ${members.length}`;
 }
 
 function normalizeEmail(value) {
@@ -1767,7 +1808,23 @@ document.addEventListener("submit", async (event) => {
   }
 });
 
+document.addEventListener("input", (event) => {
+  const input = event.target.closest("[data-admin-member-search]");
+  if (!input) return;
+  authState.adminMemberSearch = input.value;
+  authState.adminMemberPage = 0;
+  renderAdminMemberTable();
+});
+
 document.addEventListener("click", async (event) => {
+  const pageButton = event.target.closest("[data-admin-member-page]");
+  if (pageButton) {
+    authState.adminMemberPage += pageButton.dataset.adminMemberPage === "next" ? 1 : -1;
+    if (authState.adminMemberPage < 0) authState.adminMemberPage = 0;
+    renderAdminMemberTable();
+    return;
+  }
+
   const userButton = event.target.closest("[data-user-action]");
   if (userButton) {
     userButton.disabled = true;

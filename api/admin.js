@@ -447,13 +447,27 @@ function publicRegistration(row) {
 
 function publicMember(row) {
   return {
+    uid: clean(row[1], 200),
     email: clean(row[2], 180),
     name: clean(row[3], 120),
     provider: clean(row[4], 60),
     role: clean(row[5], 120),
+    marker: clean(row[12], 120),
     status: clean(row[12], 60) || "registered",
     updatedAt: clean(row[0], 80)
   };
+}
+
+function latestPublicMembers(rows) {
+  const latest = new Map();
+  for (let index = rows.length - 1; index >= 1; index -= 1) {
+    const item = publicMember(rows[index]);
+    const emailKey = item.email.toLowerCase();
+    const isDemo = item.provider === "demo_admin" || item.marker.startsWith("demo_by:");
+    if (!emailKey || latest.has(emailKey) || item.email.startsWith("deleted:") || isDemo) continue;
+    latest.set(emailKey, item);
+  }
+  return Array.from(latest.values());
 }
 
 export default async function handler(req, res) {
@@ -494,7 +508,7 @@ export default async function handler(req, res) {
         ok: true,
         admin: true,
         registrations: rows.slice(1).map(publicRegistration).filter((item) => item.id && item.status !== "deleted").reverse().slice(0, 80),
-        members: memberRows.slice(1).map(publicMember).filter((item) => item.email && !item.email.startsWith("deleted:")).reverse().slice(0, 120)
+        members: latestPublicMembers(memberRows).slice(0, 120)
       });
       return;
     }
@@ -564,22 +578,25 @@ export default async function handler(req, res) {
       const targetEmail = clean(body.email, 180).toLowerCase();
       const response = await sheets.spreadsheets.values.get({ spreadsheetId, range: memberRange });
       const rows = response.data.values || [];
-      const rowIndex = rows.findIndex((row) => clean(row?.[2], 180).toLowerCase() === targetEmail);
-      if (rowIndex < 0) {
+      const rowIndexes = rows
+        .map((row, index) => ({ row, index }))
+        .filter((item) => clean(item.row?.[2], 180).toLowerCase() === targetEmail)
+        .map((item) => item.index);
+      if (!rowIndexes.length) {
         res.status(404).json({ ok: false, error: "member_not_found" });
         return;
       }
 
       const emailHash = crypto.createHash("sha256").update(targetEmail).digest("hex").slice(0, 16);
-      await sheets.spreadsheets.values.update({
+      await Promise.all(rowIndexes.map((rowIndex) => sheets.spreadsheets.values.update({
         spreadsheetId,
         range: `${rangeSheet(memberRange, "Members!A:Z")}!A${rowIndex + 1}:R${rowIndex + 1}`,
         valueInputOption: "USER_ENTERED",
         requestBody: {
           values: [[now, "", `deleted:${emailHash}`, "", "", "", "", "", "no", "no", "no", "no", `deleted_by_admin:${identity.email}`, "deleted", "none", "no", "", ""]]
         }
-      });
-      res.status(200).json({ ok: true, status: "member_deleted" });
+      })));
+      res.status(200).json({ ok: true, status: "member_deleted", rows: rowIndexes.length });
       return;
     }
 

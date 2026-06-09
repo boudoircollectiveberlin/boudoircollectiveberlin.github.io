@@ -13,6 +13,10 @@ function parseBoolean(value) {
   return String(value || "").trim().toLowerCase() === "yes";
 }
 
+function rangeSheet(range, fallback) {
+  return clean(range, 120).split("!")[0] || clean(fallback, 120).split("!")[0];
+}
+
 function memberFromRow(row) {
   return {
     displayName: clean(row[3], 120),
@@ -107,33 +111,50 @@ export default async function handler(req, res) {
     }
 
     const sheets = getSheetsClient();
-    await sheets.spreadsheets.values.append({
+    const memberRange = process.env.MEMBER_SHEET_RANGE || "Members!A:Z";
+    const values = [[
+      new Date().toISOString(),
+      identity.sub,
+      identity.email,
+      displayName,
+      identity.provider,
+      functions.join(","),
+      clean(body.instagram, 80),
+      clean(body.portfolio, 300),
+      body.futureUpdates === true ? "yes" : "no",
+      body.lobbyInfo === true ? "yes" : "no",
+      body.communityConsent === true ? "yes" : "no",
+      body.communityPrivacy === true ? "yes" : "no",
+      "registered",
+      "orga_only",
+      body.discoverable === true ? "confirmed_members" : "none",
+      body.discoverable === true ? "yes" : "no",
+      clean(body.discoverableName || displayName, 120),
+      clean(body.discoverableIntro, 600)
+    ]];
+    const existing = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.REGISTRATION_SHEET_ID,
-      range: process.env.MEMBER_SHEET_RANGE || "Members!A:Z",
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [[
-          new Date().toISOString(),
-          identity.sub,
-          identity.email,
-          displayName,
-          identity.provider,
-          functions.join(","),
-          clean(body.instagram, 80),
-          clean(body.portfolio, 300),
-          body.futureUpdates === true ? "yes" : "no",
-          body.lobbyInfo === true ? "yes" : "no",
-          body.communityConsent === true ? "yes" : "no",
-          body.communityPrivacy === true ? "yes" : "no",
-          "registered",
-          "orga_only",
-          body.discoverable === true ? "confirmed_members" : "none",
-          body.discoverable === true ? "yes" : "no",
-          clean(body.discoverableName || displayName, 120),
-          clean(body.discoverableIntro, 600)
-        ]]
-      }
-    });
+      range: memberRange
+    }).catch(() => ({ data: { values: [] } }));
+    const rows = existing.data.values || [];
+    const identityEmail = clean(identity.email, 200).toLowerCase();
+    const rowIndex = rows.findIndex((row, index) => index > 0 && (clean(row?.[1], 200) === identity.sub || clean(row?.[2], 200).toLowerCase() === identityEmail));
+
+    if (rowIndex > 0) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: process.env.REGISTRATION_SHEET_ID,
+        range: `${rangeSheet(memberRange, "Members!A:Z")}!A${rowIndex + 1}:R${rowIndex + 1}`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values }
+      });
+    } else {
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: process.env.REGISTRATION_SHEET_ID,
+        range: memberRange,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values }
+      });
+    }
 
     res.status(200).json({ ok: true, memberStatus: "registered" });
   } catch (error) {

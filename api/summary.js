@@ -1,5 +1,7 @@
+import crypto from "node:crypto";
 import { applyCors, clean, getSheetsClient, readBearerToken, verifyFirebaseIdToken } from "./_google.js";
-import { GRABOWSEE_EVENT_ID } from "./register.js";
+import { actionUrl, sendMail } from "./_mail.js";
+import { GRABOWSEE_EVENT_ID, eventLabel } from "./register.js";
 
 function columnName(index) {
   let name = "";
@@ -36,6 +38,14 @@ function parseJson(value, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function hashToken(token) {
+  return crypto.createHash("sha256").update(clean(token, 200)).digest("hex");
+}
+
+function randomToken() {
+  return crypto.randomBytes(24).toString("base64url");
 }
 
 function memberFromRow(row) {
@@ -225,6 +235,44 @@ export default async function handler(req, res) {
         await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 18, registrationStatus(invitees));
         await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 22, now);
         res.status(200).json({ ok: true, status: clean(invitees[inviteeIndex].status, 80) });
+        return;
+      }
+
+      if (action === "add-invite") {
+        if (applicantEmail !== identityEmail) {
+          res.status(403).json({ ok: false, error: "not_registration_owner" });
+          return;
+        }
+        const email = clean(body.email, 180).toLowerCase();
+        const role = clean(body.role, 60);
+        const currentRole = clean(row?.[5], 60);
+        const roles = [currentRole, ...invitees.map((item) => clean(item?.eventFunction, 60)), role].filter(Boolean);
+        if (!email || !role || invitees.some((item) => clean(item?.email, 180).toLowerCase() === email) || applicantEmail === email) {
+          res.status(400).json({ ok: false, error: "invalid_invite" });
+          return;
+        }
+        if (clean(row?.[2], 120) === GRABOWSEE_EVENT_ID && (roles.filter((item) => item === "photographer").length !== 1 || roles.filter((item) => item === "model").length > 3 || !["model", "photographer"].includes(role))) {
+          res.status(400).json({ ok: false, error: "role_rules" });
+          return;
+        }
+        const token = randomToken();
+        const hashes = parseJson(row?.[24], []);
+        const nextInvitees = [...invitees, { email, eventFunction: role, status: "pending", invitedAt: now, confirmedAt: "", index: invitees.length }];
+        const nextHashes = [...hashes, { email, hash: hashToken(token), index: invitees.length }];
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 23, JSON.stringify(nextInvitees));
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 24, JSON.stringify(nextHashes));
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 25, nextInvitees.map((item) => `${clean(item.email, 180)}:${clean(item.status, 80)}`).join(", "));
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 18, registrationStatus(nextInvitees));
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 22, now);
+        const confirmUrl = actionUrl(req, "confirm-partner", token);
+        const rejectUrl = actionUrl(req, "reject-partner", token);
+        await sendMail({
+          to: email,
+          subject: `Boudoir Collective Berlin: Einladung zu ${eventLabel(clean(row?.[2], 120))}`,
+          text: `Hallo,\n\n${clean(row?.[6], 120) || identityEmail} hat dich zu ${eventLabel(clean(row?.[2], 120))} eingeladen.\n\nEinladung bestätigen: ${confirmUrl}\nEinladung ablehnen: ${rejectUrl}`,
+          html: `<p>Hallo,</p><p>${clean(row?.[6], 120) || identityEmail} hat dich zu <strong>${eventLabel(clean(row?.[2], 120))}</strong> eingeladen.</p><p><a href="${confirmUrl}">Einladung bestätigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p>`
+        });
+        res.status(200).json({ ok: true, status: "invite_added" });
         return;
       }
 

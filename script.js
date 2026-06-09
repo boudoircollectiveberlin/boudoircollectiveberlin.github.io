@@ -226,6 +226,7 @@ function refreshEventApplicationUi() {
   const existingEventEntry = eventId
     ? (Array.isArray(authState.userSummary?.registrations) ? authState.userSummary.registrations : []).find((item) => item.eventId === eventId)
     : null;
+  form.closest("#application")?.classList.toggle("has-existing-entry", Boolean(existingEventEntry));
   const canUseEventForm = adminSimulationActive() || (isSignedIn && authState.profileComplete && !existingEventEntry);
   const needsProfile = isSignedIn && !authState.profileComplete && !adminSimulationActive();
 
@@ -383,11 +384,13 @@ function userActionStatusMessage(action, status) {
     if (action === "confirm-invite" && status === "confirmed") return "Deine Einladung wurde bestätigt.";
     if (action === "confirm-invite" && status === "confirmed_profile_required") return "Einladung bestätigt. Bitte vervollständige noch dein Profil, damit die Bewerbung vollständig wird.";
     if (action === "reject-invite" && status === "rejected") return "Deine Einladung wurde abgelehnt.";
+    if (action === "add-invite" && status === "invite_added") return "Einladung wurde hinzugefügt.";
   }
   if (action === "withdraw-registration" && status === "canceled_by_user") return "Your application has been withdrawn.";
   if (action === "confirm-invite" && status === "confirmed") return "Your invitation has been confirmed.";
   if (action === "confirm-invite" && status === "confirmed_profile_required") return "Invitation confirmed. Please complete your profile so the application can be completed.";
   if (action === "reject-invite" && status === "rejected") return "Your invitation has been declined.";
+  if (action === "add-invite" && status === "invite_added") return "Invitation added.";
   return "";
 }
 
@@ -1006,6 +1009,7 @@ function renderUserSummary() {
   const registrations = Array.isArray(authState.userSummary?.registrations) ? authState.userSummary.registrations : [];
   const visibleRegistrations = eventId ? registrations.filter((item) => item.eventId === eventId) : registrations;
   const adminRegistrations = eventId ? authState.adminRegistrations.filter((item) => item.eventId === eventId) : [];
+  const adminMembers = Array.isArray(authState.adminMembers) ? authState.adminMembers : [];
 
   host.hidden = false;
   host.innerHTML = `
@@ -1032,9 +1036,30 @@ function renderUserSummary() {
                 ${item.canRespondInvite && item.inviteeStatus === "pending" ? `<button class="button button--ghost" type="button" data-user-action="reject-invite" data-registration-id="${escapeHtml(item.registrationId)}">${lang() === "de" ? "Einladung ablehnen" : "Decline invitation"}</button>` : ""}
               </div>
             ` : ""}
+            ${item.applicant && item.registrationStatus !== "confirmed" && item.registrationStatus !== "canceled_by_user" ? `
+              <form class="inline-invite-form" data-add-late-invite data-registration-id="${escapeHtml(item.registrationId)}">
+                <input name="email" type="email" placeholder="email@example.com" required>
+                <select name="role" required>
+                  <option value="model">Model</option>
+                  <option value="photographer">Fotograf:in</option>
+                </select>
+                <button class="button button--ghost" type="submit">${lang() === "de" ? "Invite hinzufügen" : "Add invite"}</button>
+              </form>
+            ` : ""}
           </article>
         `).join("")
         : `<p>${lang() === "de" ? "Noch keine sichtbaren Eventstatus-Einträge." : "No visible event status entries yet."}</p>`}
+      ${isAccountPage() && authState.isAdmin ? `
+        <div class="section__heading section__heading--compact">
+          <h3>${lang() === "de" ? "Registrierte Nutzer" : "Registered users"}</h3>
+        </div>
+        ${adminMembers.length ? adminMembers.map((member) => `
+          <article class="summary-row">
+            <strong>${escapeHtml(member.name || member.email)}</strong>
+            <span>${escapeHtml(member.email)} · ${escapeHtml(member.role || "")} · ${escapeHtml(member.status || "")}</span>
+          </article>
+        `).join("") : `<p>${lang() === "de" ? "Keine Nutzer gefunden." : "No users found."}</p>`}
+      ` : ""}
       ${authState.isAdmin && adminRegistrations.length ? `
         <div class="section__heading section__heading--compact">
           <h3>${lang() === "de" ? "Teilnehmerliste" : "Participant list"}</h3>
@@ -1322,6 +1347,7 @@ async function loadAdminPanel() {
     const payload = await response.json();
     authState.isAdmin = Boolean(payload.admin);
     authState.adminRegistrations = payload.registrations || [];
+    authState.adminMembers = payload.members || [];
     if (adminPanel) adminPanel.hidden = !payload.admin;
     setAdminAccessNote("", false);
     syncAccountAdminTab();
@@ -1713,6 +1739,31 @@ form?.addEventListener("submit", async (event) => {
     setStatus(formStatus, t("signupError"), true);
   } finally {
     submitButton.disabled = false;
+  }
+});
+
+document.addEventListener("submit", async (event) => {
+  const inviteForm = event.target.closest("[data-add-late-invite]");
+  if (!inviteForm) return;
+  event.preventDefault();
+  const button = inviteForm.querySelector("button[type='submit']");
+  button.disabled = true;
+  const statusTarget = document.querySelector("#event-user-status") || formStatus;
+  setStatus(statusTarget, t("sending"));
+  try {
+    const result = await userSummaryPost({
+      action: "add-invite",
+      registrationId: inviteForm.dataset.registrationId,
+      email: inviteForm.elements.email.value,
+      role: inviteForm.elements.role.value
+    });
+    setStatus(statusTarget, userActionStatusMessage("add-invite", result.status) || "OK");
+    await loadUserSummary();
+    await loadAdminPanel();
+  } catch {
+    setStatus(statusTarget, t("signupError"), true);
+  } finally {
+    button.disabled = false;
   }
 });
 

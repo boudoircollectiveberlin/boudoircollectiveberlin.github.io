@@ -445,6 +445,17 @@ function publicRegistration(row) {
   };
 }
 
+function publicMember(row) {
+  return {
+    email: clean(row[2], 180),
+    name: clean(row[3], 120),
+    provider: clean(row[4], 60),
+    role: clean(row[5], 120),
+    status: clean(row[12], 60) || "registered",
+    updatedAt: clean(row[0], 80)
+  };
+}
+
 export default async function handler(req, res) {
   applyCors(req, res);
 
@@ -473,12 +484,17 @@ export default async function handler(req, res) {
     const memberRange = process.env.MEMBER_SHEET_RANGE || "Members!A:Z";
 
     if (req.method === "GET") {
-      const response = await sheets.spreadsheets.values.get({ spreadsheetId, range: registrationRange });
-      const rows = response.data.values || [];
+      const [registrationResponse, memberResponse] = await Promise.all([
+        sheets.spreadsheets.values.get({ spreadsheetId, range: registrationRange }),
+        sheets.spreadsheets.values.get({ spreadsheetId, range: memberRange }).catch(() => ({ data: { values: [] } }))
+      ]);
+      const rows = registrationResponse.data.values || [];
+      const memberRows = memberResponse.data.values || [];
       res.status(200).json({
         ok: true,
         admin: true,
-        registrations: rows.slice(1).map(publicRegistration).filter((item) => item.id && item.status !== "deleted").reverse().slice(0, 80)
+        registrations: rows.slice(1).map(publicRegistration).filter((item) => item.id && item.status !== "deleted").reverse().slice(0, 80),
+        members: memberRows.slice(1).map(publicMember).filter((item) => item.email && !item.email.startsWith("deleted:")).reverse().slice(0, 120)
       });
       return;
     }

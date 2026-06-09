@@ -1593,6 +1593,21 @@ textarea:focus,
   background: linear-gradient(180deg, rgba(72, 16, 16, .28), rgba(18, 8, 8, .86));
 }
 
+.section--register.has-existing-entry {
+  padding-top: 28px;
+}
+
+.section--register.has-existing-entry > .section__heading p:not(.eyebrow) {
+  display: none;
+}
+
+.inline-invite-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(130px, auto) auto;
+  gap: 10px;
+  margin-top: 10px;
+}
+
 .action-notice {
   display: grid;
   gap: 6px;

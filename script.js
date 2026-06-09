@@ -89,6 +89,21 @@ function setAccountTab(name) {
   });
 }
 
+function openProfileFormSection() {
+  closeAccountMenu();
+  if (topbar && menuToggle) {
+    topbar.dataset.menuOpen = "false";
+    menuToggle.setAttribute("aria-expanded", "false");
+  }
+  if (isAccountPage()) {
+    setAccountTab("profile");
+    window.history.replaceState({}, "", "#profile-form");
+    setTimeout(() => profileForm?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+  } else {
+    window.location.href = "account.html#profile-form";
+  }
+}
+
 function syncAccountTabLabels() {
   accountTabButtons.forEach((button) => {
     button.textContent = lang() === "de" ? (button.dataset.tabLabelDe || button.textContent) : (button.dataset.tabLabelEn || button.textContent);
@@ -116,6 +131,10 @@ function initAccountTabs() {
   }
   setAccountTab("overview");
 }
+
+window.addEventListener("hashchange", () => {
+  if (window.location.hash === "#profile-form") setAccountTab("profile");
+});
 
 function profileStorageKey(uid) {
   return `bcb-profile-complete:${uid}`;
@@ -768,6 +787,14 @@ function initAccountMenu() {
 
   accountPanel.addEventListener("click", (event) => {
     event.stopPropagation();
+  });
+
+  accountProfileLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      if (!link.getAttribute("href")?.includes("#profile-form")) return;
+      event.preventDefault();
+      openProfileFormSection();
+    });
   });
 
   document.addEventListener("click", (event) => {

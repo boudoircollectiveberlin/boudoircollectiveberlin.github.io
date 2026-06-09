@@ -1082,7 +1082,7 @@ function renderUserSummary() {
             ${item.applicant && item.invitees?.length
               ? item.invitees.map((invitee, index) => inviteLine(invitee, index, item.registrationId, item.applicant)).join("")
               : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} \u00b7 ${escapeHtml(inviteStatusLabel(item.inviteeStatus))}</span>` : "")}
-            ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
+            ${item.adminStatus && authState.isAdmin ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
             ${(item.canWithdraw || item.canRespondInvite) ? `
               <div class="admin-row__actions">
                 ${item.canWithdraw ? `<button class="button button--ghost" type="button" data-user-action="withdraw-registration" data-registration-id="${escapeHtml(item.registrationId)}">${lang() === "de" ? "Bewerbung zurückziehen" : "Withdraw application"}</button>` : ""}

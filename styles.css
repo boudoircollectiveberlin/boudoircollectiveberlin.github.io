@@ -1612,6 +1612,13 @@ textarea:focus,
   grid-template-columns: minmax(180px, 1fr) minmax(130px, auto) auto;
   gap: 10px;
   margin-top: 10px;
+  max-width: 100%;
+}
+
+.inline-invite-form input,
+.inline-invite-form select,
+.inline-invite-form button {
+  min-width: 0;
 }
 
 .admin-member-tools {
@@ -1857,8 +1864,13 @@ textarea:focus,
   .account-subsection__grid,
   .admin-tools,
   .admin-row,
-  .admin-mail-preview {
+  .admin-mail-preview,
+  .inline-invite-form {
     grid-template-columns: 1fr;
+  }
+
+  .admin-row__actions {
+    justify-content: flex-start;
   }
 
   .reference-section__intro {

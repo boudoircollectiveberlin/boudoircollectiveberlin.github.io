@@ -1588,8 +1588,14 @@ textarea:focus,
 .admin-simulation-note {
   margin-top: 18px;
   padding: 16px;
-  border: 1px solid rgba(158, 73, 73, .28);
+  border: 1px solid rgba(255, 255, 255, .12);
   border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(0, 0, 0, .18));
+}
+
+.summary-panel--admin,
+.admin-simulation-note {
+  border-color: rgba(158, 73, 73, .28);
   background: linear-gradient(180deg, rgba(72, 16, 16, .28), rgba(18, 8, 8, .86));
 }
 

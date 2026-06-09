@@ -255,7 +255,7 @@ function refreshEventApplicationUi() {
         : `There is already an entry for your account for this event: ${role} · ${status}. If you want to apply again instead, withdraw your current invitation or application below first.`;
     }
     if (eventAuthGateLink) {
-      eventAuthGateLink.textContent = lang() === "de" ? "Status unten ansehen" : "View status below";
+      eventAuthGateLink.textContent = lang() === "de" ? "Meinen Status ansehen" : "View my status";
       eventAuthGateLink.href = "#member-summary-panel";
     }
     return;
@@ -1093,34 +1093,46 @@ function renderUserSummary() {
         <div class="admin-member-table-wrap"><table class="admin-member-table"><thead><tr><th>Name</th><th>E-Mail</th><th>Rolle</th><th>Status</th></tr></thead><tbody data-admin-member-body></tbody></table></div>
       ` : ""}
       ${authState.isAdmin && adminRegistrations.length ? `
-        <div class="section__heading section__heading--compact">
-          <h3>${lang() === "de" ? "Teilnehmerliste" : "Participant list"}</h3>
-        </div>
-        ${adminRegistrations.map((item) => `
-          ${(() => {
-            const completion = registrationCompletionMeta(item);
-            return `
-          <article class="summary-row">
-            <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " \u00b7 Simulation" : ""}</strong>
-            <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.status || ""))}</span>
-            <span class="summary-row__completion ${completion.complete ? "is-complete" : "is-incomplete"}">${escapeHtml(completion.label)}</span>
-            ${item.invitees?.map((invitee, index) => inviteLine(invitee, index, item.id, true)).join("") || ""}
-            ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
-            <div class="admin-row__actions">
-              <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}" ${completion.complete ? "" : "disabled"}>${escapeHtml(t("adminConfirm"))}</button>
-              <button class="button button--ghost" type="button" data-admin-action="reject" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminReject"))}</button>
-              <button class="button button--ghost" type="button" data-admin-action="undo" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminUndo"))}</button>
-              <button class="button button--ghost" type="button" data-admin-action="delete" data-registration-id="${escapeHtml(item.id)}">Delete</button>
-            </div>
-          </article>
-        `; })()}`).join("")}
-        <p id="event-admin-status" role="status"></p>
+        <div id="event-admin-mount"></div>
       ` : ""}
       ${authState.isAdmin ? `<div class="admin-demo-output" id="event-admin-preview"></div>` : ""}
       <p id="event-user-status" role="status"></p>
     </div>
   `;
+  const adminMount = document.querySelector("#event-admin-mount");
+  if (adminMount) adminMount.outerHTML = renderEventAdminList(adminRegistrations);
   renderAdminMemberTable();
+}
+
+function renderEventAdminList(registrations) {
+  return `
+    <section class="summary-panel summary-panel--admin">
+      <div class="section__heading section__heading--compact">
+        <h3>${lang() === "de" ? "Teilnehmerliste" : "Participant list"}</h3>
+      </div>
+      <div class="summary-list">
+        ${registrations.map((item) => {
+          const completion = registrationCompletionMeta(item);
+          return `
+            <article class="summary-row">
+              <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " \u00b7 Simulation" : ""}</strong>
+              <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.status || ""))}</span>
+              <span class="summary-row__completion ${completion.complete ? "is-complete" : "is-incomplete"}">${escapeHtml(completion.label)}</span>
+              ${item.invitees?.map((invitee, index) => inviteLine(invitee, index, item.id, true)).join("") || ""}
+              ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
+              <div class="admin-row__actions">
+                <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}" ${completion.complete ? "" : "disabled"}>${escapeHtml(t("adminConfirm"))}</button>
+                <button class="button button--ghost" type="button" data-admin-action="reject" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminReject"))}</button>
+                <button class="button button--ghost" type="button" data-admin-action="undo" data-registration-id="${escapeHtml(item.id)}">${escapeHtml(t("adminUndo"))}</button>
+                <button class="button button--ghost" type="button" data-admin-action="delete" data-registration-id="${escapeHtml(item.id)}">Delete</button>
+              </div>
+            </article>
+          `;
+        }).join("")}
+        <p id="event-admin-status" role="status"></p>
+      </div>
+    </section>
+  `;
 }
 
 function renderAdminMemberTable() {

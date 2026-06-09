@@ -392,12 +392,14 @@ function userActionStatusMessage(action, status) {
     if (action === "confirm-invite" && status === "confirmed_profile_required") return "Einladung bestätigt. Bitte vervollständige noch dein Profil, damit die Bewerbung vollständig wird.";
     if (action === "reject-invite" && status === "rejected") return "Deine Einladung wurde abgelehnt.";
     if (action === "add-invite" && status === "invite_added") return "Einladung wurde hinzugefügt.";
+    if (action === "update-invite-email" && status === "invite_email_updated") return "Mailadresse wurde korrigiert und die Einladung neu versendet.";
   }
   if (action === "withdraw-registration" && status === "canceled_by_user") return "Your application has been withdrawn.";
   if (action === "confirm-invite" && status === "confirmed") return "Your invitation has been confirmed.";
   if (action === "confirm-invite" && status === "confirmed_profile_required") return "Invitation confirmed. Please complete your profile so the application can be completed.";
   if (action === "reject-invite" && status === "rejected") return "Your invitation has been declined.";
   if (action === "add-invite" && status === "invite_added") return "Invitation added.";
+  if (action === "update-invite-email" && status === "invite_email_updated") return "Email corrected and invitation resent.";
   return "";
 }
 
@@ -421,6 +423,18 @@ function registrationCompletionMeta(item) {
         ? `Complete - ${confirmedCount}/${invitees.length} invites confirmed`
         : `Incomplete - ${confirmedCount}/${invitees.length} invites confirmed`)
   };
+}
+
+function inviteLine(invitee, index, registrationId, editable) {
+  const label = `Invite ${escapeHtml(invitee.name || invitee.email)}${invitee.name ? ` (${escapeHtml(invitee.email)})` : ""} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}`;
+  if (!editable) return `<span>${label}</span>`;
+  return `
+    <span>${label}</span>
+    <form class="inline-invite-form" data-update-invite-email data-registration-id="${escapeHtml(registrationId)}" data-invite-index="${index}">
+      <input name="email" type="email" value="${escapeHtml(invitee.email || "")}" required>
+      <button class="button button--ghost" type="submit">${escapeHtml(lang() === "de" ? "Mail korrigieren" : "Correct email")}</button>
+    </form>
+  `;
 }
 
 function actionResultMessage(action, result) {
@@ -1039,7 +1053,7 @@ function renderUserSummary() {
             <strong>${eventDetailUrl(item.eventId) ? `<a href="${escapeHtml(eventDetailUrl(item.eventId))}">${escapeHtml(item.eventLabel || item.eventId)}</a>` : escapeHtml(item.eventLabel || item.eventId)}</strong>
             <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.registrationStatus || ""))}${item.simulated ? " \u00b7 Simulation" : ""}</span>
             ${item.applicant && item.invitees?.length
-              ? item.invitees.map((invitee) => `<span>Invite ${escapeHtml(invitee.name || invitee.email)}${invitee.name ? ` (${escapeHtml(invitee.email)})` : ""} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}</span>`).join("")
+              ? item.invitees.map((invitee, index) => inviteLine(invitee, index, item.registrationId, item.applicant)).join("")
               : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} \u00b7 ${escapeHtml(inviteStatusLabel(item.inviteeStatus))}</span>` : "")}
             ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
             ${(item.canWithdraw || item.canRespondInvite) ? `
@@ -1090,7 +1104,7 @@ function renderUserSummary() {
             <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " \u00b7 Simulation" : ""}</strong>
             <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.status || ""))}</span>
             <span class="summary-row__completion ${completion.complete ? "is-complete" : "is-incomplete"}">${escapeHtml(completion.label)}</span>
-            ${item.invitees?.map((invitee) => `<span>Invite ${escapeHtml(invitee.name || invitee.email)}${invitee.name ? ` (${escapeHtml(invitee.email)})` : ""} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}</span>`).join("") || ""}
+            ${item.invitees?.map((invitee, index) => inviteLine(invitee, index, item.id, true)).join("") || ""}
             ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
             <div class="admin-row__actions">
               <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}" ${completion.complete ? "" : "disabled"}>${escapeHtml(t("adminConfirm"))}</button>
@@ -1784,6 +1798,31 @@ form?.addEventListener("submit", async (event) => {
 });
 
 document.addEventListener("submit", async (event) => {
+  const correctionForm = event.target.closest("[data-update-invite-email]");
+  if (correctionForm) {
+    event.preventDefault();
+    const button = correctionForm.querySelector("button[type='submit']");
+    button.disabled = true;
+    const statusTarget = document.querySelector("#event-user-status") || formStatus;
+    setStatus(statusTarget, t("sending"));
+    try {
+      const result = await userSummaryPost({
+        action: "update-invite-email",
+        registrationId: correctionForm.dataset.registrationId,
+        inviteIndex: correctionForm.dataset.inviteIndex,
+        email: correctionForm.elements.email.value
+      });
+      setStatus(statusTarget, userActionStatusMessage("update-invite-email", result.status) || "OK");
+      await loadUserSummary();
+      await loadAdminPanel();
+    } catch {
+      setStatus(statusTarget, t("signupError"), true);
+    } finally {
+      button.disabled = false;
+    }
+    return;
+  }
+
   const inviteForm = event.target.closest("[data-add-late-invite]");
   if (!inviteForm) return;
   event.preventDefault();

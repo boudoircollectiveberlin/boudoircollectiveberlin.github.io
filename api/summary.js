@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { applyCors, clean, getSheetsClient, readBearerToken, verifyFirebaseIdToken } from "./_google.js";
+import { applyCors, clean, getSheetsClient, isAdminIdentity, readBearerToken, verifyFirebaseIdToken } from "./_google.js";
 import { actionUrl, sendMail } from "./_mail.js";
 import { GRABOWSEE_EVENT_ID, eventLabel } from "./register.js";
 
@@ -240,7 +240,7 @@ export default async function handler(req, res) {
       }
 
       if (action === "add-invite") {
-        if (applicantEmail !== identityEmail) {
+        if (applicantEmail !== identityEmail && !isAdminIdentity(identity)) {
           res.status(403).json({ ok: false, error: "not_registration_owner" });
           return;
         }
@@ -274,6 +274,41 @@ export default async function handler(req, res) {
           html: `<p>Hallo,</p><p>${clean(row?.[6], 120) || identityEmail} hat dich zu <strong>${eventLabel(clean(row?.[2], 120))}</strong> eingeladen.</p><p><a href="${confirmUrl}">Einladung bestätigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p>`
         });
         res.status(200).json({ ok: true, status: "invite_added" });
+        return;
+      }
+
+      if (action === "update-invite-email") {
+        const targetIndex = Number(body.inviteIndex);
+        if ((applicantEmail !== identityEmail && !isAdminIdentity(identity)) || !Number.isInteger(targetIndex) || !invitees[targetIndex]) {
+          res.status(403).json({ ok: false, error: "invite_update_forbidden" });
+          return;
+        }
+        const email = clean(body.email, 180).toLowerCase();
+        if (!email || applicantEmail === email || invitees.some((item, index) => index !== targetIndex && clean(item?.email, 180).toLowerCase() === email)) {
+          res.status(400).json({ ok: false, error: "invalid_invite_email" });
+          return;
+        }
+        const token = randomToken();
+        const hashes = parseJson(row?.[24], []);
+        invitees[targetIndex].email = email;
+        invitees[targetIndex].status = "pending";
+        invitees[targetIndex].confirmedAt = "";
+        invitees[targetIndex].invitedAt = now;
+        hashes[targetIndex] = { email, hash: hashToken(token), index: targetIndex };
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 23, JSON.stringify(invitees));
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 24, JSON.stringify(hashes));
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 25, invitees.map((item) => `${clean(item.email, 180)}:${clean(item.status, 80)}`).join(", "));
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 18, registrationStatus(invitees));
+        await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 22, now);
+        const confirmUrl = actionUrl(req, "confirm-partner", token);
+        const rejectUrl = actionUrl(req, "reject-partner", token);
+        await sendMail({
+          to: email,
+          subject: `Boudoir Collective Berlin: Einladung zu ${eventLabel(clean(row?.[2], 120))}`,
+          text: `Hallo,\n\n${clean(row?.[6], 120) || identityEmail} hat dich zu ${eventLabel(clean(row?.[2], 120))} eingeladen.\n\nEinladung bestätigen: ${confirmUrl}\nEinladung ablehnen: ${rejectUrl}`,
+          html: `<p>Hallo,</p><p>${clean(row?.[6], 120) || identityEmail} hat dich zu <strong>${eventLabel(clean(row?.[2], 120))}</strong> eingeladen.</p><p><a href="${confirmUrl}">Einladung bestätigen</a></p><p><a href="${rejectUrl}">Einladung ablehnen</a></p>`
+        });
+        res.status(200).json({ ok: true, status: "invite_email_updated" });
         return;
       }
 

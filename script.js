@@ -1,9 +1,5 @@
 const API_BASE = window.BCB_API_BASE || "";
 
-if (window.location.hostname === "boudoircollectiveberlin.de") {
-  window.location.replace(`https://www.boudoircollectiveberlin.de${window.location.pathname}${window.location.search}${window.location.hash}`);
-}
-
 const upcomingEventGrid = document.querySelector("#upcoming-event-grid");
 const pastEventGrid = document.querySelector("#past-event-grid");
 const eventSelect = document.querySelector("#event-select");

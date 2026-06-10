@@ -267,7 +267,7 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true, registrationId: id, mailConfigured: mailConfigured() });
   } catch (error) {
     console.error("registration_failed", { message: error.message });
-    res.status(error.statusCode || 500).json({ ok: false, error: "registration_failed" });
+    res.status(error.statusCode || 500).json({ ok: false, error: "registration_failed", detail: error.message });
   }
 }
 

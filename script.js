@@ -422,6 +422,35 @@ function userActionStatusMessage(action, status) {
   return "";
 }
 
+function registrationErrorMessage(payload) {
+  const fields = payload?.fields && typeof payload.fields === "object" ? Object.values(payload.fields).filter(Boolean) : [];
+  const codes = fields.length ? fields : [payload?.detail, payload?.error].filter(Boolean);
+  const mapDe = {
+    validation_failed: "Bitte prüfe die markierten Angaben.",
+    invitee_email_invalid: "Die E-Mail der eingeladenen Person ist ungültig.",
+    invitee_email_required: "Bitte trage die E-Mail der eingeladenen Person ein.",
+    invitee_function_required: "Bitte wähle die Funktion der eingeladenen Person aus.",
+    partner_notice_required: "Bitte bestätige, dass du die weitere Person einladen darfst.",
+    grabowsee_one_photographer_required: "Für Grabowsee braucht jede Bewerbung genau eine fotografierende Person.",
+    grabowsee_model_required: "Für Grabowsee braucht jede Bewerbung mindestens ein Model.",
+    grabowsee_model_max: "Für Grabowsee sind maximal drei Models pro Bewerbung möglich.",
+    registration_failed: "Das Senden hat noch nicht geklappt."
+  };
+  const mapEn = {
+    validation_failed: "Please check the entered details.",
+    invitee_email_invalid: "The invited person's email is invalid.",
+    invitee_email_required: "Please enter the invited person's email.",
+    invitee_function_required: "Please select the invited person's role.",
+    partner_notice_required: "Please confirm that you may invite the additional person.",
+    grabowsee_one_photographer_required: "Grabowsee requires exactly one photographer per application.",
+    grabowsee_model_required: "Grabowsee requires at least one model per application.",
+    grabowsee_model_max: "Grabowsee allows at most three models per application.",
+    registration_failed: "Sending did not work yet."
+  };
+  const labels = codes.map((code) => (lang() === "de" ? mapDe : mapEn)[code] || code);
+  return labels.length ? [...new Set(labels)].join(" ") : t("signupError");
+}
+
 function registrationCompletionMeta(item) {
   const invitees = Array.isArray(item?.invitees) ? item.invitees : [];
   if (!invitees.length) {
@@ -1830,7 +1859,7 @@ form?.addEventListener("submit", async (event) => {
       });
       payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.ok) {
-        throw new Error(payload.error || "registration_failed");
+        throw new Error(registrationErrorMessage(payload));
       }
     }
 
@@ -1845,8 +1874,8 @@ form?.addEventListener("submit", async (event) => {
     }
     await loadAdminPanel();
     await loadUserSummary();
-  } catch {
-    setStatus(formStatus, t("signupError"), true);
+  } catch (error) {
+    setStatus(formStatus, error.message || t("signupError"), true);
   } finally {
     submitButton.disabled = false;
   }

@@ -1760,7 +1760,8 @@ profileForm?.addEventListener("submit", async (event) => {
       body: JSON.stringify(payloadFromProfileForm(profileForm))
     });
 
-    if (!response.ok) throw new Error("member_failed");
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.detail || result.error || "member_failed");
     authState.member = payloadFromProfileForm(profileForm);
     if (authState.profile?.uid) {
       localStorage.setItem(profileStorageKey(authState.profile.uid), "true");
@@ -1773,8 +1774,8 @@ profileForm?.addEventListener("submit", async (event) => {
       window.location.href = nextTarget;
       return;
     }
-  } catch {
-    setStatus(profileStatus, t("signupError"), true);
+  } catch (error) {
+    setStatus(profileStatus, `${t("signupError")} ${error.message ? `(${error.message})` : ""}`, true);
   } finally {
     submitButton.disabled = false;
   }

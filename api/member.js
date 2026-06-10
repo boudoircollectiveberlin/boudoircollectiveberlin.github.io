@@ -17,6 +17,57 @@ function rangeSheet(range, fallback) {
   return clean(range, 120).split("!")[0] || clean(fallback, 120).split("!")[0];
 }
 
+function parseJson(value, fallback) {
+  try {
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function registrationStatus(invitees) {
+  if (!invitees.length) return "pending_review";
+  if (invitees.some((participant) => clean(participant?.status, 80) === "rejected")) return "invite_rejected";
+  if (invitees.some((participant) => clean(participant?.status, 80) === "pending")) return "pending_invites";
+  if (invitees.some((participant) => clean(participant?.status, 80) === "confirmed_profile_required")) return "invite_profiles_required";
+  return "pending_review";
+}
+
+async function updateCell(sheets, spreadsheetId, sheetName, rowNumber, columnIndex, value) {
+  const column = String.fromCharCode(65 + columnIndex);
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `${sheetName}!${column}${rowNumber}`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values: [[value]] }
+  });
+}
+
+async function completePendingInviteProfiles(sheets, spreadsheetId, identityEmail) {
+  const registrationRange = process.env.REGISTRATION_SHEET_RANGE || "Registrations!A:Z";
+  const sheetName = rangeSheet(registrationRange, "Registrations!A:Z");
+  const response = await sheets.spreadsheets.values.get({ spreadsheetId, range: registrationRange }).catch(() => ({ data: { values: [] } }));
+  const rows = response.data.values || [];
+  const now = new Date().toISOString();
+  await Promise.all(rows.slice(1).map(async (row, offset) => {
+    const invitees = parseJson(row?.[23], []);
+    let changed = false;
+    invitees.forEach((invitee) => {
+      if (clean(invitee?.email, 180).toLowerCase() === identityEmail && clean(invitee?.status, 80) === "confirmed_profile_required") {
+        invitee.status = "confirmed";
+        invitee.confirmedAt = invitee.confirmedAt || now;
+        changed = true;
+      }
+    });
+    if (!changed) return;
+    const rowNumber = offset + 2;
+    await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 23, JSON.stringify(invitees));
+    await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 25, invitees.map((item) => `${clean(item.email, 180)}:${clean(item.status, 80)}`).join(", "));
+    await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 18, registrationStatus(invitees));
+    await updateCell(sheets, spreadsheetId, sheetName, rowNumber, 22, now);
+  }));
+}
+
 function memberFromRow(row) {
   return {
     displayName: clean(row[3], 120),
@@ -156,9 +207,11 @@ export default async function handler(req, res) {
       });
     }
 
+    await completePendingInviteProfiles(sheets, process.env.REGISTRATION_SHEET_ID, identityEmail);
+
     res.status(200).json({ ok: true, memberStatus: "registered" });
   } catch (error) {
     console.error("member_failed", { message: error.message });
-    res.status(error.statusCode || 500).json({ ok: false, error: "member_failed" });
+    res.status(error.statusCode || 500).json({ ok: false, error: "member_failed", detail: error.message });
   }
 }

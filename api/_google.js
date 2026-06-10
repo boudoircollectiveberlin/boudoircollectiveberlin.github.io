@@ -116,7 +116,9 @@ export async function verifyFirebaseIdToken(idToken) {
     issuer: `https://securetoken.google.com/${process.env.FIREBASE_PROJECT_ID}`
   });
 
-  if (payload.email && payload.email_verified === false) {
+  const provider = payload.firebase?.sign_in_provider || "";
+  const trustedOAuthProviders = new Set(["google.com", "microsoft.com"]);
+  if (payload.email && payload.email_verified === false && !trustedOAuthProviders.has(provider)) {
     const error = new Error("Email not verified");
     error.statusCode = 401;
     throw error;
@@ -127,7 +129,7 @@ export async function verifyFirebaseIdToken(idToken) {
     email: payload.email || "",
     name: payload.name || "",
     picture: payload.picture || "",
-    provider: payload.firebase?.sign_in_provider || ""
+    provider
   };
 }
 

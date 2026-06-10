@@ -9,8 +9,11 @@ const MAX_INVITEES = 6;
 export const GRABOWSEE_EVENT_ID = "heilstaette-grabowsee-2026-07-04";
 
 function normalizeInstagram(value) {
-  const instagram = clean(value, 80);
-  return instagram ? (instagram.startsWith("@") ? instagram : `@${instagram}`) : "";
+  const raw = clean(value, 300);
+  if (!raw) return "";
+  const withoutQuery = raw.split(/[?#]/)[0].replace(/\/$/, "");
+  const match = withoutQuery.match(/(?:instagram\.com\/|^@?)([a-zA-Z0-9._]{1,30})$/i);
+  return match ? `@${match[1]}` : (raw.startsWith("@") ? raw : `@${raw}`);
 }
 
 function invitedParticipants(payload) {

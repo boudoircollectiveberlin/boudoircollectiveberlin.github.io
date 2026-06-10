@@ -334,6 +334,14 @@ function localized(value) {
   return value || "";
 }
 
+function normalizeInstagramInput(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const withoutQuery = raw.split(/[?#]/)[0].replace(/\/$/, "");
+  const match = withoutQuery.match(/(?:instagram\.com\/|^@?)([a-zA-Z0-9._]{1,30})$/i);
+  return match ? `@${match[1]}` : raw;
+}
+
 function isGmailAddress(email) {
   return /@gmail\.com$/i.test(String(email || "").trim());
 }
@@ -1650,11 +1658,14 @@ async function initFirebaseLogin() {
 
 function payloadFromProfileForm(formElement) {
   const data = new FormData(formElement);
+  if (formElement.elements.instagram) {
+    formElement.elements.instagram.value = normalizeInstagramInput(formElement.elements.instagram.value);
+  }
   return {
     idToken: authState.idToken,
     displayName: data.get("displayName"),
     functions: data.getAll("functions"),
-    instagram: data.get("instagram"),
+    instagram: normalizeInstagramInput(data.get("instagram")),
     portfolio: data.get("portfolio"),
     futureUpdates: data.get("futureUpdates") === "on",
     lobbyInfo: data.get("lobbyInfo") === "on",

@@ -1,6 +1,7 @@
 import { applyCors, clean, getSheetsClient, readBearerToken, readBody, verifyFirebaseIdToken } from "./_google.js";
 
 const ALLOWED_FUNCTIONS = new Set(["model", "photographer", "mua"]);
+const INSTAGRAM_RE = /^@?[a-zA-Z0-9._]{1,30}$/;
 
 function normalizeFunctions(value) {
   const entries = Array.isArray(value) ? value : [];
@@ -11,6 +12,14 @@ function normalizeFunctions(value) {
 
 function parseBoolean(value) {
   return String(value || "").trim().toLowerCase() === "yes";
+}
+
+function normalizeInstagram(value) {
+  const raw = clean(value, 300);
+  if (!raw) return "";
+  const withoutQuery = raw.split(/[?#]/)[0].replace(/\/$/, "");
+  const match = withoutQuery.match(/(?:instagram\.com\/|^@?)([a-zA-Z0-9._]{1,30})$/i);
+  return match ? `@${match[1]}` : (raw.startsWith("@") ? raw : `@${raw}`);
 }
 
 function rangeSheet(range, fallback) {
@@ -138,6 +147,7 @@ export default async function handler(req, res) {
     const identity = await verifyFirebaseIdToken(body.idToken);
     const displayName = clean(body.displayName || identity.name, 120);
     const functions = normalizeFunctions(body.functions);
+    const instagram = normalizeInstagram(body.instagram);
 
     if (!displayName) {
       res.status(400).json({ ok: false, error: "validation_failed", fields: { displayName: "name_required" } });
@@ -146,6 +156,11 @@ export default async function handler(req, res) {
 
     if (!functions.length) {
       res.status(400).json({ ok: false, error: "validation_failed", fields: { functions: "functions_required" } });
+      return;
+    }
+
+    if (instagram && !INSTAGRAM_RE.test(instagram)) {
+      res.status(400).json({ ok: false, error: "validation_failed", fields: { instagram: "instagram_invalid" } });
       return;
     }
 
@@ -170,7 +185,7 @@ export default async function handler(req, res) {
       displayName,
       identity.provider,
       functions.join(","),
-      clean(body.instagram, 80),
+      instagram,
       clean(body.portfolio, 300),
       body.futureUpdates === true ? "yes" : "no",
       body.lobbyInfo === true ? "yes" : "no",

@@ -1,5 +1,9 @@
 const API_BASE = window.BCB_API_BASE || "";
 
+if (window.location.hostname === "boudoircollectiveberlin.de") {
+  window.location.replace(`https://www.boudoircollectiveberlin.de${window.location.pathname}${window.location.search}${window.location.hash}`);
+}
+
 const upcomingEventGrid = document.querySelector("#upcoming-event-grid");
 const pastEventGrid = document.querySelector("#past-event-grid");
 const eventSelect = document.querySelector("#event-select");
@@ -282,7 +286,11 @@ function refreshEventApplicationUi() {
 
   if (!isSignedIn) {
     if (eventAuthGateTitle) eventAuthGateTitle.textContent = t("grabowseeLoginRequiredTitle");
-    if (eventAuthGateCopy) eventAuthGateCopy.textContent = t("grabowseeLoginRequiredCopy");
+    if (eventAuthGateCopy) {
+      eventAuthGateCopy.textContent = lang() === "de"
+        ? "Bitte logge dich mit derselben E-Mail ein, mit der du eingeladen wurdest. Erst dann kann die Website deine bestätigte Einladung und deinen Eventstatus anzeigen."
+        : "Please sign in with the same email address that was invited. Only then can the website show your confirmed invitation and event status.";
+    }
     if (eventAuthGateLink) eventAuthGateLink.textContent = t("grabowseeLoginRequiredAction");
     return;
   }

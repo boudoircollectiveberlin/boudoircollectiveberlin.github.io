@@ -72,7 +72,16 @@ export function isAdminIdentity(identity) {
 }
 
 export function publicBaseUrl(req) {
-  return (process.env.PUBLIC_SITE_URL || req.headers.origin || "").replace(/\/$/, "");
+  const value = (process.env.PUBLIC_SITE_URL || req.headers.origin || "").replace(/\/$/, "");
+  try {
+    const url = new URL(value);
+    if (url.hostname === "boudoircollectiveberlin.de") {
+      return "https://www.boudoircollectiveberlin.de";
+    }
+  } catch {
+    // Fall through to the raw configured value for non-URL local/dev values.
+  }
+  return value;
 }
 
 export function publicApiBaseUrl(req) {

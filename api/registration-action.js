@@ -50,7 +50,9 @@ function frontendBaseUrl(req) {
   const host = clean(req?.headers?.["x-forwarded-host"] || req?.headers?.host, 240);
   const proto = clean(req?.headers?.["x-forwarded-proto"], 20) || "https";
   if (!host) return "";
-  const siteHost = host.startsWith("api.") ? `www.${host.slice(4)}` : host;
+  const siteHost = host === "boudoircollectiveberlin.de"
+    ? "www.boudoircollectiveberlin.de"
+    : (host.startsWith("api.") ? `www.${host.slice(4)}` : host);
   return `${proto}://${siteHost}`.replace(/\/$/, "");
 }
 

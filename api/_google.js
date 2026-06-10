@@ -79,7 +79,7 @@ export function publicBaseUrl(req) {
       return "https://www.boudoircollectiveberlin.de";
     }
   } catch {
-    // Fall through to the raw configured value for non-URL local/dev values.
+    // Keep non-URL dev values unchanged.
   }
   return value;
 }

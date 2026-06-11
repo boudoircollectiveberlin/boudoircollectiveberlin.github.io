@@ -68,6 +68,7 @@ function humanEventLabel(eventId) {
 
 function registrationSummary(row, identityEmail) {
   const email = clean(row?.[7], 180).toLowerCase();
+  const applicantName = clean(row?.[6], 120);
   const invitees = parseJson(row?.[23], []).map((participant) => ({
     name: clean(participant?.name, 120),
     email: clean(participant?.email, 180).toLowerCase(),
@@ -83,12 +84,15 @@ function registrationSummary(row, identityEmail) {
     eventId: clean(row?.[2], 120),
     eventLabel: humanEventLabel(clean(row?.[2], 120)),
     role: isApplicant ? clean(row?.[5], 60) : inviteeMatch?.role || "",
+    applicantName,
+    applicantEmail: email,
+    applicantRole: clean(row?.[5], 60),
     registrationStatus: clean(row?.[18], 60) || "pending_review",
     adminStatus: clean(row?.[21], 120),
     updatedAt: clean(row?.[22], 80),
     applicant: isApplicant,
     simulated: isSimulatedRow(row),
-    invitees: isApplicant ? invitees : [],
+    invitees,
     inviteeStatus: isApplicant ? "" : (inviteeMatch?.status || ""),
     canWithdraw: isApplicant,
     canRespondInvite: !isApplicant && Boolean(inviteeMatch)

@@ -485,6 +485,67 @@ function registrationCompletionMeta(item) {
   };
 }
 
+function registrationParticipantList(item) {
+  const participants = [];
+  if (item?.applicantName || item?.applicantEmail) {
+    participants.push({
+      name: item.applicantName || item.applicantEmail,
+      email: item.applicantEmail || "",
+      role: item.applicantRole || (item.applicant ? item.role || "" : ""),
+      status: item.applicant ? "applicant" : "confirmed"
+    });
+  }
+  (Array.isArray(item?.invitees) ? item.invitees : []).forEach((invitee) => {
+    participants.push({
+      name: invitee.name || invitee.email,
+      email: invitee.email || "",
+      role: invitee.role || "",
+      status: invitee.status || "pending"
+    });
+  });
+  return participants;
+}
+
+function participantStatusLabel(status) {
+  if (status === "applicant") return lang() === "de" ? "Antragstellend" : "Applicant";
+  return inviteStatusLabel(status);
+}
+
+function registrationParticipantsMarkup(item) {
+  const identityEmail = normalizeEmail(authState.profile?.email || authState.impersonation?.email || "");
+  const participants = registrationParticipantList(item);
+  if (!participants.length) return "";
+  return `
+    <div class="summary-row__group">
+      <strong>${escapeHtml(lang() === "de" ? "Gemeinsam beworben mit" : "Applied together with")}</strong>
+      <div class="summary-row__participants">
+        ${participants.map((participant) => {
+          const ownEntry = normalizeEmail(participant.email) === identityEmail;
+          const label = ownEntry
+            ? (lang() === "de" ? "Du" : "You")
+            : (participant.name || participant.email || (lang() === "de" ? "Unbekannt" : "Unknown"));
+          return `
+            <span class="summary-row__participant">
+              <strong>${escapeHtml(label)}</strong>
+              <span>${escapeHtml([participant.role || "", participantStatusLabel(participant.status || "")].filter(Boolean).join(" · "))}</span>
+            </span>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function registrationOverviewMarkup(item) {
+  const lines = [
+    `${lang() === "de" ? "Gesamtbewerbung" : "Application status"} · ${registrationStatusLabel(item.registrationStatus || "")}`
+  ];
+  if (!item.applicant && item.inviteeStatus) {
+    lines.push(`${lang() === "de" ? "Dein Status" : "Your status"} · ${inviteStatusLabel(item.inviteeStatus)}`);
+  }
+  return lines.map((line) => `<span>${escapeHtml(line)}</span>`).join("");
+}
+
 function inviteLine(invitee, index, registrationId, editable) {
   const label = `Invite ${escapeHtml(invitee.name || invitee.email)}${invitee.name ? ` (${escapeHtml(invitee.email)})` : ""} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}`;
   if (!editable) return `<span>${label}</span>`;
@@ -764,22 +825,47 @@ function eventStatus(event) {
   return t("statusPlanning");
 }
 
-function eventCard(event) {
+function eventCapacityLabel(event) {
+  const photographers = Number.isFinite(event?.capacity?.photographers) ? event.capacity.photographers : null;
+  const models = Number.isFinite(event?.capacity?.models) ? event.capacity.models : null;
+  if (photographers == null && models == null) return "";
+  if (photographers != null && models != null) return `${photographers} ${t("rolePhotographer")} / ${models} ${t("roleModel")}`;
+  if (photographers != null) return `${photographers} ${t("rolePhotographer")}`;
+  return `${models} ${t("roleModel")}`;
+}
+
+function eventMetaEntries(event) {
+  const entries = [
+    { label: t("eventMetaDate"), value: [localized(event.dateLabel), localized(event.timeLabel)].filter(Boolean).join(" · ") },
+    { label: t("eventMetaLocation"), value: localized(event.location) },
+    { label: t("eventMetaCost"), value: localized(event.cost) }
+  ];
+  const capacity = eventCapacityLabel(event);
+  if (capacity) entries.push({ label: t("eventMetaCapacity"), value: capacity });
+  return entries.filter((entry) => entry.value);
+}
+
+function eventCard(event, index, groupName) {
+  const meta = eventMetaEntries(event);
+  const featured = groupName === "upcoming" && index === 0;
   return `
-    <article class="event-card">
+    <article class="event-card${featured ? " event-card--featured" : ""}">
       <div class="event-card__top">
         <span class="badge">${escapeHtml(event.type)}</span>
-        <small>${escapeHtml(eventStatus(event))}</small>
+        <small class="event-card__status">${escapeHtml(eventStatus(event))}</small>
       </div>
-      <div>
+      <div class="event-card__body">
         <h3>${escapeHtml(localized(event.title))}</h3>
-        <p>${escapeHtml(localized(event.summary))}</p>
+        <p class="event-card__summary">${escapeHtml(localized(event.summary))}</p>
+        <p class="event-card__format">${escapeHtml(localized(event.format))}</p>
       </div>
-      <p>${escapeHtml(localized(event.format))}</p>
-      <ul>
-        <li>${escapeHtml(localized(event.dateLabel))}, ${escapeHtml(localized(event.timeLabel))}</li>
-        <li>${escapeHtml(localized(event.location))}</li>
-        <li>${escapeHtml(localized(event.cost))}</li>
+      <ul class="event-card__meta">
+        ${meta.map((entry) => `
+          <li>
+            <span>${escapeHtml(entry.label)}</span>
+            <strong>${escapeHtml(entry.value)}</strong>
+          </li>
+        `).join("")}
       </ul>
       ${event.detailUrl ? `<a class="button button--ghost event-card__link" href="${escapeHtml(event.detailUrl)}">${escapeHtml(t("eventDetails"))}</a>` : ""}
     </article>
@@ -792,11 +878,11 @@ function renderEvents(events) {
   const past = events.filter((event) => event.group === "past");
 
   if (upcomingEventGrid) {
-    upcomingEventGrid.innerHTML = upcoming.map(eventCard).join("");
+    upcomingEventGrid.innerHTML = upcoming.map((event, index) => eventCard(event, index, "upcoming")).join("");
   }
 
   if (pastEventGrid) {
-    pastEventGrid.innerHTML = past.map(eventCard).join("");
+    pastEventGrid.innerHTML = past.map((event, index) => eventCard(event, index, "past")).join("");
   }
 
   if (eventSelect) {
@@ -1119,26 +1205,34 @@ function renderUserSummary() {
   const isAdminOverview = isAccountPage() && authState.isAdmin;
   const openAdminCount = (authState.adminRegistrations || []).filter((item) => item.status === "pending_review").length;
   const incompleteCount = (authState.adminRegistrations || []).filter((item) => (item.invitees || []).some((invitee) => invitee.status !== "confirmed")).length;
+  const summaryIntro = isAdminOverview
+    ? (lang() === "de"
+      ? `${openAdminCount} Bewerbungen warten auf Admin-Freigabe, ${incompleteCount} Bewerbungen haben offene Invites/Profile.`
+      : `${openAdminCount} applications await admin approval, ${incompleteCount} applications have open invites/profiles.`)
+    : (lang() === "de"
+      ? "Hier siehst du deinen aktuellen Stand pro Event, inklusive Bewerbungsstatus und Setup."
+      : "Here you can see your current status per event, including application state and setup.");
+  const adminMemberIntro = lang() === "de"
+    ? `Aktuell registrierte andere Nutzer im System: ${Number(authState.userSummary?.otherRegisteredCount || 0)}`
+    : `Currently registered other users in the system: ${Number(authState.userSummary?.otherRegisteredCount || 0)}`;
 
   host.hidden = false;
   host.innerHTML = `
     <div class="section__heading section__heading--compact">
       <h3>${isAdminOverview ? (lang() === "de" ? "Orga-Übersicht" : "Organizer overview") : (lang() === "de" ? "Dein Status" : "Your status")}</h3>
-      <p>${isAdminOverview ? (lang() === "de"
-        ? `${openAdminCount} Bewerbungen warten auf Admin-Freigabe, ${incompleteCount} Bewerbungen haben offene Invites/Profile.`
-        : `${openAdminCount} applications await admin approval, ${incompleteCount} applications have open invites/profiles.`) : (authState.userSummary?.member ? (lang() === "de"
-        ? `Aktuell registrierte andere Nutzer im System: ${Number(authState.userSummary.otherRegisteredCount || 0)}`
-        : `Currently registered other users in the system: ${Number(authState.userSummary.otherRegisteredCount || 0)}`) : (lang() === "de" ? "Admin-Sicht auf die aktuelle Teilnehmerliste." : "Admin view of the current participant list."))}</p>
+      <p>${summaryIntro}</p>
     </div>
     <div class="summary-list">
       ${visibleRegistrations.length
         ? visibleRegistrations.map((item) => `
           <article class="summary-row">
             <strong>${eventDetailUrl(item.eventId) ? `<a href="${escapeHtml(eventDetailUrl(item.eventId))}">${escapeHtml(item.eventLabel || item.eventId)}</a>` : escapeHtml(item.eventLabel || item.eventId)}</strong>
-            <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.registrationStatus || ""))}${item.simulated ? " \u00b7 Simulation" : ""}</span>
+            <span>${escapeHtml(item.role || "")}${item.simulated ? " \u00b7 Simulation" : ""}</span>
+            ${registrationOverviewMarkup(item)}
+            ${registrationParticipantsMarkup(item)}
             ${item.applicant && item.invitees?.length
               ? item.invitees.map((invitee, index) => inviteLine(invitee, index, item.registrationId, item.applicant)).join("")
-              : (item.inviteeStatus ? `<span>${lang() === "de" ? "Dein Invite-Status" : "Your invite status"} \u00b7 ${escapeHtml(inviteStatusLabel(item.inviteeStatus))}</span>` : "")}
+              : ""}
             ${item.adminStatus && authState.isAdmin ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
             ${(item.canWithdraw || item.canRespondInvite) ? `
               <div class="admin-row__actions">
@@ -1162,6 +1256,7 @@ function renderUserSummary() {
       ${isAccountPage() && authState.isAdmin ? `
         <div class="section__heading section__heading--compact">
           <h3>${lang() === "de" ? "Registrierte Nutzer" : "Registered users"}</h3>
+          <p>${adminMemberIntro}</p>
         </div>
         ${adminMembers.length ? adminMembers.map((member) => `
           <article class="summary-row">

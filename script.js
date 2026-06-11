@@ -303,7 +303,8 @@ async function loadMemberProfile() {
 
   try {
     const response = await fetch(`${API_BASE}/api/member`, {
-      headers: { Authorization: `Bearer ${authState.idToken}` }
+      headers: { Authorization: `Bearer ${authState.idToken}` },
+      cache: "no-store"
     });
     if (!response.ok) return null;
     const payload = await response.json();
@@ -1152,7 +1153,8 @@ async function loadUserSummary() {
 
   try {
     const response = await fetch(`${API_BASE}/api/summary`, {
-      headers: { Authorization: `Bearer ${authState.idToken}` }
+      headers: { Authorization: `Bearer ${authState.idToken}` },
+      cache: "no-store"
     });
     if (!response.ok) throw new Error("summary_failed");
     authState.userSummary = await response.json();

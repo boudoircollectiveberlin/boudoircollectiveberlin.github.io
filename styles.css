@@ -640,10 +640,13 @@ h3 {
 }
 
 .event-card--hero {
+  --event-card-detail-bg: #19191f;
+  gap: 0;
+  padding: 0;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(232, 201, 183, .08), rgba(255, 255, 255, .03)),
-    rgba(0, 0, 0, .18);
+    linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .02)),
+    var(--event-card-detail-bg);
 }
 
 .event-card__link {
@@ -681,14 +684,21 @@ h3 {
 
 .event-card__hero {
   position: relative;
-  min-height: 330px;
+  min-height: 380px;
   display: grid;
   align-items: end;
-  padding: 18px 16px 20px;
+  padding: 22px 18px 118px;
+  background: var(--event-card-image) center / cover no-repeat;
+}
+
+.event-card__hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background:
-    linear-gradient(180deg, rgba(8, 8, 10, .16) 0%, rgba(8, 8, 10, .42) 42%, rgba(8, 8, 10, .96) 100%),
-    linear-gradient(180deg, transparent 52%, rgba(13, 13, 16, .95) 100%),
-    var(--event-card-image) center / cover no-repeat;
+    linear-gradient(90deg, rgba(5, 5, 7, .7), rgba(5, 5, 7, .32) 54%, rgba(5, 5, 7, .56)),
+    linear-gradient(180deg, rgba(5, 5, 7, .1) 0%, rgba(5, 5, 7, .34) 45%, rgba(5, 5, 7, .82) 74%, rgba(25, 25, 31, .98) 100%);
+  pointer-events: none;
 }
 
 .event-card__hero::after {
@@ -697,8 +707,8 @@ h3 {
   right: 0;
   bottom: -1px;
   left: 0;
-  height: 90px;
-  background: linear-gradient(180deg, rgba(13, 13, 16, 0), rgba(13, 13, 16, 1));
+  height: 28%;
+  background: linear-gradient(180deg, rgba(25, 25, 31, 0), rgba(25, 25, 31, .72) 54%, var(--event-card-detail-bg));
   pointer-events: none;
 }
 
@@ -707,6 +717,14 @@ h3 {
   z-index: 1;
   display: grid;
   gap: 18px;
+}
+
+.event-card--hero .event-card__content {
+  position: relative;
+  z-index: 1;
+  margin-top: -96px;
+  padding: 46px 16px 16px;
+  background: linear-gradient(180deg, rgba(25, 25, 31, 0), var(--event-card-detail-bg) 42px);
 }
 
 .event-card__body h3,
@@ -731,7 +749,29 @@ h3 {
 
 .event-card--hero .event-card__summary {
   max-width: 34ch;
-  color: rgba(255, 255, 255, .9);
+  color: rgba(255, 255, 255, .92);
+}
+
+.event-card--hero .badge,
+.event-card--hero .event-card__status {
+  border-color: rgba(255, 255, 255, .18);
+  background: rgba(8, 8, 10, .58);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
+  backdrop-filter: blur(6px);
+}
+
+.event-card--hero .event-card__body h3,
+.event-card--hero .event-card__summary {
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .76);
+}
+
+.event-card--hero .event-card__format,
+.event-card--hero .event-card__meta strong {
+  color: rgba(255, 255, 255, .92);
+}
+
+.event-card--hero .event-card__meta li {
+  border-top-color: rgba(255, 255, 255, .11);
 }
 
 .event-card__meta {

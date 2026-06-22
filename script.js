@@ -1201,9 +1201,23 @@ function eventMetaEntries(event) {
 
 function eventCard(event, index, groupName) {
   const meta = eventMetaEntries(event);
-  const featured = groupName === "upcoming" && index === 0;
+  const hasVisualHero = groupName === "upcoming" && event.coverImage;
   return `
-    <article class="event-card${featured ? " event-card--featured" : ""}">
+    <article class="event-card${hasVisualHero ? " event-card--hero" : ""}">
+      ${hasVisualHero ? `
+        <div class="event-card__hero" style="--event-card-image: url('${escapeHtml(event.coverImage)}')">
+          <div class="event-card__hero-content">
+            <div class="event-card__top">
+              <span class="badge">${escapeHtml(event.type)}</span>
+              <small class="event-card__status">${escapeHtml(eventStatus(event))}</small>
+            </div>
+            <div class="event-card__body">
+              <h3>${escapeHtml(localized(event.title))}</h3>
+              <p class="event-card__summary">${escapeHtml(localized(event.summary))}</p>
+            </div>
+          </div>
+        </div>
+      ` : `
       <div class="event-card__top">
         <span class="badge">${escapeHtml(event.type)}</span>
         <small class="event-card__status">${escapeHtml(eventStatus(event))}</small>
@@ -1211,8 +1225,10 @@ function eventCard(event, index, groupName) {
       <div class="event-card__body">
         <h3>${escapeHtml(localized(event.title))}</h3>
         <p class="event-card__summary">${escapeHtml(localized(event.summary))}</p>
-        <p class="event-card__format">${escapeHtml(localized(event.format))}</p>
       </div>
+      `}
+      <div class="event-card__content">
+        <p class="event-card__format">${escapeHtml(localized(event.format))}</p>
       <ul class="event-card__meta">
         ${meta.map((entry) => `
           <li>
@@ -1222,6 +1238,7 @@ function eventCard(event, index, groupName) {
         `).join("")}
       </ul>
       ${event.detailUrl ? `<a class="button button--ghost event-card__link" href="${escapeHtml(event.detailUrl)}">${escapeHtml(t("eventDetails"))}</a>` : ""}
+      </div>
     </article>
   `;
 }

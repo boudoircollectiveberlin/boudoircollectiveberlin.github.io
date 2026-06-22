@@ -634,15 +634,15 @@ h3 {
 
 .event-card {
   display: grid;
-  grid-template-rows: auto auto auto 1fr auto;
+  grid-template-rows: auto 1fr;
   min-height: 100%;
   gap: 14px;
 }
 
-.event-card--featured {
-  grid-column: span 2;
+.event-card--hero {
+  overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(232, 201, 183, .1), rgba(255, 255, 255, .03)),
+    linear-gradient(180deg, rgba(232, 201, 183, .08), rgba(255, 255, 255, .03)),
     rgba(0, 0, 0, .18);
 }
 
@@ -673,6 +673,42 @@ h3 {
   gap: 10px;
 }
 
+.event-card__content {
+  display: grid;
+  gap: 14px;
+  padding: 0 16px 16px;
+}
+
+.event-card__hero {
+  position: relative;
+  min-height: 330px;
+  display: grid;
+  align-items: end;
+  padding: 18px 16px 20px;
+  background:
+    linear-gradient(180deg, rgba(8, 8, 10, .16) 0%, rgba(8, 8, 10, .42) 42%, rgba(8, 8, 10, .96) 100%),
+    linear-gradient(180deg, transparent 52%, rgba(13, 13, 16, .95) 100%),
+    var(--event-card-image) center / cover no-repeat;
+}
+
+.event-card__hero::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 90px;
+  background: linear-gradient(180deg, rgba(13, 13, 16, 0), rgba(13, 13, 16, 1));
+  pointer-events: none;
+}
+
+.event-card__hero-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 18px;
+}
+
 .event-card__body h3,
 .event-card__summary,
 .event-card__format {
@@ -691,6 +727,11 @@ h3 {
   color: var(--muted);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+
+.event-card--hero .event-card__summary {
+  max-width: 34ch;
+  color: rgba(255, 255, 255, .9);
 }
 
 .event-card__meta {
@@ -2048,10 +2089,6 @@ textarea:focus,
   .admin-mail-preview,
   .inline-invite-form {
     grid-template-columns: 1fr;
-  }
-
-  .event-card--featured {
-    grid-column: span 1;
   }
 
   .admin-row__actions {

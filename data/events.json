@@ -4,6 +4,7 @@
     {
       "id": "heilstaette-grabowsee-2026-07-04",
       "detailUrl": "event-grabowsee.html",
+      "coverImage": "assets/images/location/grabowsee/grabowsee-corridor.jpg",
       "group": "upcoming",
       "type": "TFP / Costsharing",
       "status": "interest",
@@ -44,6 +45,7 @@
     {
       "id": "schloss-wrodow-2026-08-08",
       "detailUrl": "event-wrodow.html",
+      "coverImage": "assets/images/location/wrodow/wrodow-sommer.jpg",
       "group": "upcoming",
       "type": "TFP / Costsharing",
       "status": "interest",

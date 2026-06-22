@@ -1407,6 +1407,34 @@ textarea:focus,
     url("assets/images/location/grabowsee/grabowsee-corridor.jpg") center / cover no-repeat;
 }
 
+.event-hero--wrodow .event-hero__image {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, .78), rgba(0, 0, 0, .32) 55%, rgba(0, 0, 0, .08)),
+    linear-gradient(180deg, rgba(0, 0, 0, .08), rgba(0, 0, 0, .78)),
+    url("assets/images/location/wrodow/wrodow-sommer.jpg") center / cover no-repeat;
+}
+
+.reference-gallery__placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 245px;
+  padding: 18px;
+  border: 1px dashed rgba(232, 201, 183, .32);
+  border-radius: var(--radius);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, .04) 0 14px, rgba(255, 255, 255, .015) 14px 28px),
+    rgba(0, 0, 0, .18);
+  color: rgba(255, 255, 255, .72);
+  text-align: center;
+}
+
+.reference-gallery__placeholder-label {
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
 .event-hero__content {
   position: relative;
   z-index: 1;
@@ -1557,6 +1585,68 @@ textarea:focus,
   border-top: 1px solid rgba(255, 255, 255, .12);
   color: var(--muted);
   font-size: 12px;
+}
+
+.simulation-mode-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: grid;
+  gap: 8px;
+  padding: 12px clamp(14px, 4vw, 22px);
+  border-bottom: 1px solid rgba(232, 201, 183, .32);
+  background: linear-gradient(180deg, rgba(232, 201, 183, .18), rgba(0, 0, 0, .65));
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.simulation-mode-banner strong {
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.impersonation-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .78);
+  backdrop-filter: blur(10px);
+}
+
+.impersonation-confirm__panel {
+  width: min(440px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid rgba(158, 73, 73, .5);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(78, 18, 18, .96), rgba(16, 8, 8, .98));
+  box-shadow: var(--shadow);
+}
+
+.impersonation-confirm__panel strong {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.impersonation-confirm__panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.impersonation-confirm__persona {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .24);
+  color: var(--ink);
+  font-size: 13px;
 }
 
 .footer__license {

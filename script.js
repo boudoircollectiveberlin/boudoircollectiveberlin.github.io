@@ -372,6 +372,7 @@ function currentEventId() {
 
 function eventDetailUrl(eventId) {
   if (eventId === "heilstaette-grabowsee-2026-07-04") return "event-grabowsee.html";
+  if (eventId === "schloss-wrodow-2026-08-08") return "event-wrodow.html";
   return "";
 }
 
@@ -564,7 +565,7 @@ function lateInviteOptions(item) {
   const terminal = new Set(["confirmed", "rejected", "deleted"]);
   if (terminal.has(item.registrationStatus)) return [];
   const roles = [item.role, ...(item.invitees || []).map((invitee) => invitee.role)].filter(Boolean);
-  if (item.eventId === "heilstaette-grabowsee-2026-07-04") {
+  if (item.eventId === "heilstaette-grabowsee-2026-07-04" || item.eventId === "schloss-wrodow-2026-08-08") {
     const photographerCount = roles.filter((role) => role === "photographer").length;
     const modelCount = roles.filter((role) => role === "model").length;
     return [
@@ -640,6 +641,261 @@ function renderRegistrationActionNotice() {
   window.history.replaceState({}, "", cleanUrl.toString());
 }
 
+// ===== Simulation mode (no Vercel/Firebase) =====
+const SIM_MODE_KEY = "bcb-simulation-mode";
+const SIM_USERS_KEY = "bcb-simulation-users";
+const SIM_REGS_KEY = "bcb-simulation-registrations";
+const SIM_MEMBERS_KEY = "bcb-simulation-members";
+const SIM_FIREBASE_STUB_EMAIL = "simulation@local.test";
+
+function simulationModeActive() {
+  try {
+    return localStorage.getItem(SIM_MODE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function setSimulationMode(active) {
+  try {
+    if (active) {
+      localStorage.setItem(SIM_MODE_KEY, "true");
+      seedSimulationData();
+    } else {
+      localStorage.removeItem(SIM_MODE_KEY);
+    }
+  } catch {
+    /* localStorage may be unavailable */
+  }
+}
+
+function simulationStoreRead(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function simulationStoreWrite(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* localStorage may be unavailable */
+  }
+}
+
+function seedSimulationData() {
+  const now = new Date().toISOString();
+  const existing = simulationStoreRead(SIM_USERS_KEY, null);
+  if (existing) return;
+  const users = [
+    { email: "nale@boudoircollectiveberlin.de", displayName: "Nale", eventFunction: "model", provider: "google" },
+    { email: "dominik@boudoircollectiveberlin.de", displayName: "Dominik Süß", eventFunction: "photographer", provider: "google" },
+    { email: "testmodel@gmail.com", displayName: "Test Model", eventFunction: "model", provider: "google" },
+    { email: "testphotographer@gmail.com", displayName: "Test Fotograf:in", eventFunction: "photographer", provider: "google" }
+  ];
+  const members = users.map((user) => ({
+    uid: `sim-${user.email}`,
+    email: user.email,
+    name: user.displayName,
+    provider: "google",
+    role: user.eventFunction,
+    displayName: user.displayName,
+    functions: [user.eventFunction],
+    instagram: "",
+    portfolio: "",
+    futureUpdates: true,
+    lobbyInfo: false,
+    discoverable: false,
+    communityConsent: true,
+    communityPrivacy: true,
+    status: "registered",
+    updatedAt: now
+  }));
+  const registrations = [
+    {
+      id: "sim-grabowsee-001",
+      eventId: "heilstaette-grabowsee-2026-07-04",
+      eventLabel: "Heilstätte Grabowsee",
+      applicant: true,
+      applicantName: "Test Fotograf:in",
+      applicantEmail: "testphotographer@gmail.com",
+      applicantRole: "photographer",
+      email: "testphotographer@gmail.com",
+      name: "Test Fotograf:in",
+      role: "photographer",
+      status: "pending_review",
+      registrationStatus: "pending_review",
+      invitees: [
+        { name: "Test Model", email: "testmodel@gmail.com", role: "model", status: "confirmed" }
+      ]
+    },
+    {
+      id: "sim-wrodow-001",
+      eventId: "schloss-wrodow-2026-08-08",
+      eventLabel: "Schloss Wrodow",
+      applicant: true,
+      applicantName: "Nale",
+      applicantEmail: "nale@boudoircollectiveberlin.de",
+      applicantRole: "model",
+      email: "nale@boudoircollectiveberlin.de",
+      name: "Nale",
+      role: "model",
+      status: "pending_invites",
+      registrationStatus: "pending_invites",
+      invitees: [
+        { name: "Dominik Süß", email: "dominik@boudoircollectiveberlin.de", role: "photographer", status: "pending" }
+      ]
+    }
+  ];
+  simulationStoreWrite(SIM_USERS_KEY, users);
+  simulationStoreWrite(SIM_MEMBERS_KEY, members);
+  simulationStoreWrite(SIM_REGS_KEY, registrations);
+}
+
+function resetSimulationData() {
+  try {
+    localStorage.removeItem(SIM_USERS_KEY);
+    localStorage.removeItem(SIM_REGS_KEY);
+    localStorage.removeItem(SIM_MEMBERS_KEY);
+  } catch {
+    /* localStorage may be unavailable */
+  }
+  seedSimulationData();
+}
+
+function getSimulationUsers() {
+  return simulationStoreRead(SIM_USERS_KEY, []);
+}
+
+function getSimulationMembers() {
+  return simulationStoreRead(SIM_MEMBERS_KEY, []);
+}
+
+function getSimulationRegistrations() {
+  return simulationStoreRead(SIM_REGS_KEY, []);
+}
+
+function setSimulationRegistrations(list) {
+  simulationStoreWrite(SIM_REGS_KEY, list);
+}
+
+function getSimulationRegistrationsForEmail(email) {
+  if (!email) return [];
+  const target = normalizeEmail(email);
+  return getSimulationRegistrations().filter((item) => {
+    if (normalizeEmail(item.email) === target) return true;
+    if (Array.isArray(item.invitees) && item.invitees.some((invitee) => normalizeEmail(invitee.email) === target)) return true;
+    return false;
+  });
+}
+
+function applySimulationRegistrationResult(payload) {
+  if (!payload || !payload.eventId || !payload.email) return;
+  const list = getSimulationRegistrations();
+  const email = normalizeEmail(payload.email);
+  const newEntry = {
+    id: payload.id || `sim-${Date.now()}`,
+    eventId: payload.eventId,
+    eventLabel: eventLabelForSimulation(payload.eventId),
+    applicant: true,
+    applicantName: payload.name,
+    applicantEmail: payload.email,
+    applicantRole: payload.eventFunction,
+    email: payload.email,
+    name: payload.name,
+    role: payload.eventFunction,
+    status: payload.invitedParticipants?.length ? "pending_invites" : "pending_review",
+    registrationStatus: payload.invitedParticipants?.length ? "pending_invites" : "pending_review",
+    simulated: true,
+    invitees: (payload.invitedParticipants || []).map((invitee) => ({
+      name: invitee.name || "",
+      email: invitee.email,
+      role: invitee.eventFunction,
+      status: "pending"
+    }))
+  };
+  list.push(newEntry);
+  setSimulationRegistrations(list);
+}
+
+function eventLabelForSimulation(eventId) {
+  if (eventId === "heilstaette-grabowsee-2026-07-04") return "Heilstätte Grabowsee";
+  if (eventId === "schloss-wrodow-2026-08-08") return "Schloss Wrodow";
+  return eventId;
+}
+
+function enterSimulationMode() {
+  setSimulationMode(true);
+  window.location.reload();
+}
+
+function exitSimulationMode() {
+  setSimulationMode(false);
+  window.location.reload();
+}
+
+function ensureSimulationBanner() {
+  let banner = document.querySelector("#simulation-mode-banner");
+  if (!simulationModeActive()) {
+    banner?.remove();
+    return;
+  }
+  if (!banner) {
+    banner = document.createElement("aside");
+    banner.id = "simulation-mode-banner";
+    banner.className = "simulation-mode-banner";
+    document.body.append(banner);
+  }
+  banner.innerHTML = `
+    <strong>${escapeHtml(t("simulationModeBadge"))}</strong>
+    <span>${escapeHtml(t("simulationModeIntro"))}</span>
+    <div class="admin-row__actions">
+      <button class="button button--ghost" type="button" data-sim-seed>${escapeHtml(t("simulationModeSeed"))}</button>
+      <button class="button button--primary" type="button" data-sim-exit>${escapeHtml(t("simulationModeExit"))}</button>
+    </div>
+  `;
+  banner.querySelector("[data-sim-exit]")?.addEventListener("click", exitSimulationMode);
+  banner.querySelector("[data-sim-seed]")?.addEventListener("click", () => {
+    resetSimulationData();
+    window.location.reload();
+  });
+}
+
+function ensureSimulationModeToggle() {
+  if (!isAccountPage() || !adminPanel) return;
+  if (!authState.isAdmin) return;
+  if (document.querySelector("#simulation-mode-toggle")) return;
+  const host = adminPanel;
+  const block = document.createElement("div");
+  block.className = "admin-demo";
+  block.id = "simulation-mode-toggle";
+  block.innerHTML = `
+    <div class="section__heading section__heading--compact">
+      <h3>${escapeHtml(t("simulationModeTitle"))}</h3>
+      <p>${simulationModeActive() ? escapeHtml(t("simulationModeIntro")) : escapeHtml(t("simulationModeSeedHint"))}</p>
+    </div>
+    <div class="admin-row__actions">
+      <button class="button ${simulationModeActive() ? "button--ghost" : "button--primary"}" type="button" data-sim-enter>${escapeHtml(simulationModeActive() ? t("simulationModeExit") : t("simulationModeTitle"))}</button>
+      <button class="button button--ghost" type="button" data-sim-reset>${escapeHtml(t("simulationModeSeed"))}</button>
+    </div>
+  `;
+  host.append(block);
+  block.querySelector("[data-sim-enter]")?.addEventListener("click", () => {
+    if (simulationModeActive()) exitSimulationMode();
+    else enterSimulationMode();
+  });
+  block.querySelector("[data-sim-reset]")?.addEventListener("click", () => {
+    if (!simulationModeActive()) {
+      setSimulationMode(true);
+    }
+    resetSimulationData();
+    window.location.reload();
+  });
+}
+
 function loadStoredAdminSimulation() {
   try {
     const raw = localStorage.getItem(ADMIN_SIMULATION_KEY);
@@ -697,6 +953,37 @@ function applySimulationToEventForm() {
   }
 }
 
+function adminMemberOptions() {
+  const members = Array.isArray(authState.adminMembers) ? authState.adminMembers : [];
+  const simUsers = simulationModeActive() ? getSimulationUsers() : [];
+  const options = [];
+  members.forEach((member) => {
+    if (!member.email) return;
+    options.push({
+      email: member.email,
+      displayName: member.name || member.displayName || member.email,
+      role: member.role || "",
+      source: "real"
+    });
+  });
+  simUsers.forEach((user) => {
+    if (!user.email) return;
+    options.push({
+      email: user.email,
+      displayName: user.displayName || user.email,
+      role: user.eventFunction || "",
+      source: "sim"
+    });
+  });
+  const seen = new Set();
+  return options.filter((option) => {
+    const key = normalizeEmail(option.email);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function renderAdminFlyout() {
   const flyout = document.querySelector("#global-admin-flyout");
   if (!flyout) return;
@@ -704,14 +991,25 @@ function renderAdminFlyout() {
   const baseEmail = authState.adminBaseEmail || (isGmailAddress(authState.profile?.email) ? authState.profile.email : "");
   const presets = simulationPresets(baseEmail);
   const activeEmail = authState.impersonation?.email || "";
+  const memberOptions = adminMemberOptions();
 
   flyout.innerHTML = `
     <button class="admin-flyout__toggle" type="button" id="admin-flyout-toggle" aria-expanded="false">Admin</button>
     <div class="admin-flyout__panel" id="admin-flyout-panel" hidden>
       <div class="admin-flyout__head">
-        <strong>Admin Tools</strong>
+        <strong>${escapeHtml(t("adminImpersonationTitle"))}</strong>
         <span>${escapeHtml(authState.profile?.email || "")}</span>
       </div>
+      <p class="admin-flyout__intro">${escapeHtml(t("adminImpersonationIntro"))}</p>
+      <label>
+        <span>${escapeHtml(t("adminImpersonationSelect"))}</span>
+        <select id="admin-flyout-impersonate">
+          <option value="">${escapeHtml(t("adminImpersonationNone"))}</option>
+          ${memberOptions.length
+            ? memberOptions.map((option) => `<option value="${escapeHtml(option.email)}" data-admin-sim-name="${escapeHtml(option.displayName)}" data-admin-sim-role="${escapeHtml(option.role)}" ${activeEmail === normalizeEmail(option.email) ? "selected" : ""}>${escapeHtml(option.displayName)} (${escapeHtml(option.email)})${option.source === "sim" ? " · " + escapeHtml(t("simulationModeBadge")) : ""}</option>`).join("")
+            : `<option value="" disabled>${escapeHtml(t("adminImpersonationNoUsers"))}</option>`}
+        </select>
+      </label>
       <label>
         <span>Gmail-Basis für virtuelle Eventnutzer</span>
         <input id="admin-flyout-base-email" type="email" value="${escapeHtml(baseEmail)}" placeholder="deinname@gmail.com">
@@ -722,20 +1020,20 @@ function renderAdminFlyout() {
           : `<p>Für Plus-Alias-Simulation bitte eine Gmail-Adresse verwenden.</p>`}
       </div>
       <div class="admin-flyout__current">
-        <strong>${adminSimulationActive() ? "Aktive Simulation" : "Keine aktive Simulation"}</strong>
-        <span>${adminSimulationActive() ? `${escapeHtml(authState.impersonation.displayName || "")} \u00b7 ${escapeHtml(authState.impersonation.email)}` : "Normale Nutzeransicht"}</span>
+        <strong>${adminSimulationActive() ? escapeHtml(t("adminImpersonationActive")) : escapeHtml(t("adminImpersonationNone"))}</strong>
+        <span>${adminSimulationActive() ? `${escapeHtml(authState.impersonation.displayName || "")} \u00b7 ${escapeHtml(authState.impersonation.email)}` : escapeHtml(lang() === "de" ? "Normale Nutzeransicht" : "Normal user view")}</span>
       </div>
       <label class="checkbox">
         <input id="admin-flyout-create-profiles" type="checkbox" checked>
-        <span>Invite-Profile mit anlegen</span>
+        <span>${escapeHtml(lang() === "de" ? "Invite-Profile mit anlegen" : "Create invite profiles with it")}</span>
       </label>
       <label class="checkbox">
         <input id="admin-flyout-send-mails" type="checkbox">
-        <span>Mails wirklich senden</span>
+        <span>${escapeHtml(lang() === "de" ? "Mails wirklich senden" : "Actually send mails")}</span>
       </label>
       <div class="admin-row__actions">
-        <button class="button button--ghost" type="button" id="admin-flyout-clear">Simulation beenden</button>
-        <a class="button button--ghost" href="account.html#admin-panel">Account-Admin</a>
+        <button class="button button--ghost" type="button" id="admin-flyout-clear">${escapeHtml(t("adminImpersonationStop"))}</button>
+        <a class="button button--ghost" href="account.html#admin-panel">${escapeHtml(lang() === "de" ? "Account-Admin" : "Account admin")}</a>
       </div>
     </div>
   `;
@@ -755,6 +1053,20 @@ function renderAdminFlyout() {
     renderAdminFlyout();
   });
 
+  const select = flyout.querySelector("#admin-flyout-impersonate");
+  select?.addEventListener("change", () => {
+    const option = select.selectedOptions[0];
+    if (!option || !option.value) {
+      resetAdminSimulation();
+      return;
+    }
+    setAdminSimulation({
+      email: option.value,
+      displayName: option.dataset.adminSimName || option.value,
+      eventFunction: option.dataset.adminSimRole || ""
+    });
+  });
+
   flyout.querySelectorAll("[data-admin-sim-email]").forEach((button) => {
     button.addEventListener("click", () => {
       setAdminSimulation({
@@ -767,6 +1079,47 @@ function renderAdminFlyout() {
 
   flyout.querySelector("#admin-flyout-clear")?.addEventListener("click", () => {
     resetAdminSimulation();
+  });
+}
+
+function confirmImpersonationAction(label) {
+  if (!adminSimulationActive()) return Promise.resolve(true);
+  const persona = `${authState.impersonation.displayName || ""} \u00b7 ${authState.impersonation.email}`.trim();
+  return new Promise((resolve) => {
+    const existing = document.querySelector("#impersonation-confirm");
+    existing?.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "impersonation-confirm";
+    overlay.className = "impersonation-confirm";
+    overlay.setAttribute("role", "alertdialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.innerHTML = `
+      <div class="impersonation-confirm__panel">
+        <strong>${escapeHtml(t("adminImpersonationConfirmTitle"))}</strong>
+        <p>${escapeHtml(t("adminImpersonationConfirmCopy"))}</p>
+        <p><strong>${escapeHtml(label)}</strong></p>
+        <p class="impersonation-confirm__persona">${escapeHtml(persona)}</p>
+        <div class="admin-row__actions">
+          <button class="button button--ghost" type="button" data-impersonation-cancel>${escapeHtml(t("adminImpersonationCancel"))}</button>
+          <button class="button button--primary" type="button" data-impersonation-confirm>${escapeHtml(t("adminImpersonationConfirm"))}</button>
+        </div>
+      </div>
+    `;
+    document.body.append(overlay);
+    function close(result) {
+      overlay.remove();
+      document.removeEventListener("keydown", onKey);
+      resolve(result);
+    }
+    function onKey(event) {
+      if (event.key === "Escape") close(false);
+    }
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay) close(false);
+    });
+    overlay.querySelector("[data-impersonation-cancel]")?.addEventListener("click", () => close(false));
+    overlay.querySelector("[data-impersonation-confirm]")?.addEventListener("click", () => close(true));
+    document.addEventListener("keydown", onKey);
   });
 }
 
@@ -1383,18 +1736,28 @@ function clientEventValidation(payload) {
     return lang() === "de" ? "Dieselbe Mailadresse darf in einer Bewerbung nur einmal vorkommen." : "The same email address may only appear once in an application.";
   }
 
-  if (payload.eventId === "heilstaette-grabowsee-2026-07-04") {
+  if (payload.eventId === "heilstaette-grabowsee-2026-07-04" || payload.eventId === "schloss-wrodow-2026-08-08") {
+    const eventKey = payload.eventId === "heilstaette-grabowsee-2026-07-04" ? "grabowsee" : "wrodow";
     const roles = [payload.eventFunction, ...payload.invitedParticipants.map((participant) => participant.eventFunction)].filter(Boolean);
     const photographerCount = roles.filter((role) => role === "photographer").length;
     const modelCount = roles.filter((role) => role === "model").length;
     if (payload.invitedParticipants.length > 3) {
-      return lang() === "de" ? "F\u00fcr Grabowsee sind neben der bewerbenden Person h\u00f6chstens drei weitere Personen m\u00f6glich." : "Grabowsee allows at most three additional participants besides the applicant.";
+      return t(`${eventKey}MaxInvitees`) || (lang() === "de" ? "Neben der bewerbenden Person sind höchstens drei weitere Personen möglich." : "At most three additional participants are allowed besides the applicant.");
+    }
+    if (!["model", "photographer"].includes(payload.eventFunction)) {
+      return t(`${eventKey}RoleInvalid`) || (lang() === "de" ? "Nur Fotograf:in und Model sind möglich." : "Only photographer and model are allowed.");
+    }
+    if (payload.invitedParticipants.some((participant) => !["model", "photographer"].includes(participant.eventFunction))) {
+      return t(`${eventKey}InviteRoleInvalid`) || (lang() === "de" ? "Nur Fotograf:in und Model sind als Funktion möglich." : "Only photographer and model are allowed as invitee roles.");
     }
     if (photographerCount !== 1) {
-      return lang() === "de" ? "F\u00fcr Grabowsee ist genau ein:e Fotograf:in erlaubt." : "Grabowsee requires exactly one photographer.";
+      return t(`${eventKey}OnePhotographerRequired`) || (lang() === "de" ? "Genau ein:e Fotograf:in ist erlaubt." : "Exactly one photographer is required.");
     }
-    if (modelCount < 1 || modelCount > 3) {
-      return lang() === "de" ? "F\u00fcr Grabowsee sind genau ein:e Fotograf:in und ein bis drei Models m\u00f6glich." : "Grabowsee requires exactly one photographer and one to three models.";
+    if (modelCount < 1) {
+      return t(`${eventKey}ModelRequired`) || (lang() === "de" ? "Mindestens ein Model ist erforderlich." : "At least one model is required.");
+    }
+    if (modelCount > 3) {
+      return t(`${eventKey}ModelMax`) || (lang() === "de" ? "Maximal drei Models sind möglich." : "At most three models are allowed.");
     }
   }
 
@@ -1670,6 +2033,9 @@ function refreshAuthUi() {
 }
 
 async function initFirebaseLogin() {
+  if (simulationModeActive()) {
+    return;
+  }
   if (!authButtons.length) {
     return;
   }
@@ -2062,15 +2428,21 @@ document.addEventListener("click", async (event) => {
 
   const userButton = event.target.closest("[data-user-action]");
   if (userButton) {
+    const action = userButton.dataset.userAction;
+    const actionLabel = t(`adminImpersonationAction${action.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("")}`) || action;
+    const confirmed = await confirmImpersonationAction(actionLabel);
+    if (!confirmed) {
+      return;
+    }
     userButton.disabled = true;
     const statusTarget = document.querySelector("#event-user-status") || formStatus;
     setStatus(statusTarget, t("sending"));
     try {
       const result = await userSummaryPost({
-        action: userButton.dataset.userAction,
+        action,
         registrationId: userButton.dataset.registrationId
       });
-      setStatus(statusTarget, userActionStatusMessage(userButton.dataset.userAction, result.status) || (lang() === "de" ? "Status aktualisiert." : "Status updated."));
+      setStatus(statusTarget, userActionStatusMessage(action, result.status) || (lang() === "de" ? "Status aktualisiert." : "Status updated."));
       await loadUserSummary();
       await loadAdminPanel();
     } catch {
@@ -2084,12 +2456,19 @@ document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-admin-action]");
   if (!button) return;
 
+  const action = button.dataset.adminAction;
+  const actionLabel = t(`adminImpersonationAction${action.charAt(0).toUpperCase() + action.slice(1)}`) || action;
+  const confirmed = await confirmImpersonationAction(actionLabel);
+  if (!confirmed) {
+    return;
+  }
+
   button.disabled = true;
   const statusTarget = currentAdminStatusTarget(button);
   setStatus(statusTarget, t("sending"));
   try {
     await adminPost({
-      action: button.dataset.adminAction,
+      action,
       registrationId: button.dataset.registrationId
     });
     setStatus(statusTarget, t("adminSaved"));
@@ -2156,11 +2535,73 @@ window.addEventListener("bcb:languagechange", () => {
   renderSimulationNotice();
 });
 
+async function bootstrapSimulationMode() {
+  if (!simulationModeActive()) return;
+  seedSimulationData();
+  const stored = loadStoredAdminSimulation();
+  const impersonation = stored?.email
+    ? stored
+    : (() => {
+        const first = getSimulationUsers()[0];
+        if (!first) return null;
+        return { email: first.email, displayName: first.displayName, eventFunction: first.eventFunction };
+      })();
+  if (impersonation && !stored?.email) {
+    setAdminSimulation(impersonation);
+  } else if (impersonation) {
+    setAdminSimulation(impersonation);
+  }
+  authState.profile = {
+    uid: `sim-${impersonation?.email || SIM_FIREBASE_STUB_EMAIL}`,
+    email: impersonation?.email || SIM_FIREBASE_STUB_EMAIL,
+    name: impersonation?.displayName || t("simulationModeBadge"),
+    provider: "simulation"
+  };
+  authState.idToken = "simulation-token";
+  const member = getSimulationMembers().find((m) => normalizeEmail(m.email) === normalizeEmail(impersonation?.email || "")) || null;
+  authState.member = member;
+  authState.profileComplete = Boolean(member);
+  authState.isAdmin = true;
+  authState.userSummary = {
+    otherRegisteredCount: getSimulationUsers().length,
+    registrations: getSimulationRegistrationsForEmail(impersonation?.email || "").map((item) => ({
+      ...item,
+      canWithdraw: true,
+      canRespondInvite: true
+    }))
+  };
+  authState.adminMembers = getSimulationMembers();
+  authState.adminRegistrations = getSimulationRegistrations();
+  ensureSimulationBanner();
+  refreshAuthUi();
+  renderUserSummary();
+  if (adminPanel) adminPanel.hidden = false;
+  ensureAdminFlyout();
+  ensureSimulationModeToggle();
+  syncAccountAdminTab();
+  setAdminAccessNote("", false);
+  renderAdminRegistrations(authState.adminRegistrations);
+}
+
 initMenu();
 initAccountMenu();
 initContactFlyout();
 initAccountTabs();
 initInviteeControls();
 loadEvents().then(renderEvents);
-initFirebaseLogin();
 renderRegistrationActionNotice();
+if (simulationModeActive()) {
+  bootstrapSimulationMode();
+} else {
+  initFirebaseLogin();
+}
+window.addEventListener("bcb:languagechange", () => {
+  ensureSimulationBanner();
+});
+setTimeout(() => {
+  ensureSimulationBanner();
+  if (simulationModeActive()) ensureSimulationModeToggle();
+}, 0);
+window.addEventListener("storage", (event) => {
+  if (event.key === SIM_MODE_KEY) bootstrapSimulationMode();
+});

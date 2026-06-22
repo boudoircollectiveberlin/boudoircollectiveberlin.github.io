@@ -41,6 +41,7 @@ function inviteSummary(invitees) {
 
 function eventDetailPath(eventId) {
   if (eventId === "heilstaette-grabowsee-2026-07-04") return "event-grabowsee.html";
+  if (eventId === "schloss-wrodow-2026-08-08") return "event-wrodow.html";
   return "account.html";
 }
 

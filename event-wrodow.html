@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="wrodowPageTitle">Schloss Wrodow | Boudoir Collective Berlin</title>
+  <meta name="description" content="Eventbewerbung f&uuml;r Schloss Wrodow: Boudoir & Sensual Community-Shooting mit Partnerbest&auml;tigung." data-i18n-attrs="content:wrodowMetaDescription">
+  <meta property="og:title" content="Schloss Wrodow: Boudoir & Sensual" data-i18n-attrs="content:wrodowOgTitle">
+  <meta property="og:description" content="Location- und Mood-Referenzen, Ablauf und Bewerbung f&uuml;r das Schloss Wrodow Community-Shooting." data-i18n-attrs="content:wrodowOgDescription">
+  <meta property="og:image" content="assets/images/location/wrodow/wrodow-sommer.jpg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__name">Boudoir Collective Berlin</span>
+      <a class="brand__meta" href="https://instagram.com/boudoircollectiveberlin" target="_blank" rel="noopener" aria-label="Instagram @boudoircollectiveberlin">
+        <img src="assets/instagram_glyph_white.svg" alt="" aria-hidden="true">
+        <span>@boudoircollectiveberlin</span>
+      </a>
+    </div>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="sr-only">Menu</span>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Hauptnavigation" data-menu>
+      <a class="nav-home" href="index.html" data-i18n="navHome">Home</a>
+      <a href="index.html#events" data-i18n="navEvents">Events</a>
+      <a href="index.html#codex" data-i18n="navCodex">Codex</a>
+      <a href="account.html" data-i18n="navRegister">Registrierung</a>
+      <a href="legal.html" data-i18n="navLegal">Rechtliches</a>
+    </nav>
+    <div class="topbar__actions">
+      <div class="lang-switch" aria-label="Language">
+        <span data-i18n="langLabel">Sprache</span>
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="account-menu" data-account-menu>
+        <button class="account-menu__trigger" type="button" aria-expanded="false" aria-controls="account-flyout" data-account-toggle>
+          <span class="sr-only" data-i18n="accountMenu">Account</span>
+          <span class="account-menu__icon" aria-hidden="true"></span>
+        </button>
+        <div class="account-menu__panel" id="account-flyout" hidden data-account-panel>
+          <div class="account-menu__section">
+            <p class="account-menu__eyebrow" data-i18n="accountMenu">Account</p>
+            <p class="account-menu__badge" id="topbar-member-status" hidden></p>
+            <p class="account-menu__status" id="topbar-auth-status" role="status" data-i18n="authFlyoutSignedOut">Login f&uuml;r Profil, Eventanmeldung und sp&auml;tere Updates.</p>
+          </div>
+          <div class="account-menu__section auth-buttons">
+            <button class="button button--primary" type="button" data-auth-provider="google" data-i18n="authGoogle" disabled>Mit Google einloggen</button>
+            <button class="button button--ghost" type="button" data-auth-provider="microsoft" data-i18n="authMicrosoft" disabled>Mit Microsoft einloggen</button>
+          </div>
+          <div class="account-menu__section account-menu__links">
+            <a class="button button--ghost" href="account.html" data-account-profile-link data-i18n="accountFlyoutRegister">Zur Registrierung</a>
+            <button class="button button--ghost" type="button" data-auth-logout hidden data-i18n="authLogout">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="event-hero event-hero--wrodow" aria-labelledby="event-title">
+      <div class="event-hero__image" aria-hidden="true"></div>
+      <div class="event-hero__content">
+        <p class="eyebrow" data-i18n="wrodowHeroEyebrow">08.08.2026 · TFP / Costsharing</p>
+        <h1 id="event-title" data-i18n="wrodowHeroTitle">Schloss Wrodow: Boudoir & Sensual</h1>
+        <p data-i18n="wrodowHeroCopy">Community-Shooting in einer besonderen Schloss-Location. Pro Bewerbung brauchen wir genau eine fotografierende Person und ein oder mehrere Models. Eine Person reicht die Bewerbung f&uuml;r das geplante Setup ein; weitere beteiligte Personen werden per Einladungslink eingebunden.</p>
+        <div class="event-facts" aria-label="Kerndetails zum Event">
+          <article class="event-facts__item">
+            <strong data-i18n="wrodowCostLabel">Kosten</strong>
+            <span data-i18n="wrodowCostValue">konkrete Umlage pro Teilnehmer:in wird noch ermittelt</span>
+          </article>
+          <article class="event-facts__item">
+            <strong data-i18n="wrodowSetupLabel">Setup</strong>
+            <span data-i18n="wrodowSetupValue">genau 1 Fotograf:in, 1 bis 3 Models</span>
+          </article>
+          <article class="event-facts__item">
+            <strong data-i18n="wrodowFlowLabel">Ablauf</strong>
+            <span data-i18n="wrodowFlowValue">Bewerbung, Invite-Best&auml;tigung, Admin-Freigabe</span>
+          </article>
+        </div>
+        <div class="hero__actions">
+          <a class="button button--primary" href="#application" data-i18n="wrodowHeroPrimary">Bewerbung starten</a>
+          <a class="button button--ghost" href="#location-reference" data-i18n="wrodowHeroSecondary">Location ansehen</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--split">
+      <div class="section__heading">
+        <p class="eyebrow" data-i18n="wrodowFlowEyebrow">Bewerbungslogik</p>
+        <h2 data-i18n="wrodowFlowTitle">Bewerbung, Best&auml;tigung, Admin-Freigabe</h2>
+        <p data-i18n="wrodowFlowCopy">Eine Bewerbung wird immer von einer hauptverantwortlichen Person eingereicht. Pro Setup ist genau ein:e Fotograf:in vorgesehen, dazu ein oder mehrere Models. Weitere beteiligte Personen werden eingeladen und machen die Bewerbung erst vollst&auml;ndig, wenn sie den Link mit eingeloggt best&auml;tigtem Account annehmen.</p>
+      </div>
+      <div class="steps">
+        <article><span>1</span><h3 data-i18n="wrodowStep1Title">Profil</h3><p data-i18n="wrodowStep1Copy">Login und privates Community-Profil sind Pflicht, weil die E-Mail dar&uuml;ber best&auml;tigt ist.</p></article>
+        <article><span>2</span><h3 data-i18n="wrodowStep2Title">Einladungen</h3><p data-i18n="wrodowStep2Copy">Die hauptverantwortliche Person tr&auml;gt die weiteren Beteiligten ein. Diese erhalten eine E-Mail und m&uuml;ssen den Link mit eingeloggt best&auml;tigtem Account annehmen, damit die Bewerbung vollst&auml;ndig wird.</p></article>
+        <article><span>3</span><h3 data-i18n="wrodowStep3Title">Admin-Pr&uuml;fung</h3><p data-i18n="wrodowStep3Copy">Sobald alle Einladungen best&auml;tigt sind, pr&uuml;fen Admins jede Bewerbung einzeln und geben sie frei, lehnen sie ab oder setzen sie zur&uuml;ck.</p></article>
+      </div>
+    </section>
+
+    <section class="section reference-section" id="location-reference">
+      <div class="reference-section__intro">
+        <div class="section__heading">
+          <p class="eyebrow" data-i18n="wrodowReferenceEyebrow">Location reference</p>
+          <h2 data-i18n="wrodowReferenceTitle">Location reference: Schloss Wrodow</h2>
+          <p data-i18n="wrodowReferenceCopy">Diese Referenzbilder zeigen Atmosph&auml;re und architektonischen Charakter von Schloss Wrodow. Sie dienen ausschlie&szlig;lich als Mood- und Location-Referenz. Detailbilder aus dem Vorjahres-Event werden nachgeliefert.</p>
+        </div>
+        <div class="reference-section__note">
+          <strong data-i18n="wrodowReferenceNoteTitle">Nicht unsere Eventfotos</strong>
+          <span data-i18n="wrodowReferenceNoteCopy">Die Galerie zeigt das Schloss vor dem Event. Tats&auml;chlicher Set-Zugang, Sicherheitsregeln und nutzbare R&auml;ume werden separat durch die Orga best&auml;tigt.</span>
+        </div>
+      </div>
+      <div class="reference-gallery">
+        <figure class="reference-gallery__feature">
+          <img src="assets/images/location/wrodow/wrodow-sommer.jpg" alt="Schloss Wrodow im Sommer, Hauptfassade mit Park" data-i18n-attrs="alt:wrodowAltSommer">
+          <figcaption data-i18n="wrodowCaptionSommer" data-i18n-html="true"><a href="https://commons.wikimedia.org/wiki/File:Schloss_Wrodow_im_Sommer.JPG">Schloss Wrodow im Sommer</a> via Wikimedia Commons</figcaption>
+        </figure>
+        <figure class="reference-gallery__placeholder" data-wrodow-placeholder>
+          <span class="reference-gallery__placeholder-label" data-i18n="wrodowPlaceholderLabel">Platzhalter: Detailbild wird nachgereicht</span>
+        </figure>
+        <figure class="reference-gallery__placeholder" data-wrodow-placeholder>
+          <span class="reference-gallery__placeholder-label" data-i18n="wrodowPlaceholderLabel">Platzhalter: Detailbild wird nachgereicht</span>
+        </figure>
+        <figure class="reference-gallery__placeholder" data-wrodow-placeholder>
+          <span class="reference-gallery__placeholder-label" data-i18n="wrodowPlaceholderLabel">Platzhalter: Detailbild wird nachgereicht</span>
+        </figure>
+        <figure class="reference-gallery__placeholder" data-wrodow-placeholder>
+          <span class="reference-gallery__placeholder-label" data-i18n="wrodowPlaceholderLabel">Platzhalter: Detailbild wird nachgereicht</span>
+        </figure>
+      </div>
+      <p class="attribution" data-i18n="wrodowAttribution" data-i18n-html="true">Location reference: <a href="https://commons.wikimedia.org/wiki/File:Schloss_Wrodow_im_Sommer.JPG">"Schloss Wrodow im Sommer"</a> via Wikimedia Commons. Lizenziert unter <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. Bild kann zugeschnitten oder verkleinert worden sein. Detailbilder aus dem Vorjahres-Event werden nachgeliefert.</p>
+    </section>
+
+    <section class="section section--register" id="application">
+      <div class="section__heading">
+        <p class="eyebrow" data-i18n="wrodowApplicationEyebrow">Bewerbung</p>
+        <h2 data-i18n="wrodowApplicationTitle">F&uuml;r Schloss Wrodow bewerben</h2>
+        <p data-i18n="wrodowApplicationCopy">Bitte zuerst einloggen und dein privates Community-Profil speichern. F&uuml;r Wrodow brauchen wir pro Bewerbung genau eine fotografierende Person und mindestens ein Model. Weitere Beteiligte werden per Mail eingeladen und hinterlegen ihre Detaildaten erst selbst beim Annehmen. MUA bitte nicht hier mit anmelden, sondern separat vorab mitteilen.</p>
+      </div>
+      <div class="account-locked" data-event-auth-gate>
+        <p class="eyebrow" data-i18n="registerEyebrow">Registrierung</p>
+        <strong data-event-auth-gate-title data-i18n="wrodowLoginRequiredTitle">Bitte zuerst einloggen</strong>
+        <p data-event-auth-gate-copy data-i18n="wrodowLoginRequiredCopy">Fuer die Eventbewerbung brauchst du zuerst deinen Login und danach dein privates Community-Profil. Name und E-Mail werden dann aus deinem Account uebernommen.</p>
+        <a class="button button--primary" href="account.html#profile-form" data-event-auth-gate-link data-i18n="wrodowLoginRequiredAction">Zum Login und Profil</a>
+      </div>
+      <form class="register-form" id="register-form" novalidate hidden>
+        <input type="hidden" name="eventId" value="schloss-wrodow-2026-08-08">
+        <label>
+          <span data-i18n="eventFunctions">Ich melde mich f&uuml;r dieses Event an als</span>
+          <select name="eventFunction" required>
+            <option value="" data-i18n="eventFunctionPlaceholder">Funktion ausw&auml;hlen</option>
+            <option value="model" data-i18n="roleModel">Model</option>
+            <option value="photographer" data-i18n="rolePhotographer">Fotograf:in</option>
+          </select>
+        </label>
+        <p class="full" data-i18n="wrodowProfileAutoCopy">Name, E-Mail und vorhandene Profildaten werden automatisch aus deinem Community-Profil &uuml;bernommen.</p>
+        <fieldset class="invitee-list full" data-invitee-list>
+          <legend data-i18n="wrodowInviteListTitle">Weitere beteiligte Personen</legend>
+          <div class="invitee-card" data-invitee-card>
+            <label><span data-i18n="wrodowInviteEmailLabel">E-Mail der eingeladenen Person</span><input name="inviteEmail" type="email" placeholder="email@example.com" data-i18n-attrs="placeholder:wrodowInviteEmailPlaceholder"></label>
+            <label>
+              <span data-i18n="wrodowInviteFunctionLabel">Funktion der eingeladenen Person</span>
+              <select name="inviteFunction">
+                <option value="" data-i18n="wrodowInviteFunctionPlaceholder">Funktion ausw&auml;hlen</option>
+                <option value="model" data-i18n="roleModel">Model</option>
+                <option value="photographer" data-i18n="rolePhotographer">Fotograf:in</option>
+              </select>
+            </label>
+            <button class="button button--ghost invitee-card__remove" type="button" data-remove-invitee hidden data-i18n="wrodowInviteRemove">Entfernen</button>
+          </div>
+          <button class="button button--ghost" type="button" data-add-invitee data-i18n="wrodowInviteAdd">Weitere Person hinzufügen</button>
+        </fieldset>
+        <label class="full"><span data-i18n="notesLabel">Hinweise</span><textarea name="notes" rows="5" data-i18n-placeholder="notesPlaceholder" placeholder="Erfahrung, Bildideen, Grenzen, organisatorische Hinweise"></textarea></label>
+        <label class="honeypot">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+        <label class="checkbox full"><input type="checkbox" name="partnerNotice"><span data-i18n="wrodowInviteNoticeCopy">Falls ich weitere beteiligte Personen eintrage, best&auml;tige ich, dass ich sie einladen darf. Diese Personen erhalten einen Link und m&uuml;ssen mit eingeloggt best&auml;tigtem Account annehmen oder ablehnen.</span></label>
+        <label class="checkbox full"><input type="checkbox" name="consent" required><span data-i18n="consentCopy">Ich akzeptiere den Codex, insbesondere Consent, Privatsph&auml;re am Set und finale Bildfreigabe.</span></label>
+        <label class="checkbox full"><input type="checkbox" name="privacy" required><span data-i18n="privacyCopy" data-i18n-html="true">Ich bin mit der Verarbeitung meiner Angaben zur Eventorganisation einverstanden.</span></label>
+        <div class="form-actions full">
+          <button class="button button--primary" type="submit" data-i18n="sendSignup">Anmeldung senden</button>
+          <p id="form-status" role="status"></p>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span data-i18n="footerName">Boudoir Collective Berlin</span>
+    <div class="footer__links">
+      <a href="legal.html#imprint" data-i18n="footerImprint">Impressum</a>
+      <a href="legal.html#privacy" data-i18n="footerPrivacy">Datenschutz</a>
+    </div>
+    <span class="footer__license" data-i18n="wrodowFooterLicense" data-i18n-html="true">Referenzbild: <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> via Wikimedia Commons.</span>
+  </footer>
+
+  <script src="i18n.js" defer></script>
+  <script src="site-config.js" defer></script>
+  <script src="script.js" defer></script>
+</body>
+</html>

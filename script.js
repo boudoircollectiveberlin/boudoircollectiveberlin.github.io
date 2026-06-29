@@ -548,15 +548,24 @@ function registrationOverviewMarkup(item) {
   return lines.map((line) => `<span>${escapeHtml(line)}</span>`).join("");
 }
 
-function inviteLine(invitee, index, registrationId, editable) {
+function inviteLine(invitee, index, registrationId, editable, allowAdminActions = false) {
   const label = `Invite ${escapeHtml(invitee.name || invitee.email)}${invitee.name ? ` (${escapeHtml(invitee.email)})` : ""} \u00b7 ${escapeHtml(inviteStatusLabel(invitee.status || "pending"))}`;
   if (!editable) return `<span>${label}</span>`;
+  const canAdminConfirmInvite = allowAdminActions && ["pending", "confirmed_profile_required"].includes(invitee.status || "pending");
+  const inviteeLabel = invitee.name
+    ? `${invitee.name} (${invitee.email || ""})`
+    : (invitee.email || (lang() === "de" ? "Unbekannt" : "Unknown"));
   return `
     <span>${label}</span>
     <form class="inline-invite-form" data-update-invite-email data-registration-id="${escapeHtml(registrationId)}" data-invite-index="${index}">
       <input name="email" type="email" value="${escapeHtml(invitee.email || "")}" required>
       <button class="button button--ghost" type="submit">${escapeHtml(lang() === "de" ? "Mail korrigieren" : "Correct email")}</button>
     </form>
+    ${canAdminConfirmInvite ? `
+      <div class="admin-row__actions">
+        <button class="button button--ghost" type="button" data-admin-invite-action="confirm" data-registration-id="${escapeHtml(registrationId)}" data-invite-index="${index}" data-invitee-label="${escapeHtml(inviteeLabel)}">${escapeHtml(lang() === "de" ? "Teilnehmer manuell bestätigen" : "Manually confirm participant")}</button>
+      </div>
+    ` : ""}
   `;
 }
 
@@ -1123,6 +1132,17 @@ function confirmImpersonationAction(label) {
   });
 }
 
+async function confirmAdminInviteApproval(inviteeLabel) {
+  const firstPrompt = lang() === "de"
+    ? `Teilnehmer ohne Mailzugang manuell bestätigen?\n\n${inviteeLabel}`
+    : `Manually confirm participant without email access?\n\n${inviteeLabel}`;
+  if (!window.confirm(firstPrompt)) return false;
+  const secondPrompt = lang() === "de"
+    ? "Bitte erneut bestätigen. Diese Aktion setzt den Invite direkt auf bestätigt."
+    : "Please confirm again. This action will directly mark the invite as confirmed.";
+  return window.confirm(secondPrompt);
+}
+
 function ensureAdminFlyout() {
   if (!authState.isAdmin) return;
   let flyout = document.querySelector("#global-admin-flyout");
@@ -1668,7 +1688,7 @@ function renderEventAdminList(registrations) {
               <strong>${escapeHtml(item.name || item.email)}${item.simulated ? " \u00b7 Simulation" : ""}</strong>
               <span>${escapeHtml(item.role || "")} \u00b7 ${escapeHtml(registrationStatusLabel(item.status || ""))}</span>
               <span class="summary-row__completion ${completion.complete ? "is-complete" : "is-incomplete"}">${escapeHtml(completion.label)}</span>
-              ${item.invitees?.map((invitee, index) => inviteLine(invitee, index, item.id, true)).join("") || ""}
+              ${item.invitees?.map((invitee, index) => inviteLine(invitee, index, item.id, true, true)).join("") || ""}
               ${item.adminStatus ? `<span>Admin \u00b7 ${escapeHtml(item.adminStatus)}</span>` : ""}
               <div class="admin-row__actions">
                 <button class="button button--ghost" type="button" data-admin-action="confirm" data-registration-id="${escapeHtml(item.id)}" ${completion.complete ? "" : "disabled"}>${escapeHtml(t("adminConfirm"))}</button>
@@ -2466,6 +2486,38 @@ document.addEventListener("click", async (event) => {
       setStatus(statusTarget, t("signupError"), true);
     } finally {
       userButton.disabled = false;
+    }
+    return;
+  }
+
+  const inviteButton = event.target.closest("[data-admin-invite-action]");
+  if (inviteButton) {
+    const action = inviteButton.dataset.adminInviteAction;
+    const inviteeLabel = inviteButton.dataset.inviteeLabel || "";
+    const impersonationConfirmed = await confirmImpersonationAction(lang() === "de" ? "Teilnehmer manuell bestätigen" : "Manually confirm participant");
+    if (!impersonationConfirmed) {
+      return;
+    }
+    const confirmed = await confirmAdminInviteApproval(inviteeLabel);
+    if (!confirmed) {
+      return;
+    }
+    inviteButton.disabled = true;
+    const statusTarget = currentAdminStatusTarget(inviteButton);
+    setStatus(statusTarget, t("sending"));
+    try {
+      await adminPost({
+        action: `admin-${action}-invite`,
+        registrationId: inviteButton.dataset.registrationId,
+        inviteIndex: Number(inviteButton.dataset.inviteIndex)
+      });
+      setStatus(statusTarget, lang() === "de" ? "Teilnehmer wurde manuell bestätigt." : "Participant was confirmed manually.");
+      await loadAdminPanel();
+      await loadUserSummary();
+    } catch {
+      setStatus(statusTarget, t("signupError"), true);
+    } finally {
+      inviteButton.disabled = false;
     }
     return;
   }

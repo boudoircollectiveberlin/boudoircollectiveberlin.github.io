@@ -516,6 +516,34 @@ export default async function handler(req, res) {
     const action = clean(body.action, 60);
     const now = new Date().toISOString();
 
+    if (action === "admin-confirm-invite") {
+      const response = await sheets.spreadsheets.values.get({ spreadsheetId, range: registrationRange });
+      const rows = response.data.values || [];
+      const rowIndex = rows.findIndex((row) => clean(row?.[1], 80) === clean(body.registrationId, 80));
+      const inviteIndex = Number(body.inviteIndex);
+      if (rowIndex < 0) {
+        res.status(404).json({ ok: false, error: "registration_not_found" });
+        return;
+      }
+      const row = rows[rowIndex];
+      const invitees = parseJson(row?.[23], []);
+      if (!Number.isInteger(inviteIndex) || !invitees[inviteIndex]) {
+        res.status(404).json({ ok: false, error: "invite_not_found" });
+        return;
+      }
+      invitees[inviteIndex].status = "confirmed";
+      invitees[inviteIndex].confirmedAt = now;
+      const sheetName = rangeSheet(registrationRange, "Registrations!A:Z");
+      await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 13, "confirmed");
+      await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 18, registrationStatus(invitees));
+      await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 21, `invite_confirmed_by_admin:${identity.email}`);
+      await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 22, now);
+      await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 23, JSON.stringify(invitees));
+      await updateCell(sheets, spreadsheetId, sheetName, rowIndex + 1, 25, invitees.map((invitee) => `${clean(invitee?.email, 180)}:${clean(invitee?.status, 80)}`).join(", "));
+      res.status(200).json({ ok: true, status: "invite_confirmed_by_admin" });
+      return;
+    }
+
     if (["confirm", "reject", "undo", "delete"].includes(action)) {
       const response = await sheets.spreadsheets.values.get({ spreadsheetId, range: registrationRange });
       const rows = response.data.values || [];

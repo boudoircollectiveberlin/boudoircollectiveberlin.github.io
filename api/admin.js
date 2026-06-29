@@ -80,6 +80,14 @@ function assertMailAccepted(mailResult, context) {
   throw error;
 }
 
+function registrationStatus(invitees) {
+  if (!invitees.length) return "pending_review";
+  if (invitees.some((participant) => clean(participant?.status, 80) === "rejected")) return "invite_rejected";
+  if (invitees.some((participant) => clean(participant?.status, 80) === "pending")) return "pending_invites";
+  if (invitees.some((participant) => clean(participant?.status, 80) === "confirmed_profile_required")) return "invite_profiles_required";
+  return "pending_review";
+}
+
 function humanEventLabel(eventId) {
   return eventLabel(eventId);
 }

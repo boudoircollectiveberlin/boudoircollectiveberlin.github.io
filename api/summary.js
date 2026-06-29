@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { applyCors, clean, getSheetsClient, isAdminIdentity, readBearerToken, verifyFirebaseIdToken } from "./_google.js";
 import { actionUrl, sendMail } from "./_mail.js";
-import { GRABOWSEE_EVENT_ID, eventLabel } from "./register.js";
+import { GRABOWSEE_EVENT_ID, WRODOW_EVENT_ID, eventLabel } from "./register.js";
 
 function columnName(index) {
   let name = "";
@@ -62,8 +62,7 @@ function isSimulatedRow(row) {
 }
 
 function humanEventLabel(eventId) {
-  if (eventId === GRABOWSEE_EVENT_ID) return "Heilstätte Grabowsee";
-  return eventId;
+  return eventLabel(eventId);
 }
 
 function registrationSummary(row, identityEmail) {
@@ -256,7 +255,7 @@ export default async function handler(req, res) {
           res.status(400).json({ ok: false, error: "invalid_invite" });
           return;
         }
-        if (clean(row?.[2], 120) === GRABOWSEE_EVENT_ID && (roles.filter((item) => item === "photographer").length !== 1 || roles.filter((item) => item === "model").length > 3 || !["model", "photographer"].includes(role))) {
+        if ([GRABOWSEE_EVENT_ID, WRODOW_EVENT_ID].includes(clean(row?.[2], 120)) && (roles.filter((item) => item === "photographer").length !== 1 || roles.filter((item) => item === "model").length > 3 || !["model", "photographer"].includes(role))) {
           res.status(400).json({ ok: false, error: "role_rules" });
           return;
         }

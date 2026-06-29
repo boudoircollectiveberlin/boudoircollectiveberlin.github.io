@@ -7,6 +7,11 @@ const INSTAGRAM_RE = /^@?[a-zA-Z0-9._]{1,30}$/;
 const ALLOWED_EVENT_FUNCTIONS = new Set(["model", "photographer", "mua", "team", "other"]);
 const MAX_INVITEES = 6;
 export const GRABOWSEE_EVENT_ID = "heilstaette-grabowsee-2026-07-04";
+export const WRODOW_EVENT_ID = "schloss-wrodow-2026-08-08";
+
+function isStructuredShootEvent(eventId) {
+  return eventId === GRABOWSEE_EVENT_ID || eventId === WRODOW_EVENT_ID;
+}
 
 function normalizeInstagram(value) {
   const raw = clean(value, 300);
@@ -70,19 +75,20 @@ export function validate(payload) {
   if (!privacy) errors.privacy = "privacy_required";
   if (payload.website && clean(payload.website)) errors.website = "bot_rejected";
 
-  if (eventId === GRABOWSEE_EVENT_ID) {
+  if (isStructuredShootEvent(eventId)) {
+    const eventKey = eventId === GRABOWSEE_EVENT_ID ? "grabowsee" : "wrodow";
     const participantRoles = [eventFunction, ...invitees.map((participant) => participant.eventFunction)].filter(Boolean);
     const photographerCount = participantRoles.filter((role) => role === "photographer").length;
     const modelCount = participantRoles.filter((role) => role === "model").length;
 
-    if (!["model", "photographer"].includes(eventFunction)) errors.eventFunction = "grabowsee_role_invalid";
+    if (!["model", "photographer"].includes(eventFunction)) errors.eventFunction = `${eventKey}_role_invalid`;
     if (invitees.some((participant) => !["model", "photographer"].includes(participant.eventFunction))) {
-      errors.invitees = "grabowsee_invite_role_invalid";
+      errors.invitees = `${eventKey}_invite_role_invalid`;
     }
-    if (invitees.length > 3) errors.invitees = "grabowsee_max_invitees";
-    if (photographerCount !== 1) errors.roleMix = "grabowsee_one_photographer_required";
-    if (modelCount < 1) errors.roleMix = "grabowsee_model_required";
-    if (modelCount > 3) errors.roleMix = "grabowsee_model_max";
+    if (invitees.length > 3) errors.invitees = `${eventKey}_max_invitees`;
+    if (photographerCount !== 1) errors.roleMix = `${eventKey}_one_photographer_required`;
+    if (modelCount < 1) errors.roleMix = `${eventKey}_model_required`;
+    if (modelCount > 3) errors.roleMix = `${eventKey}_model_max`;
   }
 
   const primaryInvitee = invitees[0] || {};
@@ -126,13 +132,14 @@ function hashToken(token) {
 }
 
 export function eventLabel(eventId) {
-  if (eventId === "heilstaette-grabowsee-2026-07-04") return "Heilst\u00e4tte Grabowsee";
+  if (eventId === GRABOWSEE_EVENT_ID) return "Heilst\u00e4tte Grabowsee";
+  if (eventId === WRODOW_EVENT_ID) return "Schloss Wrodow";
   return eventId;
 }
 
 function eventDateLabel(eventId) {
-  if (eventId === "heilstaette-grabowsee-2026-07-04") return "04.07.2026";
-  if (eventId === "schloss-wrodow-2026-08-08") return "08.08.2026";
+  if (eventId === GRABOWSEE_EVENT_ID) return "04.07.2026";
+  if (eventId === WRODOW_EVENT_ID) return "08.08.2026";
   return "";
 }
 

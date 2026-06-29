@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { actionUrl, sendMail } from "./_mail.js";
 import { applyCors, clean, getSheetsClient, isAdminIdentity, readBearerToken, readBody, verifyFirebaseIdToken } from "./_google.js";
-import { GRABOWSEE_EVENT_ID, validate as validateRegistrationPayload } from "./register.js";
+import { GRABOWSEE_EVENT_ID, WRODOW_EVENT_ID, eventLabel, validate as validateRegistrationPayload } from "./register.js";
 
 function rangeSheet(range, fallback) {
   return (range || fallback).split("!")[0];
@@ -81,13 +81,12 @@ function assertMailAccepted(mailResult, context) {
 }
 
 function humanEventLabel(eventId) {
-  if (eventId === GRABOWSEE_EVENT_ID) return "Heilst\u00e4tte Grabowsee";
-  return eventId;
+  return eventLabel(eventId);
 }
 
 function humanEventDateLabel(eventId) {
   if (eventId === GRABOWSEE_EVENT_ID) return "04.07.2026";
-  if (eventId === "schloss-wrodow-2026-08-08") return "08.08.2026";
+  if (eventId === WRODOW_EVENT_ID) return "08.08.2026";
   return "";
 }
 

@@ -1,13 +1,12 @@
 {
-  "updatedAt": "2026-05-20",
+  "updatedAt": "2026-07-19",
   "events": [
     {
       "id": "heilstaette-grabowsee-2026-07-04",
-      "detailUrl": "event-grabowsee.html",
       "coverImage": "assets/images/location/grabowsee/grabowsee-corridor.jpg",
-      "group": "upcoming",
+      "group": "past",
       "type": "TFP / Costsharing",
-      "status": "interest",
+      "status": "completed",
       "dateLabel": {
         "de": "04.07.2026",
         "en": "4 Jul 2026"

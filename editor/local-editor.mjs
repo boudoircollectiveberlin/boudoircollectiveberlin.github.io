@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { contentFile, editablePages, getEditablePage, isLocalRequest, validatePageHtml } from './local-editor-core.mjs';
 import { readTranslations, saveTranslation, applyTranslationDrafts, writeTranslationSource } from './local-translations.mjs';
 import { readEventCatalog } from '../shared/read-events.mjs';
+import { readReviews, writeReviews, reviewFile, describeReviews, applyReviews } from './event-reviews.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const editorRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -133,7 +134,8 @@ export default function localEditor() {
             }
             if (req.method === 'GET' && url.pathname === '/__editor/api/events') {
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
-              return res.end(JSON.stringify(await readEventCatalog(root)));
+              const catalog=await readEventCatalog(root);
+              return res.end(JSON.stringify({...catalog,reviews:describeReviews(catalog,await readReviews(root))}));
             }
             if (req.method === 'GET' && url.pathname === '/__editor/api/media') {
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -195,12 +197,17 @@ export default function localEditor() {
                 const updated=applyTranslationDrafts(original,body.translations || {});
                 const originalEvents=await readFile(path.join(root,'data/events.json'),'utf8');
                 const eventData=applyEventDrafts(JSON.parse(originalEvents),body.events || []);
+                const originalReviews=await readFile(reviewFile(root),'utf8');
+                if((await lstat(reviewFile(root))).isSymbolicLink())throw new Error('Verknüpfte Prüfdatei ist nicht erlaubt.');
+                const updatedReviews=JSON.stringify(applyReviews(eventData,JSON.parse(originalReviews),body.events || [],JSON.parse(originalEvents)),null,2)+'\n';
                 const updatedEvents=body.events?.length?JSON.stringify(eventData,null,2)+'\n':originalEvents;
                 try {
                   if(updated!==original)await writeTranslationSource(root,updated);
                   if(updatedEvents!==originalEvents)await writeEventSource(root,updatedEvents);
+                  if(updatedReviews!==originalReviews)await writeReviews(root,updatedReviews);
                   await savePage(body.id,body.html);
                 } catch(error) {
+                  if(updatedReviews!==originalReviews)await writeReviews(root,originalReviews);
                   if(updatedEvents!==originalEvents)await writeEventSource(root,originalEvents);
                   if(updated!==original)await writeTranslationSource(root,original);
                   throw error;

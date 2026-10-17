@@ -39,6 +39,8 @@ let activeInlineNode;
 let insertionAnchor;
 let draggedComponent = '';
 let eventRecords = [];
+let eventReviewStates = {};
+let eventReviewBaselines = {};
 let eventDrafts = {};
 
 function setStatus(message) {
@@ -425,6 +427,7 @@ async function savePage() {
     for(const event of events)if(JSON.stringify(eventDrafts[event.id+'/'+event.field])===JSON.stringify(event))delete eventDrafts[event.id+'/'+event.field];
     savedSnapshot = html;
     pageHistory.reset(captureHistory());
+    await loadEventPreview();
     updateStatus();
   } catch (error) {
     saveButton.disabled = false;
@@ -678,6 +681,8 @@ async function loadEventPreview() {
     if(!response.ok)throw new Error('Eventdaten konnten nicht geladen werden.');
     const data=await response.json();
     eventRecords=data.events;
+    eventReviewStates=data.reviews || {};
+    eventReviewBaselines=Object.fromEntries(data.events.flatMap(event=>Object.keys(eventReviewStates).filter(key=>key.startsWith(event.id+'/')).map(key=>[key,{...eventText(event,key.slice(event.id.length+1))}])));
     for(const draft of Object.values(eventDrafts)){const event=eventRecords.find(item=>item.id===draft.id);if(event)setEventText(event,draft.field,{...draft.values});}
     if(generation!==eventGeneration || doc!==canvas.contentDocument)return;
     for(const [id,group,label] of hosts) {
@@ -703,15 +708,31 @@ function openEventField(event,field) {
   $('#event-field-title').textContent=(event.title.de||event.id)+' · '+field;
   $('#event-de').value=eventText(event,field).de||'';$('#event-en').value=eventText(event,field).en||'';
   $('#event-message').textContent='Gemeinsamer Eventdatensatz für Liste und Detailseite · Änderungen bleiben bis zum Speichern im Entwurf.';
+  $('#event-reviewed').checked=false;
+  updateEventReviewStatus();
   dialog.showModal();$('#event-'+editingLocale).focus();
 }
+function updateEventReviewStatus() {
+  const dialog=$('#event-dialog'),key=dialog.dataset.id+'/'+dialog.dataset.field;
+  const values={de:$('#event-de').value,en:$('#event-en').value},baseline=eventReviewBaselines[key];
+  const draft=eventDrafts[key];
+  let status=eventReviewStates[key]?.status || 'unreviewed';
+  if(baseline && values.de!==baseline.de)status='outdated';
+  else if(baseline && values.en!==baseline.en)status='changed';
+  if(draft?.review?.source===values.de && draft?.review?.target===values.en)status='reviewed';
+  if(!values.de.trim() || !values.en.trim())status='missing';
+  $('#event-review-status').textContent={missing:'Eine Sprachfassung fehlt.',unreviewed:'Vorhandene Übersetzung · noch nicht bestätigt.',outdated:'Deutsch wurde geändert · Englisch bitte prüfen.',changed:'Englisch wurde geändert · Prüfung noch offen.',reviewed:'Englisch für diesen deutschen Textstand geprüft.'}[status];
+  $('#event-reviewed').disabled=status==='missing';
+}
+for(const locale of ['de','en'])$('#event-'+locale).addEventListener('input',()=>{$('#event-reviewed').checked=false;updateEventReviewStatus();});
 $('#event-close').addEventListener('click',()=>$('#event-dialog').close());
 $('#event-save').addEventListener('click',()=>{
   const dialog=$('#event-dialog'),event=eventRecords.find(item=>item.id===dialog.dataset.id),field=dialog.dataset.field;
   if(!event)return;
   const values={de:$('#event-de').value,en:$('#event-en').value};
   try{for(const value of Object.values(values))safeEventRichText(value);}catch(error){$('#event-message').textContent=error.message;return;}
-  setEventText(event,field,values);eventDrafts[event.id+'/'+field]={id:event.id,field,values};
+  const baseline=eventReviewBaselines[event.id+'/'+field];
+  setEventText(event,field,values);eventDrafts[event.id+'/'+field]={id:event.id,field,values,...($('#event-reviewed').checked?{review:{source:values.de,target:values.en,expectedSource:baseline?.de,expectedTarget:baseline?.en}}:{})};
   dialog.close();recordChange();loadEventPreview();
 });
 

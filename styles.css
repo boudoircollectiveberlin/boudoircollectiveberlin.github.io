@@ -599,6 +599,26 @@ h3 {
   gap: 12px;
 }
 
+.bcb-layout-grid__items {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.bcb-layout-grid__card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, .18);
+}
+
+.bcb-layout-grid__card p {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
 .metrics {
   grid-template-columns: repeat(4, 1fr);
 }
@@ -2119,6 +2139,7 @@ textarea:focus,
 
   .event-grid,
   .codex-grid,
+  .bcb-layout-grid__items,
   .contact-grid,
   .invitee-card,
   .account-steps,

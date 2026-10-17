@@ -99,8 +99,8 @@ export default function localEditor() {
               res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; frame-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'");
               return res.end(await readFile(path.join(editorRoot, 'index.html')));
             }
-            if (req.method === 'GET' && ['/__editor/client.js', '/__editor/editor.css', '/__editor/preview.css', '/__editor/history.mjs', '/__editor/content-model.mjs'].includes(url.pathname)) {
-              const asset = url.pathname.endsWith('content-model.mjs') ? 'content-model.mjs' : url.pathname.endsWith('preview.css') ? 'preview.css' : url.pathname.endsWith('.css') ? 'editor.css' : url.pathname.endsWith('history.mjs') ? 'history.mjs' : 'client.js';
+            if (req.method === 'GET' && ['/__editor/client.js', '/__editor/editor.css', '/__editor/preview.css', '/__editor/history.mjs', '/__editor/content-model.mjs', '/__editor/section-layouts.mjs'].includes(url.pathname)) {
+              const asset = url.pathname.endsWith('section-layouts.mjs') ? 'section-layouts.mjs' : url.pathname.endsWith('content-model.mjs') ? 'content-model.mjs' : url.pathname.endsWith('preview.css') ? 'preview.css' : url.pathname.endsWith('.css') ? 'editor.css' : url.pathname.endsWith('history.mjs') ? 'history.mjs' : 'client.js';
               res.setHeader('Content-Type', asset.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
               return res.end(await readFile(path.join(editorRoot, asset)));
             }

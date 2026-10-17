@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { validateSectionLayoutMarkers } from './section-layouts.mjs';
 
 export const editablePages = Object.freeze([
   { id: 'index', title: 'Startseite', path: 'index.html' },
@@ -30,6 +31,7 @@ export function validatePageHtml(value) {
     throw new Error('Aktive Inhalte und Ereignisattribute sind im Editor nicht erlaubt.');
   if (/<\s*(?:!doctype|html|head|body)\b/i.test(value))
     throw new Error('Bitte nur den Seiteninhalt ohne Dokumenthülle speichern.');
+  validateSectionLayoutMarkers(value);
   return value;
 }
 

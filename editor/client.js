@@ -1,6 +1,7 @@
 import { renderEventCard, eventText, setEventText, applyEventBindings, safeEventRichText } from './event-content.mjs';
 import { createHistory } from './history.mjs';
-import { components, insertionAllowed, localizedValue, missingOtherLanguage } from './content-model.mjs';
+import { insertionAllowed, localizedValue, missingOtherLanguage } from './content-model.mjs';
+import { sectionLayouts } from './section-layouts.mjs';
 
 const $ = (selector) => document.querySelector(selector);
 const pageSelect = $('#page');
@@ -109,12 +110,17 @@ function outlineTargets() {
     [...parent.children].forEach((node, index) => {
       if (node.matches('script,style,svg,option,br')) return;
       const key = path + '-' + index;
-      node.dataset.editorKey = key;
-      const heading = node.matches('h1,h2,h3') ? node : node.querySelector(':scope > h1,:scope > h2,:scope > h3');
-      const kind = node.matches('nav') ? 'Navigation' : node.matches('a,button,input,select,textarea') ? 'Aktion' : node.matches('section,article') ? 'Abschnitt' : node.matches('img') ? 'Bild' : node.matches('div,main,header,footer,ul,ol,form') ? 'Container' : 'Text';
-      const label = (node.id === 'upcoming-event-grid' ? 'Kommende Events · lokale Eventdaten' : node.id === 'past-event-grid' ? 'Vergangene Events / Archiv · lokale Eventdaten' : '') || node.getAttribute('aria-label') || heading?.textContent.trim() || node.getAttribute('alt') || node.id || node.textContent.trim() || node.getAttribute('data-i18n') || node.tagName.toLowerCase();
-      targets.push({key, node, label: kind + ' · ' + label.replace(/\s+/g, ' ').slice(0,85), level: depth});
-      visit(node, depth + 1, key);
+      const eventHost = node.matches('[data-editor-event-host]');
+      const insideEventHost = Boolean(node.closest('[data-editor-event-host]')) && !eventHost;
+      const target = !insideEventHost && (node.tagName === 'MAIN' || node.matches('section,article,[data-bcb-layout]') || eventHost);
+      if (target) {
+        node.dataset.editorKey = key;
+        const heading = node.matches('h1,h2,h3') ? node : node.querySelector(':scope > h1,:scope > h2,:scope > h3,:scope > .section__heading h1,:scope > .section__heading h2,:scope > .section__heading h3');
+        const kind = eventHost ? 'Eventbereich' : node.tagName === 'MAIN' ? 'Seiteninhalt' : 'Abschnitt';
+        const label = (node.id === 'upcoming-event-grid' ? 'Kommende Events · gemeinsame Eventdaten' : node.id === 'past-event-grid' ? 'Vergangene Events / Archiv · gemeinsame Eventdaten' : '') || node.getAttribute('aria-label') || heading?.textContent.trim() || node.id || node.textContent.trim() || node.tagName.toLowerCase();
+        targets.push({key, node, label: kind + ' · ' + label.replace(/\s+/g, ' ').slice(0,85), level: depth});
+      }
+      visit(node, depth + (target ? 1 : 0), target ? key : path);
     });
   }
   visit(doc.body);
@@ -235,6 +241,8 @@ function applyHistory(value) {
   body().innerHTML = state.html;
   lockTranslatedText();
   renderOutline();
+  if (selectedKey && !body().querySelector(`[data-editor-key="${CSS.escape(selectedKey)}"]`))
+    selectedKey = body().querySelector('main[data-editor-key]')?.dataset.editorKey || '';
   if (selectedKey) selectOutline(selectedKey);
   loadEventPreview();
   updateStatus();
@@ -653,7 +661,8 @@ function openContextMenu(event) {
   event.preventDefault(); selectOutline(node.dataset.editorKey);
   const rect = event.currentTarget===outline?{left:0,top:0}:canvas.getBoundingClientRect();
   $('#context-edit-text').hidden=!resourceEditable(node);
-  contextMenu.querySelectorAll('[data-insert]').forEach(button=>{button.disabled=!canInsert('container',button.dataset.insert,node);});
+  const firstLayout=sectionLayouts[0]?.id;
+  contextMenu.querySelectorAll('[data-insert]').forEach(button=>{button.disabled=!firstLayout || !canInsert(firstLayout,button.dataset.insert,node);});
   contextMenu.querySelectorAll('[data-action]').forEach(button => { button.disabled = $('#'+button.dataset.action).disabled; });
   contextMenu.hidden = false;
   contextMenu.scrollTop=0;
@@ -948,7 +957,16 @@ function attributeResources(node) {
 }
 
 function targetDescriptor(node) {
-  return node ? {tag:node.tagName,parentTag:node.parentElement?.tagName,inMain:Boolean(node.closest('main')),blocked:Boolean(node.closest('form,nav,header,footer,[data-editor-event-host],[data-i18n-html="true"]')) || Boolean(node.closest('[data-i18n]') && node.closest('[data-i18n]')!==node)} : null;
+  if (!node) return null;
+  const protectedRegion = node.closest('form,nav,header,footer,[data-editor-event-host],[data-i18n-html="true"]') ||
+    (node.tagName !== 'MAIN' && node.querySelector('form,[data-editor-event-host]'));
+  return {
+    tag:node.tagName,
+    parentTag:node.parentElement?.tagName,
+    inMain:Boolean(node.closest('main')),
+    insertionRoot:node.tagName==='MAIN' || node.matches('main > section,main > article,main > div,section,article,[data-bcb-layout]'),
+    blocked:Boolean(protectedRegion) || Boolean(node.closest('[data-i18n]') && node.closest('[data-i18n]')!==node),
+  };
 }
 
 function canInsert(type,position,node) {
@@ -956,10 +974,11 @@ function canInsert(type,position,node) {
 }
 
 function updateInsertionControls() {
-  document.querySelectorAll('[data-open-insert]').forEach(button=>button.disabled=!canInsert('container',button.dataset.openInsert,selectedNode()));
+  const firstLayout=sectionLayouts[0]?.id;
+  document.querySelectorAll('[data-open-insert]').forEach(button=>button.disabled=!firstLayout || !canInsert(firstLayout,button.dataset.openInsert,selectedNode()));
 }
 
-function openInsertion(position,type='container') {
+function openInsertion(position,type=sectionLayouts[0]?.id) {
   finishInlineEdit();
   insertionAnchor=selectedNode();
   if(!insertionAnchor)return;
@@ -979,18 +998,23 @@ function updateInsertionDialog() {
 function insertComponent(type,position,anchor) {
   if(!anchor?.isConnected || !canInsert(type,position,anchor)){setStatus('Hier ist diese Einfügung nicht zulässig.');return;}
   finishInlineEdit();stagePanelTranslation();
-  const definition=components.find(item=>item.id===type),doc=canvas.contentDocument;
-  const node=doc.createElement(definition.tag);
-  node.dataset.bcbComponent=type;
-  if(definition.container){
-    node.className=type==='section'?'section-band bcb-content-section':type==='columns'?'bcb-content-columns':'bcb-content-container';
-    if(type==='columns')for(let index=0;index<2;index++){const column=doc.createElement('div');column.dataset.bcbComponent='container';column.className='bcb-content-container';node.append(column);}
-  }else{
-    const key='editor_'+crypto.randomUUID().replaceAll('-','');
-    node.dataset.i18n=key;node.textContent=definition.text;
-    stageTranslation(key,'de',definition.text);stageTranslation(key,'en','');
-    if(type==='link'){node.href='#';node.className='button button--ghost';}
+  const definition=sectionLayouts.find(item=>item.id===type),doc=canvas.contentDocument;
+  if(!definition){setStatus('Unbekanntes Abschnittslayout.');return;}
+  const resourcePrefix='editor_'+crypto.randomUUID().replaceAll('-','');
+  let resourceIndex=0;
+  function createNode(schema,root=false) {
+    const element=doc.createElement(schema.tag);
+    if(schema.className)element.className=schema.className;
+    if(schema.resource){
+      const key=`${resourcePrefix}_${schema.resource}_${resourceIndex++}`;
+      element.dataset.i18n=key;element.textContent=schema.text;
+      stageTranslation(key,'de',schema.text);stageTranslation(key,'en','');
+    }
+    if(root){element.dataset.bcbLayout=definition.id;element.dataset.bcbComponent=definition.id;}
+    for(const child of schema.children || [])element.append(createNode(child));
+    return element;
   }
+  const node=createNode(definition.root,true);
   if(position==='inside')anchor.append(node);else anchor[position==='before'?'before':'after'](node);
   renderLocale();recordChange();
   selectOutline(node.dataset.editorKey,true);
@@ -999,14 +1023,14 @@ function insertComponent(type,position,anchor) {
 }
 
 const inventory=$('#component-inventory');
-for(const component of components){
+for(const component of sectionLayouts){
   const button=document.createElement('button');button.type='button';button.draggable=true;button.dataset.component=component.id;button.textContent=component.label;button.title='Ziehen oder zum Einfügen anklicken';
   button.addEventListener('click',()=>openInsertion(canInsert(component.id,'inside',selectedNode())?'inside':'after',component.id));
   button.addEventListener('dragstart',event=>{draggedComponent=component.id;event.dataTransfer.setData('application/x-bcb-component',component.id);event.dataTransfer.setData('text/plain',component.id);event.dataTransfer.effectAllowed='copy';frame.classList.add('component-dragging');});
   button.addEventListener('dragend',()=>{draggedComponent='';clearDropIndicators();frame.classList.remove('component-dragging');});
   inventory.append(button);
 }
-$('#insert-component').replaceChildren(...components.map(item=>new Option(item.label,item.id)));
+$('#insert-component').replaceChildren(...sectionLayouts.map(item=>new Option(item.label,item.id)));
 for(const id of ['insert-component','insert-position'])$('#'+id).addEventListener('change',updateInsertionDialog);
 $('#insert-close').addEventListener('click',()=>$('#insert-dialog').close());
 $('#insert-confirm').addEventListener('click',()=>{insertComponent($('#insert-component').value,$('#insert-position').value,insertionAnchor);$('#insert-dialog').close();});
@@ -1045,7 +1069,7 @@ function installDropTargets(host,tree=false) {
   host.addEventListener('dragleave',event=>{if(!host.contains(event.relatedTarget))clearDropIndicators();});
 }
 
-function isStructuralNode(node){return Boolean(node && node.tagName!=='MAIN' && node.matches('section,article,div,p,h1,h2,h3,h4,h5,h6,a') && node.closest('main') && !targetDescriptor(node)?.blocked);}
+function isStructuralNode(node){return Boolean(node && node.tagName!=='MAIN' && node.matches('section,article,[data-bcb-layout]') && node.closest('main') && !targetDescriptor(node)?.blocked);}
 function structuralSiblings(node){return [...node.parentElement.children].filter(isStructuralNode);}
 
 function eventResource(node){const key=node?.dataset.editorEventResource;if(!key)return null;const index=key.lastIndexOf('/');const event=eventRecords.find(item=>item.id===key.slice(0,index));return event?{event,field:key.slice(index+1)}:null;}

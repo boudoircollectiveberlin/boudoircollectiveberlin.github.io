@@ -6,7 +6,8 @@ Boudoir Collective Berlin: Astro/static HTML, CSS, vanilla JS. Branch `preview`.
 - `9d5e0ec`: event/cache architecture documentation.
 - `772c74f`: event translation review revisions.
 - `a57d732`: viewport-bounded context menus and scrollable modal dialogs.
-- Final validation: 32 tests, five-page static build, API/editor syntax checks pass. Instructions/evidence: `docs/local-validation.md`.
+- Current local change: semantic editor outline and three validated reusable section layouts; existing page fragments remain backward-compatible HTML. Not yet committed/pushed.
+- Final validation before current change: 32 tests, five-page static build, API/editor syntax checks pass. Current editor consolidation: 34 tests plus desktop/mobile browser insert/undo checks passed. Evidence: `docs/local-validation.md`.
 - Old `.codex/local-server-4175.log` removed. Test backups already restored byte-for-byte and removed. Own test server stopped; restart with `npm run dev:astro`, open `/__editor/`. Generated public/dist refreshed and retained; dependencies retained.
 - Existing untracked DSPro9 drafts, `.vscode`, AGENTS.md, project skills and local registration spreadsheet preserved. No blanket staging or cleanup of user work.
 
@@ -21,7 +22,8 @@ Boudoir Collective Berlin: Astro/static HTML, CSS, vanilla JS. Branch `preview`.
 # FRONTEND STATE
 - Single click edits active language; double-click/right-click opens paired dialog. No per-field translation buttons.
 - Preview markers ONLY indicate missing OTHER language. Review/stale status appears in event dialog; German is currently the source. General dictionary review and selectable source remain open.
-- Recursive tree, constrained component drag/drop and before/after/inside insertion, Undo/Redo, WebP media, navigation, metadata and device preview implemented.
+- Editor outline groups semantic sections instead of exposing every DOM node. Structural actions target semantic sections; insertion uses validated two-column, three-card and statement layouts. Existing fragments and direct text editing remain compatible; full typed migration of existing pages remains open.
+- Undo/Redo, WebP media, navigation, metadata and device preview implemented.
 - Context menu measured after showing and clamped to viewport with 8px gap; internally scrollable when necessary. Modals fixed/centered, height capped with internal scrolling. Browser checked bottom footer right-click and following text dialog.
 - Browser verified shared event title edits/list-detail consistency and translation confirmation save/reopen/source-change warning. Exact test source restored. Screenshots live outside repo in this chat's visualization folder.
 

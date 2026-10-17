@@ -12,11 +12,14 @@ test('editor exposes only the five migrated BCB pages', () => {
 
 test('editor accepts page fragments and rejects active content', () => {
   assert.equal(validatePageHtml('<main><h1>BCB</h1></main>'), '<main><h1>BCB</h1></main>');
+  const section='<section data-bcb-layout="editorial-section" data-bcb-component="editorial-section"></section>';
+  assert.equal(validatePageHtml(section),section);
   for (const html of [
     '<script>alert(1)</script>',
     '<img src=x onerror=alert(1)>',
     '<a href="javascript:alert(1)">Link</a>',
     '<!doctype html><html></html>',
+    '<section data-bcb-layout="custom-html" data-bcb-component="custom-html"></section>',
   ]) assert.throws(() => validatePageHtml(html));
   assert.throws(() => validatePageHtml('x'.repeat(1024 * 1024 + 1)), /1 MB/);
 });

@@ -34,9 +34,9 @@
         <button id="tab-properties" role="tab" aria-controls="panel-properties" aria-selected="false" tabindex="-1" data-tab="properties">Info</button>
       </div>
       <section id="panel-structure" class="panel" role="tabpanel" aria-labelledby="tab-structure">
-        <details class="component-library" open><summary>Komponenten einfügen</summary><p class="hint">Ziehen oder auswählen. Grüne Markierungen zeigen zulässige Ziele.</p><div id="component-inventory"></div><div class="insert-actions"><button type="button" data-open-insert="before">Davor</button><button type="button" data-open-insert="after">Danach</button><button type="button" data-open-insert="inside">In Container</button></div></details>
+        <details class="component-library" open><summary>Abschnittsvorlagen einfügen</summary><p class="hint">Geprüfte Layouts als zusammenhängende Abschnitte einfügen. Ziehen oder auswählen.</p><div id="component-inventory"></div><div class="insert-actions"><button type="button" data-open-insert="before">Davor</button><button type="button" data-open-insert="after">Danach</button><button type="button" data-open-insert="inside">In Abschnitt</button></div></details>
         <div class="panel-heading"><h1>Seitenaufbau</h1><span id="outline-count" class="count"></span></div>
-        <p class="hint">Abschnitt wählen, um ihn in der Vorschau zu bearbeiten.</p>
+        <p class="hint">Die Übersicht zeigt redaktionelle Abschnitte statt jedes HTML-Elements. Textfelder bleiben direkt in der Vorschau bearbeitbar.</p>
         <nav id="outline" aria-label="Seitenabschnitte"><p class="hint">Seite wird geladen …</p></nav>
         <button id="new-text" class="wide-button" type="button">Neuen mehrsprachigen Text anlegen</button><div class="section-actions" aria-label="Ausgewählten Abschnitt bearbeiten">
           <button id="move-up" type="button" title="Abschnitt nach oben" aria-label="Abschnitt nach oben" disabled>↑</button>
@@ -59,9 +59,9 @@
       <section id="panel-properties" class="panel" role="tabpanel" aria-labelledby="tab-properties" hidden>
         <div class="panel-heading"><h1>Auswahl</h1></div>
         <p id="selection-title" class="selection-title">Kein Abschnitt gewählt</p>
-        <p id="selection-description" class="hint">Wähle links einen Abschnitt oder direkt ein Element in der Vorschau. Texte kannst du dort unmittelbar bearbeiten.</p>
+        <p id="selection-description" class="hint">Wähle links einen Inhaltsabschnitt oder direkt ein Textfeld in der Vorschau. Texte kannst du dort unmittelbar bearbeiten.</p>
         <button id="focus-selection" class="wide-button" type="button" disabled>In Vorschau bearbeiten</button>
-        <div id="link-properties" hidden><label for="link-url">Linkadresse</label><input id="link-url" type="text"><label id="shared-link-label" hidden><input id="shared-link" type="checkbox" checked> Navigation auf allen Seiten ändern</label><button id="apply-link" class="wide-button" type="button">Link übernehmen</button></div><button id="edit-selected-translation" hidden class="wide-button" type="button" disabled>Übersetzung dieses Textes bearbeiten</button><button id="edit-metadata" class="wide-button" type="button">Seitentitel und Beschreibung</button><div class="edit-help"><strong>Hinweis</strong><p>Text per Doppelklick bearbeiten. Komponenten über Inventar oder Rechtsklick einfügen. Speichern sichert Seitenaufbau und Sprachentwürfe gemeinsam lokal.</p></div>
+        <div id="link-properties" hidden><label for="link-url">Linkadresse</label><input id="link-url" type="text"><label id="shared-link-label" hidden><input type="checkbox" id="shared-link" checked> Navigation auf allen Seiten ändern</label><button id="apply-link" class="wide-button" type="button">Navigation übernehmen</button></div><button id="edit-selected-translation" hidden class="wide-button" type="button" disabled>Übersetzung dieses Textes bearbeiten</button><button id="edit-metadata" class="wide-button" type="button">Seitentitel und Beschreibung</button><div class="edit-help"><strong>Hinweis</strong><p>Text per Doppelklick bearbeiten. Geprüfte Abschnittsvorlagen verwenden das bestehende BCB-Seitendesign; Speichern sichert Layout und Sprachentwürfe gemeinsam lokal.</p></div>
       </section>
       <section id="panel-media" class="panel" role="tabpanel" aria-labelledby="tab-media" hidden>
         <div class="panel-heading"><h1>Mediathek</h1><span id="media-count" class="count"></span></div>

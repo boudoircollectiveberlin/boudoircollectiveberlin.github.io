@@ -1,17 +1,10 @@
-export const components = Object.freeze([
-  { id: 'section', label: 'Abschnitt', tag: 'section', container: true },
-  { id: 'container', label: 'Container', tag: 'div', container: true },
-  { id: 'columns', label: 'Zwei Spalten', tag: 'div', container: true },
-  { id: 'heading', label: 'Überschrift', tag: 'h2', text: 'Neue Überschrift' },
-  { id: 'text', label: 'Text', tag: 'p', text: 'Neuer Text' },
-  { id: 'link', label: 'Link / Schaltfläche', tag: 'a', text: 'Linktext' },
-]);
+import { sectionLayouts } from './section-layouts.mjs';
 
 export function insertionAllowed(type, position, target) {
-  if (!components.some(item => item.id === type) || !['before','after','inside'].includes(position) || !target || target.blocked || !target.inMain) return false;
-  const parent = position === 'inside' ? target.tag : target.parentTag;
-  if (position !== 'inside' && target.tag === 'MAIN') return false;
-  return ['MAIN','SECTION','ARTICLE','DIV','ASIDE'].includes(parent);
+  if (!sectionLayouts.some(item => item.id === type) || !['before','after','inside'].includes(position) ||
+    !target || target.blocked || !target.inMain || !target.insertionRoot) return false;
+  if (position === 'inside') return ['MAIN','SECTION'].includes(target.tag);
+  return target.tag !== 'MAIN' && ['MAIN','SECTION','ARTICLE','DIV'].includes(target.parentTag);
 }
 
 export function localizedValue(translations, drafts, key, locale, original = '') {

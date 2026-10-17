@@ -24,7 +24,13 @@ node --check editor/client.js
 
 Der Build muss vor den Tests vorhanden sein: Einige Tests prüfen die gebauten Seiten. Telemetrie bleibt beim lokalen Build deaktiviert, damit Astro keine Benutzerkonfiguration außerhalb des Projekts schreiben muss.
 
-Letzter geprüfter Funktionsstand: 32 Tests, fünf statische Seiten und Syntaxprüfungen erfolgreich. Browserprüfung: DE/EN-Eventdialog, Bestätigung speichern/erneut öffnen, Quelländerung setzt Prüfhinweis. Teständerungen bytegenau zurückgesetzt. Rechtsklick auf den untersten Footer-Link öffnet ein vollständig sichtbares Menü; der anschließende Textdialog bleibt im Fenster. Keine Teilnehmeraktionen oder externen Schreibzugriffe ausgeführt.
+Vor der Editor-Konsolidierung: 32 Tests, fünf statische Seiten und Syntaxprüfungen erfolgreich. Browserprüfung: DE/EN-Eventdialog, Bestätigung speichern/erneut öffnen, Quelländerung setzt Prüfhinweis. Teständerungen bytegenau zurückgesetzt. Rechtsklick auf den untersten Footer-Link öffnet ein vollständig sichtbares Menü; der anschließende Textdialog bleibt im Fenster. Keine Teilnehmeraktionen oder externen Schreibzugriffe ausgeführt.
+
+## Editor-Konsolidierung (18.10.2026)
+
+Die Seiten bleiben vorerst kompatible HTML-Fragmente. Die Aufbauübersicht gruppiert jetzt nach semantischen Abschnitten; Strukturaktionen greifen nicht mehr auf beliebige Text-/Markup-Knoten. Neue Inhalte werden aus validierten Abschnittsvorlagen erzeugt: zweispaltiger Inhaltsabschnitt, Drei-Kachel-Gruppe und Statement. Layoutmarker werden beim Editor-Speichern allowlist-geprüft; Textfelder erhalten eindeutige DE/EN-Ressourcen. Bestehende Inline-Textbearbeitung und Layout-/Integrationsmarkup bleiben erhalten. Diese Zwischenstufe reduziert freie Strukturkombinationen, ist aber noch keine vollständige Migration der Bestandsseiten auf ein typisiertes Inhaltsmodell.
+
+Validierung dieser Änderung: Build vor Tests; alle 34 Tests, API- und Editor-Syntaxchecks erfolgreich. Browser geprüft: Inhaltsabschnitt eingefügt und rückgängig gemacht, Drei-Kachel-Abschnitt bei 390 px mit einspaltigem Layout und ohne horizontales Überlaufen eingefügt und rückgängig gemacht. Neue Layoutvorlagen erst nach Prüfung ihres Strukturmodells und ihrer responsiven Darstellung ergänzen.
 
 ## Bereinigung und Fortsetzung
 

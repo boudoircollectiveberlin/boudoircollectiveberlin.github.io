@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import body from '../content/pages/index.html?raw';
+const meta = {
+  "lang": "de",
+  "bodyAttrs": "",
+  "head": [
+    "<title>Boudoir Collective Berlin | Community für Boudoir & Sensual Photography</title>",
+    "<meta name=\"description\" content=\"Boudoir Collective Berlin ist eine offene Community und Plattform für Boudoir und Sensual Photography in Berlin.\">",
+    "<meta property=\"og:title\" content=\"Boudoir Collective Berlin\">",
+    "<meta property=\"og:description\" content=\"Offene Community und Plattform für Boudoir und Sensual Photography in Berlin.\">",
+    "<meta property=\"og:image\" content=\"assets/header.jpg\">"
+  ]
+};
+---
+<Layout {...meta}><Fragment set:html={body} /></Layout>

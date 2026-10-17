@@ -39,7 +39,201 @@
         "photographers": null,
         "models": null
       },
-      "tags": ["location", "lost-place", "boudoir", "sensual", "tfp", "costsharing"]
+      "tags": [
+        "location",
+        "lost-place",
+        "boudoir",
+        "sensual",
+        "tfp",
+        "costsharing"
+      ],
+      "detailPage": "event-grabowsee.html",
+      "content": {
+        "PageTitle": {
+          "de": "Heilstätte Grabowsee | Boudoir Collective Berlin",
+          "en": "Heilstätte Grabowsee | Boudoir Collective Berlin"
+        },
+        "HeroEyebrow": {
+          "de": "04.07.2026 · TFP / Costsharing",
+          "en": "04.07.2026 · TFP / Cost sharing"
+        },
+        "HeroCopy": {
+          "de": "Community-Shooting in einer besonderen Lost-Place-Location. Pro Bewerbung brauchen wir genau eine fotografierende Person und ein oder mehrere Models. Eine Person reicht die Bewerbung für das geplante Setup ein; weitere Beteiligte werden per Einladungslink eingebunden.",
+          "en": "Each application must contain exactly one photographer and one or more models. One primary applicant submits the planned setup, and any additional participants are invited by email."
+        },
+        "HeroPrimary": {
+          "de": "Bewerbung starten",
+          "en": "Start application"
+        },
+        "HeroSecondary": {
+          "de": "Location ansehen",
+          "en": "View location"
+        },
+        "FlowEyebrow": {
+          "de": "Bewerbungslogik",
+          "en": "Application logic"
+        },
+        "FlowTitle": {
+          "de": "Bewerbung, Bestätigung, Admin-Freigabe",
+          "en": "Application, confirmation, admin approval"
+        },
+        "FlowCopy": {
+          "de": "Eine Bewerbung wird immer von einer hauptverantwortlichen Person eingereicht. Pro Setup ist genau ein:e Fotograf:in vorgesehen, dazu ein oder mehrere Models. Weitere Beteiligte werden eingeladen und machen die Bewerbung erst vollständig, wenn sie den Link mit eingeloggt bestätigtem Account annehmen.",
+          "en": "Every application is submitted by one primary applicant. Each setup must contain exactly one photographer plus one or more models. Additional participants are invited and complete the application only once they accept the link while logged in with a confirmed account."
+        },
+        "Step1Title": {
+          "de": "Profil",
+          "en": "Profile"
+        },
+        "Step1Copy": {
+          "de": "Login und privates Community-Profil sind Pflicht, weil die E-Mail darüber bestätigt ist.",
+          "en": "Login and a private community profile are required because the email address is confirmed through that flow."
+        },
+        "Step2Title": {
+          "de": "Einladungen",
+          "en": "Invitations"
+        },
+        "Step2Copy": {
+          "de": "Die hauptverantwortliche Person trägt nur Mailadresse und Rolle der weiteren Beteiligten ein. Detaildaten ergänzen diese Personen selbst beim Annehmen.",
+          "en": "The primary applicant only enters email address and role for the additional participants. They complete their own detail data when accepting the invite."
+        },
+        "Step3Title": {
+          "de": "Admin-Prüfung",
+          "en": "Admin review"
+        },
+        "Step3Copy": {
+          "de": "Sobald alle Einladungen bestätigt sind, prüfen Admins jede Bewerbung einzeln und geben sie frei, lehnen sie ab oder setzen sie zurück.",
+          "en": "Once all invitations are confirmed, admins review each application individually and approve it, reject it or reset it."
+        },
+        "ReferenceEyebrow": {
+          "de": "Location reference",
+          "en": "Location reference"
+        },
+        "ReferenceTitle": {
+          "de": "Location reference: Heilstätte Grabowsee",
+          "en": "Location reference: Heilstätte Grabowsee"
+        },
+        "ReferenceCopy": {
+          "de": "Diese Referenzbilder zeigen Atmosphäre und architektonischen Charakter der Heilstätte Grabowsee. Sie dienen ausschließlich als Mood- und Location-Referenz.",
+          "en": "These reference images show the atmosphere and architectural character of Heilstätte Grabowsee. They are provided as mood and location references only."
+        },
+        "ReferenceNoteTitle": {
+          "de": "Nicht unsere Eventfotos",
+          "en": "Not our event photos"
+        },
+        "ReferenceNoteCopy": {
+          "de": "Die Galerie zeigt Textur, Licht und architektonische Stimmung vor dem Event. Tatsächlicher Set-Zugang, Sicherheitsregeln und nutzbare Räume werden separat durch die Orga bestätigt.",
+          "en": "The gallery is meant to communicate texture, light and architectural mood before the event. Actual set access, safety rules and usable rooms are confirmed separately by the organizer team."
+        },
+        "CaptionCorridor": {
+          "de": "<a href=\"https://commons.wikimedia.org/wiki/File:Heilst%C3%A4tten_Grabowsee_Corridor_(19587453126).jpg\">Heilstätten Grabowsee Corridor</a> by Dirk Beuth",
+          "en": "<a href=\"https://commons.wikimedia.org/wiki/File:Heilst%C3%A4tten_Grabowsee_Corridor_(19587453126).jpg\">Heilstätten Grabowsee Corridor</a> by Dirk Beuth"
+        },
+        "CaptionPiano": {
+          "de": "<a href=\"https://commons.wikimedia.org/wiki/File:Klavier_auf_der_B%C3%BChne_(8130703202).jpg\">Klavier auf der Bühne</a> by Mathilde Doiezie",
+          "en": "<a href=\"https://commons.wikimedia.org/wiki/File:Klavier_auf_der_B%C3%BChne_(8130703202).jpg\">Klavier auf der Bühne</a> by Mathilde Doiezie"
+        },
+        "CaptionSpartan": {
+          "de": "<a href=\"https://commons.wikimedia.org/wiki/File:Spartanisch_(8130708720).jpg\">Spartanisch</a> by Mathilde Doiezie",
+          "en": "<a href=\"https://commons.wikimedia.org/wiki/File:Spartanisch_(8130708720).jpg\">Spartanisch</a> by Mathilde Doiezie"
+        },
+        "CaptionDoor": {
+          "de": "<a href=\"https://commons.wikimedia.org/wiki/File:T%C3%BCre_Heilst%C3%A4tte_Grabowsee_(8130706576).jpg\">Türe Heilstätte Grabowsee</a> by Mathilde Doiezie",
+          "en": "<a href=\"https://commons.wikimedia.org/wiki/File:T%C3%BCre_Heilst%C3%A4tte_Grabowsee_(8130706576).jpg\">Türe Heilstätte Grabowsee</a> by Mathilde Doiezie"
+        },
+        "CaptionBreach": {
+          "de": "<a href=\"https://commons.wikimedia.org/wiki/File:Into_the_breach_(44042635081).jpg\">Into the breach</a> by A_Peach",
+          "en": "<a href=\"https://commons.wikimedia.org/wiki/File:Into_the_breach_(44042635081).jpg\">Into the breach</a> by A_Peach"
+        },
+        "Attribution": {
+          "de": "Location reference photos via Wikimedia Commons: <a href=\"https://commons.wikimedia.org/wiki/File:Heilst%C3%A4tten_Grabowsee_Corridor_(19587453126).jpg\">“Heilstätten Grabowsee Corridor”</a> by Dirk Beuth; <a href=\"https://commons.wikimedia.org/wiki/File:Klavier_auf_der_B%C3%BChne_(8130703202).jpg\">“Klavier auf der Bühne”</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Spartanisch_(8130708720).jpg\">“Spartanisch”</a> und <a href=\"https://commons.wikimedia.org/wiki/File:T%C3%BCre_Heilst%C3%A4tte_Grabowsee_(8130706576).jpg\">“Türe Heilstätte Grabowsee”</a> by Mathilde Doiezie; <a href=\"https://commons.wikimedia.org/wiki/File:Into_the_breach_(44042635081).jpg\">“Into the breach”</a> by A_Peach. Lizenziert unter <a href=\"https://creativecommons.org/licenses/by/2.0/\">CC BY 2.0</a>. Bilder können zugeschnitten oder verkleinert worden sein.",
+          "en": "Location reference photos via Wikimedia Commons: <a href=\"https://commons.wikimedia.org/wiki/File:Heilst%C3%A4tten_Grabowsee_Corridor_(19587453126).jpg\">“Heilstätten Grabowsee Corridor”</a> by Dirk Beuth; <a href=\"https://commons.wikimedia.org/wiki/File:Klavier_auf_der_B%C3%BChne_(8130703202).jpg\">“Klavier auf der Bühne”</a>, <a href=\"https://commons.wikimedia.org/wiki/File:Spartanisch_(8130708720).jpg\">“Spartanisch”</a> and <a href=\"https://commons.wikimedia.org/wiki/File:T%C3%BCre_Heilst%C3%A4tte_Grabowsee_(8130706576).jpg\">“Türe Heilstätte Grabowsee”</a> by Mathilde Doiezie; <a href=\"https://commons.wikimedia.org/wiki/File:Into_the_breach_(44042635081).jpg\">“Into the breach”</a> by A_Peach. Licensed under <a href=\"https://creativecommons.org/licenses/by/2.0/\">CC BY 2.0</a>. Images may have been cropped or resized."
+        },
+        "ApplicationEyebrow": {
+          "de": "Bewerbung",
+          "en": "Application"
+        },
+        "ApplicationTitle": {
+          "de": "Für Grabowsee bewerben",
+          "en": "Apply for Grabowsee"
+        },
+        "ApplicationCopy": {
+          "de": "Bitte zuerst einloggen und dein privates Community-Profil speichern. Für Grabowsee brauchen wir pro Bewerbung genau eine fotografierende Person und mindestens ein Model. Weitere Beteiligte werden per Mail eingeladen und hinterlegen ihre Detaildaten erst selbst beim Annehmen. MUA bitte nicht hier mit anmelden, sondern separat vorab mitteilen.",
+          "en": "Please sign in and save your private community profile first. Grabowsee requires exactly one photographer and at least one model per application. Additional participants are invited by email and add their detail data only when accepting. Please do not register MUAs here; share them with the organizers separately in advance."
+        },
+        "ProfileAutoCopy": {
+          "de": "Name, E-Mail und vorhandene Profildaten werden automatisch aus deinem Community-Profil übernommen.",
+          "en": "Name, email and existing profile details are automatically taken from your community profile."
+        },
+        "InviteListTitle": {
+          "de": "Weitere beteiligte Personen",
+          "en": "Additional participants"
+        },
+        "InviteEmailLabel": {
+          "de": "E-Mail der eingeladenen Person",
+          "en": "Email of the invited participant"
+        },
+        "InviteFunctionLabel": {
+          "de": "Funktion der eingeladenen Person",
+          "en": "Role of the invited participant"
+        },
+        "InviteFunctionPlaceholder": {
+          "de": "Funktion auswählen",
+          "en": "Select role"
+        },
+        "InviteRemove": {
+          "de": "Entfernen",
+          "en": "Remove"
+        },
+        "InviteAdd": {
+          "de": "Weitere Person hinzufügen",
+          "en": "Add another person"
+        },
+        "InviteNoticeCopy": {
+          "de": "Falls ich weitere beteiligte Personen eintrage, bestätige ich, dass ich sie einladen darf. Diese Personen erhalten einen Link, hinterlegen ihre Detaildaten selbst und müssen mit eingeloggt bestätigtem Account annehmen oder ablehnen.",
+          "en": "If I enter additional participants, I confirm that I am allowed to invite them. They will receive a link, add their own detail data, and must accept or reject it while logged in with a confirmed account."
+        },
+        "FooterLicense": {
+          "de": "Referenzbilder: <a href=\"https://creativecommons.org/licenses/by/2.0/\">CC BY 2.0</a>, Details in der Attribution der Galerie.",
+          "en": "Reference images: <a href=\"https://creativecommons.org/licenses/by/2.0/\">CC BY 2.0</a>, see the gallery attribution for details."
+        },
+        "MetaDescription": {
+          "de": "Eventbewerbung für Heilstätte Grabowsee: Boudoir & Sensual Community-Shooting mit Partnerbestätigung.",
+          "en": "Event application for Heilstätte Grabowsee: boudoir and sensual community shoot with partner confirmation."
+        },
+        "OgTitle": {
+          "de": "Heilstätte Grabowsee: Boudoir & Sensual",
+          "en": "Heilstätte Grabowsee: Boudoir & Sensual"
+        },
+        "OgDescription": {
+          "de": "Location- und Mood-Referenzen, Ablauf und Bewerbung für das Grabowsee Community-Shooting.",
+          "en": "Location references, process and application flow for the Grabowsee community shoot."
+        },
+        "AltCorridor": {
+          "de": "Langer Flur in der Heilstätte Grabowsee mit verwitterten Wänden und hohen Fenstern.",
+          "en": "Long corridor inside Heilstätte Grabowsee with weathered walls and tall windows."
+        },
+        "AltPiano": {
+          "de": "Klavier auf einer abgenutzten Bühne in der Heilstätte Grabowsee.",
+          "en": "Piano on a worn stage inside Heilstätte Grabowsee."
+        },
+        "AltSpartan": {
+          "de": "Karger Innenraum der Heilstätte Grabowsee mit gealterten Oberflächen.",
+          "en": "Sparse interior room at Heilstätte Grabowsee with aged surfaces."
+        },
+        "AltDoor": {
+          "de": "Verwitterte Tür im Inneren der Heilstätte Grabowsee.",
+          "en": "Weathered door inside Heilstätte Grabowsee."
+        },
+        "AltBreach": {
+          "de": "Beschädigter Innenraumdurchgang der Heilstätte Grabowsee mit freigelegten Wänden.",
+          "en": "Ruined interior opening at Heilstätte Grabowsee with exposed walls."
+        },
+        "InviteEmailPlaceholder": {
+          "de": "email@example.com",
+          "en": "email@example.com"
+        }
+      }
     },
     {
       "id": "schloss-wrodow-2026-08-08",
@@ -80,7 +274,209 @@
         "photographers": null,
         "models": null
       },
-      "tags": ["location", "castle", "boudoir", "sensual", "tfp", "costsharing"]
+      "tags": [
+        "location",
+        "castle",
+        "boudoir",
+        "sensual",
+        "tfp",
+        "costsharing"
+      ],
+      "detailPage": "event-wrodow.html",
+      "content": {
+        "PageTitle": {
+          "de": "Schloss Wrodow | Boudoir Collective Berlin",
+          "en": "Schloss Wrodow | Boudoir Collective Berlin"
+        },
+        "HeroEyebrow": {
+          "de": "08.08.2026 · TFP / Costsharing",
+          "en": "08 Aug 2026 · TFP / Cost sharing"
+        },
+        "HeroCopy": {
+          "de": "Community-Shooting in einer besonderen Schloss-Location. Pro Bewerbung brauchen wir genau eine fotografierende Person und ein oder mehrere Models. Eine Person reicht die Bewerbung für das geplante Setup ein; weitere beteiligte Personen werden per Einladungslink eingebunden.",
+          "en": "Community shoot in a distinctive castle location. Each application must contain exactly one photographer and one or more models. One primary applicant submits the planned setup, and any additional participants are invited by email."
+        },
+        "CostLabel": {
+          "de": "Kosten",
+          "en": "Cost"
+        },
+        "SetupLabel": {
+          "de": "Setup",
+          "en": "Setup"
+        },
+        "SetupValue": {
+          "de": "genau 1 Fotograf:in, 1 bis 3 Models",
+          "en": "exactly 1 photographer, 1 to 3 models"
+        },
+        "FlowLabel": {
+          "de": "Ablauf",
+          "en": "Flow"
+        },
+        "FlowValue": {
+          "de": "Bewerbung, Invite-Bestätigung, Admin-Freigabe",
+          "en": "Apply, invite confirmation, admin approval"
+        },
+        "HeroPrimary": {
+          "de": "Bewerbung starten",
+          "en": "Start application"
+        },
+        "HeroSecondary": {
+          "de": "Location ansehen",
+          "en": "View location"
+        },
+        "FlowEyebrow": {
+          "de": "Bewerbungslogik",
+          "en": "Application logic"
+        },
+        "FlowTitle": {
+          "de": "Bewerbung, Bestätigung, Admin-Freigabe",
+          "en": "Application, confirmation, admin approval"
+        },
+        "FlowCopy": {
+          "de": "Eine Bewerbung wird immer von einer hauptverantwortlichen Person eingereicht. Pro Setup ist genau ein:e Fotograf:in vorgesehen, dazu ein oder mehrere Models. Weitere beteiligte Personen werden eingeladen und machen die Bewerbung erst vollständig, wenn sie den Link mit eingeloggt bestätigtem Account annehmen.",
+          "en": "Every application is submitted by one primary applicant. Each setup must contain exactly one photographer plus one or more models. Additional participants are invited and complete the application only once they accept the link while logged in with a confirmed account."
+        },
+        "Step1Title": {
+          "de": "Profil",
+          "en": "Profile"
+        },
+        "Step1Copy": {
+          "de": "Login und privates Community-Profil sind Pflicht, weil die E-Mail darüber bestätigt ist.",
+          "en": "Login and a private community profile are required because the email address is confirmed through that flow."
+        },
+        "Step2Title": {
+          "de": "Einladungen",
+          "en": "Invitations"
+        },
+        "Step2Copy": {
+          "de": "Die hauptverantwortliche Person trägt nur Mailadresse und Rolle der weiteren Beteiligten ein. Detaildaten ergänzen diese Personen selbst beim Annehmen.",
+          "en": "The primary applicant only enters email address and role for the additional participants. They complete their own detail data when accepting the invite."
+        },
+        "Step3Title": {
+          "de": "Admin-Prüfung",
+          "en": "Admin review"
+        },
+        "Step3Copy": {
+          "de": "Sobald alle Einladungen bestätigt sind, prüfen Admins jede Bewerbung einzeln und geben sie frei, lehnen sie ab oder setzen sie zurück.",
+          "en": "Once all invitations are confirmed, admins review each application individually and approve it, reject it or reset it."
+        },
+        "ReferenceEyebrow": {
+          "de": "Location reference",
+          "en": "Location reference"
+        },
+        "ReferenceTitle": {
+          "de": "Location reference: Schloss Wrodow",
+          "en": "Location reference: Schloss Wrodow"
+        },
+        "ReferenceCopy": {
+          "de": "Diese Referenzbilder zeigen Atmosphäre und architektonischen Charakter von Schloss Wrodow. Sie dienen als Mood- und Location-Referenz und werden durch Beispielbilder aus dem Vorjahres-Event ergänzt.",
+          "en": "These reference images show the atmosphere and architectural character of Schloss Wrodow. They serve as mood and location references and are complemented by sample photos from last year's event."
+        },
+        "ReferenceNoteTitle": {
+          "de": "Nicht unsere Eventfotos",
+          "en": "Not our event photos"
+        },
+        "ReferenceNoteCopy": {
+          "de": "Die Galerie zeigt das Schloss vor dem Event. Tatsächlicher Set-Zugang, Sicherheitsregeln und nutzbare Räume werden separat durch die Orga bestätigt.",
+          "en": "The gallery shows the castle before the event. Actual set access, safety rules and usable rooms are confirmed separately by the organizer team."
+        },
+        "CaptionSommer": {
+          "de": "<a href=\"https://commons.wikimedia.org/wiki/File:Schloss_Wrodow_im_Sommer.JPG\">Schloss Wrodow im Sommer</a> via Wikimedia Commons",
+          "en": "<a href=\"https://commons.wikimedia.org/wiki/File:Schloss_Wrodow_im_Sommer.JPG\">Schloss Wrodow in summer</a> via Wikimedia Commons"
+        },
+        "CaptionOwn": {
+          "de": "Beispielbild aus dem Vorjahres-Event",
+          "en": "Sample image from last year's event"
+        },
+        "Attribution": {
+          "de": "Location reference: <a href=\"https://commons.wikimedia.org/wiki/File:Schloss_Wrodow_im_Sommer.JPG\">\"Schloss Wrodow im Sommer\"</a> via Wikimedia Commons. Lizenziert unter <a href=\"https://creativecommons.org/licenses/by-sa/4.0/\">CC BY-SA 4.0</a>. Bild kann zugeschnitten oder verkleinert worden sein. Weitere Beispielbilder stammen aus dem Vorjahres-Event.",
+          "en": "Location reference: <a href=\"https://commons.wikimedia.org/wiki/File:Schloss_Wrodow_im_Sommer.JPG\">\"Schloss Wrodow im Sommer\"</a> via Wikimedia Commons. Licensed under <a href=\"https://creativecommons.org/licenses/by-sa/4.0/\">CC BY-SA 4.0</a>. Image may have been cropped or resized. Additional sample images are from last year's event."
+        },
+        "ApplicationEyebrow": {
+          "de": "Bewerbung",
+          "en": "Application"
+        },
+        "ApplicationTitle": {
+          "de": "Für Schloss Wrodow bewerben",
+          "en": "Apply for Schloss Wrodow"
+        },
+        "ApplicationCopy": {
+          "de": "Bitte zuerst einloggen und dein privates Community-Profil speichern. Für Wrodow brauchen wir pro Bewerbung genau eine fotografierende Person und mindestens ein Model. Weitere Beteiligte werden per Mail eingeladen und hinterlegen ihre Detaildaten erst selbst beim Annehmen. MUA bitte nicht hier mit anmelden, sondern separat vorab mitteilen.",
+          "en": "Please sign in and save your private community profile first. Wrodow requires exactly one photographer and at least one model per application. Additional participants are invited by email and add their detail data only when accepting. Please do not register MUAs here; share them with the organizers separately in advance."
+        },
+        "ProfileAutoCopy": {
+          "de": "Name, E-Mail und vorhandene Profildaten werden automatisch aus deinem Community-Profil übernommen.",
+          "en": "Name, email and existing profile details are automatically taken from your community profile."
+        },
+        "InviteListTitle": {
+          "de": "Weitere beteiligte Personen",
+          "en": "Additional participants"
+        },
+        "InviteEmailLabel": {
+          "de": "E-Mail der eingeladenen Person",
+          "en": "Email of the invited participant"
+        },
+        "InviteFunctionLabel": {
+          "de": "Funktion der eingeladenen Person",
+          "en": "Role of the invited participant"
+        },
+        "InviteFunctionPlaceholder": {
+          "de": "Funktion auswählen",
+          "en": "Select role"
+        },
+        "InviteRemove": {
+          "de": "Entfernen",
+          "en": "Remove"
+        },
+        "InviteAdd": {
+          "de": "Weitere Person hinzufügen",
+          "en": "Add another person"
+        },
+        "InviteNoticeCopy": {
+          "de": "Falls ich weitere beteiligte Personen eintrage, bestätige ich, dass ich sie einladen darf. Diese Personen erhalten einen Link, hinterlegen ihre Detaildaten selbst und müssen mit eingeloggt bestätigtem Account annehmen oder ablehnen.",
+          "en": "If I enter additional participants, I confirm that I am allowed to invite them. They will receive a link, add their own detail data, and must accept or reject it while logged in with a confirmed account."
+        },
+        "FooterLicense": {
+          "de": "Referenzbild: <a href=\"https://creativecommons.org/licenses/by-sa/4.0/\">CC BY-SA 4.0</a> via Wikimedia Commons.",
+          "en": "Reference image: <a href=\"https://creativecommons.org/licenses/by-sa/4.0/\">CC BY-SA 4.0</a> via Wikimedia Commons."
+        },
+        "MetaDescription": {
+          "de": "Eventbewerbung für Schloss Wrodow: Boudoir & Sensual Community-Shooting mit Partnerbestätigung.",
+          "en": "Event application for Schloss Wrodow: boudoir and sensual community shoot with partner confirmation."
+        },
+        "OgTitle": {
+          "de": "Schloss Wrodow: Boudoir & Sensual",
+          "en": "Schloss Wrodow: Boudoir & Sensual"
+        },
+        "OgDescription": {
+          "de": "Location- und Mood-Referenzen, Ablauf und Bewerbung für das Schloss Wrodow Community-Shooting.",
+          "en": "Location references, process and application flow for the Schloss Wrodow community shoot."
+        },
+        "AltSommer": {
+          "de": "Schloss Wrodow im Sommer, Hauptfassade mit Park.",
+          "en": "Schloss Wrodow in summer, main facade with park."
+        },
+        "AltNale1": {
+          "de": "Boudoir Beispielbild aus dem Vorjahres-Event in Schloss Wrodow.",
+          "en": "Boudoir sample image from last year's event at Schloss Wrodow."
+        },
+        "AltNale2": {
+          "de": "Boudoir Beispielbild aus dem Vorjahres-Event in Schloss Wrodow mit weichem Licht.",
+          "en": "Boudoir sample image from last year's event at Schloss Wrodow with soft light."
+        },
+        "AltOlaf1": {
+          "de": "Beispielbild aus dem Vorjahres-Event in Schloss Wrodow.",
+          "en": "Sample image from last year's event at Schloss Wrodow."
+        },
+        "AltOlaf2": {
+          "de": "Weiteres Beispielbild aus dem Vorjahres-Event in Schloss Wrodow.",
+          "en": "Another sample image from last year's event at Schloss Wrodow."
+        },
+        "InviteEmailPlaceholder": {
+          "de": "email@example.com",
+          "en": "email@example.com"
+        }
+      }
     },
     {
       "id": "boudoir-sensual-open-studio-2026-03",
@@ -119,7 +515,13 @@
         "photographers": 12,
         "models": 12
       },
-      "tags": ["past", "studio", "boudoir", "sensual"]
+      "tags": [
+        "past",
+        "studio",
+        "boudoir",
+        "sensual"
+      ]
     }
-  ]
+  ],
+  "schemaVersion": 1
 }

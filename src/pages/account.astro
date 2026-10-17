@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import body from '../content/pages/account.html?raw';
+const meta = {
+  "lang": "de",
+  "bodyAttrs": "",
+  "head": [
+    "<title>Boudoir Collective Berlin | Login & Registrierung</title>",
+    "<meta name=\"description\" content=\"Login, privates Community-Profil und Eventanmeldung f&uuml;r Boudoir Collective Berlin.\">"
+  ]
+};
+---
+<Layout {...meta}><Fragment set:html={body} /></Layout>

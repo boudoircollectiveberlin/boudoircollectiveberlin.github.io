@@ -1,3 +1,5 @@
+let eventContent;
+const eventContentReady = import('./shared/event-content.mjs').then(module => { eventContent = module; return module; });
 const API_BASE = window.BCB_API_BASE || "";
 
 const upcomingEventGrid = document.querySelector("#upcoming-event-grid");
@@ -1181,99 +1183,27 @@ function renderMailPreviews(previews, target = adminDemoOutput) {
 }
 
 async function loadEvents() {
-  const fallback = await fetch("data/events.json").then((response) => response.json());
-
-  try {
-    const response = await fetch(`${API_BASE}/api/events`);
-    if (!response.ok) return fallback.events;
-    const payload = await response.json();
-    return payload.events || fallback.events;
-  } catch {
-    return fallback.events;
-  }
-}
-
-function eventStatus(event) {
-  if (event.status === "completed") return t("statusCompleted");
-  if (event.status === "interest") return t("statusInterest");
-  return t("statusPlanning");
-}
-
-function eventCapacityLabel(event) {
-  const photographers = Number.isFinite(event?.capacity?.photographers) ? event.capacity.photographers : null;
-  const models = Number.isFinite(event?.capacity?.models) ? event.capacity.models : null;
-  if (photographers == null && models == null) return "";
-  if (photographers != null && models != null) return `${photographers} ${t("rolePhotographer")} / ${models} ${t("roleModel")}`;
-  if (photographers != null) return `${photographers} ${t("rolePhotographer")}`;
-  return `${models} ${t("roleModel")}`;
-}
-
-function eventMetaEntries(event) {
-  const entries = [
-    { label: t("eventMetaDate"), value: [localized(event.dateLabel), localized(event.timeLabel)].filter(Boolean).join(" · ") },
-    { label: t("eventMetaLocation"), value: localized(event.location) },
-    { label: t("eventMetaCost"), value: localized(event.cost) }
-  ];
-  const capacity = eventCapacityLabel(event);
-  if (capacity) entries.push({ label: t("eventMetaCapacity"), value: capacity });
-  return entries.filter((entry) => entry.value);
-}
-
-function eventCard(event, index, groupName) {
-  const meta = eventMetaEntries(event);
-  const hasVisualHero = groupName === "upcoming" && event.coverImage;
-  return `
-    <article class="event-card${hasVisualHero ? " event-card--hero" : ""}">
-      ${hasVisualHero ? `
-        <div class="event-card__hero" style="--event-card-image: url('${escapeHtml(event.coverImage)}')">
-          <div class="event-card__hero-content">
-            <div class="event-card__top">
-              <span class="badge">${escapeHtml(event.type)}</span>
-              <small class="event-card__status">${escapeHtml(eventStatus(event))}</small>
-            </div>
-            <div class="event-card__body">
-              <h3>${escapeHtml(localized(event.title))}</h3>
-              <p class="event-card__summary">${escapeHtml(localized(event.summary))}</p>
-            </div>
-          </div>
-        </div>
-      ` : `
-      <div class="event-card__top">
-        <span class="badge">${escapeHtml(event.type)}</span>
-        <small class="event-card__status">${escapeHtml(eventStatus(event))}</small>
-      </div>
-      <div class="event-card__body">
-        <h3>${escapeHtml(localized(event.title))}</h3>
-        <p class="event-card__summary">${escapeHtml(localized(event.summary))}</p>
-      </div>
-      `}
-      <div class="event-card__content">
-        <p class="event-card__format">${escapeHtml(localized(event.format))}</p>
-      <ul class="event-card__meta">
-        ${meta.map((entry) => `
-          <li>
-            <span>${escapeHtml(entry.label)}</span>
-            <strong>${escapeHtml(entry.value)}</strong>
-          </li>
-        `).join("")}
-      </ul>
-      ${event.detailUrl ? `<a class="button button--ghost event-card__link" href="${escapeHtml(event.detailUrl)}">${escapeHtml(t("eventDetails"))}</a>` : ""}
-      </div>
-    </article>
-  `;
+  await eventContentReady;
+  const embedded=document.getElementById('bcb-event-catalog');
+  if(embedded)return eventContent.publicEventCatalog(JSON.parse(embedded.textContent)).events;
+  // Legacy static HTML has one same-origin read. No duplicate remote catalog API call.
+  const response=await fetch('data/events.json');
+  if(!response.ok)throw new Error('Eventkatalog konnte nicht geladen werden.');
+  return eventContent.publicEventCatalog(await response.json()).events;
 }
 
 function renderEvents(events) {
   eventsCache = events;
+  eventContent.applyEventBindings(document,{events},{locale:lang()});
   const upcoming = events.filter((event) => event.group !== "past");
   const past = events.filter((event) => event.group === "past");
 
   if (upcomingEventGrid) {
-    upcomingEventGrid.innerHTML = upcoming.map((event, index) => eventCard(event, index, "upcoming")).join("");
+    upcomingEventGrid.innerHTML = upcoming.map((event, index) => eventContent.renderEventCard(event, {locale:lang()})).join("");
   }
 
   if (pastEventGrid) {
-    pastEventGrid.innerHTML = past.map((event, index) => eventCard(event, index, "past")).join("");
+    pastEventGrid.innerHTML = past.map((event, index) => eventContent.renderEventCard(event, {locale:lang()})).join("");
   }
 
   if (eventSelect) {
@@ -2657,7 +2587,10 @@ initAccountMenu();
 initContactFlyout();
 initAccountTabs();
 initInviteeControls();
-loadEvents().then(renderEvents);
+loadEvents().then(renderEvents).catch(error => {
+  console.error('Eventkatalog:',error);
+  for(const grid of [upcomingEventGrid,pastEventGrid])if(grid && !grid.children.length)grid.textContent=lang()==='en'?'Events could not be loaded.':'Events konnten nicht geladen werden.';
+});
 renderRegistrationActionNotice();
 if (simulationModeActive()) {
   bootstrapSimulationMode();

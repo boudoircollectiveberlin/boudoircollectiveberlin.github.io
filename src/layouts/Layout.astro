@@ -1,0 +1,33 @@
+---
+import { readEventCatalog } from '../../shared/read-events.mjs';
+import { renderEventPage, serializeEventCatalog } from '../../shared/event-content.mjs';
+interface Props {
+  lang: string;
+  bodyAttrs?: string;
+  head?: string[];
+}
+const { lang, bodyAttrs = '', head = [] } = Astro.props;
+const catalog = await readEventCatalog(process.cwd());
+const page = Astro.url.pathname.split('/').pop() || 'index.html';
+const content = renderEventPage(await Astro.slots.render('default'), catalog, {page,locale:lang});
+const renderedHead = renderEventPage(head.join('\n'),catalog,{page,locale:lang});
+const bodyProps = Object.fromEntries(
+  [...bodyAttrs.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1], m[2]]),
+);
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <Fragment set:html={renderedHead} />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body {...bodyProps}>
+    <Fragment set:html={content} />
+    <script is:inline id="bcb-event-catalog" type="application/json" set:html={serializeEventCatalog(catalog)}></script>
+    <script is:inline src="i18n.js" defer></script>
+    <script is:inline src="site-config.js" defer></script>
+    <script is:inline src="script.js" defer></script>
+  </body>
+</html>

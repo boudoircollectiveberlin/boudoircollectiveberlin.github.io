@@ -1,5 +1,4 @@
-import fs from "node:fs/promises";
-import path from "node:path";
+import { readEventCatalog } from '../shared/read-events.mjs';
 import { applyCors } from "./_google.js";
 
 export default async function handler(req, res) {
@@ -15,8 +14,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const file = path.join(process.cwd(), "data", "events.json");
-  const events = JSON.parse(await fs.readFile(file, "utf8"));
+  const events = await readEventCatalog(process.cwd());
 
   res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
   res.status(200).json({ ok: true, ...events });

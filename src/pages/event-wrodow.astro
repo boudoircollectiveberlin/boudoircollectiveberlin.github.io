@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import body from '../content/pages/event-wrodow.html?raw';
+const meta = {
+  "lang": "de",
+  "bodyAttrs": "",
+  "head": [
+    "<title data-event-id=\"schloss-wrodow-2026-08-08\" data-event-field=\"content.PageTitle\">Schloss Wrodow | Boudoir Collective Berlin</title>",
+    "<meta name=\"description\" content=\"Eventbewerbung f&uuml;r Schloss Wrodow: Boudoir & Sensual Community-Shooting mit Partnerbest&auml;tigung.\" data-event-id=\"schloss-wrodow-2026-08-08\" data-event-attrs=\"content:content.MetaDescription\">",
+    "<meta property=\"og:title\" content=\"Schloss Wrodow: Boudoir & Sensual\" data-event-id=\"schloss-wrodow-2026-08-08\" data-event-attrs=\"content:content.OgTitle\">",
+    "<meta property=\"og:description\" content=\"Location- und Mood-Referenzen, Ablauf und Bewerbung f&uuml;r das Schloss Wrodow Community-Shooting.\" data-event-id=\"schloss-wrodow-2026-08-08\" data-event-attrs=\"content:content.OgDescription\">",
+    "<meta property=\"og:image\" content=\"assets/images/location/wrodow/wrodow-sommer.jpg\">"
+  ]
+};
+---
+<Layout {...meta}><Fragment set:html={body} /></Layout>

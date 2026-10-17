@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import body from '../content/pages/legal.html?raw';
+const meta = {
+  "lang": "de",
+  "bodyAttrs": "",
+  "head": [
+    "<title data-i18n=\"legalPageTitle\">Boudoir Collective Berlin | Impressum & Datenschutz</title>",
+    "<meta name=\"description\" content=\"Impressum und Datenschutzhinweise für Boudoir Collective Berlin.\" data-i18n-attrs=\"content:legalMetaDescription\">"
+  ]
+};
+---
+<Layout {...meta}><Fragment set:html={body} /></Layout>

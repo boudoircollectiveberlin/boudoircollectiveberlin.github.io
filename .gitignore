@@ -1,4 +1,7 @@
 .vercel
+.astro
+dist
+public
 node_modules
 .env
 .env.*

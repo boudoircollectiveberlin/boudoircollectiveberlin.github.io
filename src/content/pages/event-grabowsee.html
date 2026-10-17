@@ -1,0 +1,189 @@
+<header class="topbar">
+    <div class="brand">
+      <span class="brand__name">Boudoir Collective Berlin</span>
+      <a class="brand__meta" href="https://instagram.com/boudoircollectiveberlin" target="_blank" rel="noopener" aria-label="Instagram @boudoircollectiveberlin">
+        <img src="assets/instagram_glyph_white.svg" alt="" aria-hidden="true">
+        <span>@boudoircollectiveberlin</span>
+      </a>
+    </div>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="sr-only">Menu</span>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Hauptnavigation" data-menu>
+      <a class="nav-home" href="index.html" data-i18n="navHome">Home</a>
+      <a href="index.html#events" data-i18n="navEvents">Events</a>
+      <a href="index.html#codex" data-i18n="navCodex">Codex</a>
+      <a href="account.html" data-i18n="navRegister">Registrierung</a>
+      <a href="legal.html" data-i18n="navLegal">Rechtliches</a>
+    </nav>
+    <div class="topbar__actions">
+      <div class="lang-switch" aria-label="Language">
+        <span data-i18n="langLabel">Sprache</span>
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="account-menu" data-account-menu>
+        <button class="account-menu__trigger" type="button" aria-expanded="false" aria-controls="account-flyout" data-account-toggle>
+          <span class="sr-only" data-i18n="accountMenu">Account</span>
+          <span class="account-menu__icon" aria-hidden="true"></span>
+        </button>
+        <div class="account-menu__panel" id="account-flyout" hidden data-account-panel>
+          <div class="account-menu__section">
+            <p class="account-menu__eyebrow" data-i18n="accountMenu">Account</p>
+            <p class="account-menu__badge" id="topbar-member-status" hidden></p>
+            <p class="account-menu__status" id="topbar-auth-status" role="status" data-i18n="authFlyoutSignedOut">Login f&uuml;r Profil, Eventanmeldung und sp&auml;tere Updates.</p>
+          </div>
+          <div class="account-menu__section auth-buttons">
+            <button class="button button--primary" type="button" data-auth-provider="google" data-i18n="authGoogle" disabled>Mit Google einloggen</button>
+            <button class="button button--ghost" type="button" data-auth-provider="microsoft" data-i18n="authMicrosoft" disabled>Mit Microsoft einloggen</button>
+          </div>
+          <div class="account-menu__section account-menu__links">
+            <a class="button button--ghost" href="account.html" data-account-profile-link data-i18n="accountFlyoutRegister">Zur Registrierung</a>
+            <button class="button button--ghost" type="button" data-auth-logout hidden data-i18n="authLogout">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="event-hero event-hero--grabowsee" aria-labelledby="event-title">
+      <div class="event-hero__image" aria-hidden="true"></div>
+      <div class="event-hero__content">
+        <p class="eyebrow" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.HeroEyebrow">04.07.2026 · TFP / Costsharing</p>
+        <h1 id="event-title" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="title">Heilst&auml;tte Grabowsee: Boudoir &amp; Sensual</h1>
+        <p data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.HeroCopy">Community-Shooting in einer besonderen Lost-Place-Location. Pro Bewerbung brauchen wir genau eine fotografierende Person und ein oder mehrere Models. Eine Person reicht die Bewerbung f&uuml;r das geplante Setup ein; weitere beteiligte Personen werden per Einladungslink eingebunden.</p>
+        <div class="event-facts" aria-label="Kerndetails zum Event">
+          <article class="event-facts__item">
+            <strong>Kosten</strong>
+            <span data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="cost">voraussichtlich 25&nbsp;EUR pro Person</span>
+          </article>
+          <article class="event-facts__item">
+            <strong>Setup</strong>
+            <span>genau 1 Fotograf:in, 1 bis 3 Models</span>
+          </article>
+          <article class="event-facts__item">
+            <strong>Ablauf</strong>
+            <span>Bewerbung, Invite-Best&auml;tigung, Admin-Freigabe</span>
+          </article>
+        </div>
+        <div class="hero__actions">
+          <a class="button button--primary" href="#application" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.HeroPrimary">Bewerbung starten</a>
+          <a class="button button--ghost" href="#location-reference" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.HeroSecondary">Location ansehen</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--split">
+      <div class="section__heading">
+        <p class="eyebrow" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.FlowEyebrow">Bewerbungslogik</p>
+        <h2 data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.FlowTitle">Bewerbung, Best&auml;tigung, Admin-Freigabe</h2>
+        <p data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.FlowCopy">Eine Bewerbung wird immer von einer hauptverantwortlichen Person eingereicht. Pro Setup ist genau ein:e Fotograf:in vorgesehen, dazu ein oder mehrere Models. Weitere beteiligte Personen werden eingeladen und machen die Bewerbung erst vollst&auml;ndig, wenn sie den Link mit eingeloggt best&auml;tigtem Account annehmen.</p>
+      </div>
+      <div class="steps">
+        <article><span>1</span><h3 data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.Step1Title">Profil</h3><p data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.Step1Copy">Login und privates Community-Profil sind Pflicht, weil die E-Mail dar&uuml;ber best&auml;tigt ist.</p></article>
+        <article><span>2</span><h3 data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.Step2Title">Einladungen</h3><p data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.Step2Copy">Die hauptverantwortliche Person tr&auml;gt die weiteren Beteiligten ein. Diese erhalten eine E-Mail und m&uuml;ssen den Link mit eingeloggt best&auml;tigtem Account annehmen, damit die Bewerbung vollst&auml;ndig wird.</p></article>
+        <article><span>3</span><h3 data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.Step3Title">Admin-Pr&uuml;fung</h3><p data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.Step3Copy">Sobald alle Einladungen best&auml;tigt sind, pr&uuml;fen Admins jede Bewerbung einzeln und geben sie frei, lehnen sie ab oder setzen sie zur&uuml;ck.</p></article>
+      </div>
+    </section>
+
+    <section class="section reference-section" id="location-reference">
+      <div class="reference-section__intro">
+        <div class="section__heading">
+          <p class="eyebrow" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.ReferenceEyebrow">Location reference</p>
+          <h2 data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.ReferenceTitle">Location reference: Heilst&auml;tte Grabowsee</h2>
+          <p data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.ReferenceCopy">Diese Referenzbilder zeigen Atmosph&auml;re und architektonischen Charakter der Heilst&auml;tte Grabowsee. Sie dienen ausschlie&szlig;lich als Mood- und Location-Referenz.</p>
+        </div>
+        <div class="reference-section__note">
+          <strong data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.ReferenceNoteTitle">Nicht unsere Eventfotos</strong>
+          <span data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.ReferenceNoteCopy">Die Galerie zeigt Textur, Licht und architektonische Stimmung vor dem Event. Tats&auml;chlicher Set-Zugang, Sicherheitsregeln und nutzbare R&auml;ume werden separat durch die Orga best&auml;tigt.</span>
+        </div>
+      </div>
+      <div class="reference-gallery">
+        <figure class="reference-gallery__feature">
+          <img src="assets/images/location/grabowsee/grabowsee-corridor.jpg" alt="Long corridor inside Heilst&auml;tte Grabowsee with weathered walls and tall windows." data-event-id="heilstaette-grabowsee-2026-07-04" data-event-attrs="alt:content.AltCorridor">
+          <figcaption data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.CaptionCorridor" data-event-html="true"><a href="https://commons.wikimedia.org/wiki/File:Heilst%C3%A4tten_Grabowsee_Corridor_(19587453126).jpg">Heilst&auml;tten Grabowsee Corridor</a> by Dirk Beuth</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/images/location/grabowsee/grabowsee-stage-piano.jpg" alt="Piano on a worn stage inside Heilst&auml;tte Grabowsee." data-event-id="heilstaette-grabowsee-2026-07-04" data-event-attrs="alt:content.AltPiano">
+          <figcaption data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.CaptionPiano" data-event-html="true"><a href="https://commons.wikimedia.org/wiki/File:Klavier_auf_der_B%C3%BChne_(8130703202).jpg">Klavier auf der B&uuml;hne</a> by Mathilde Doiezie</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/images/location/grabowsee/grabowsee-spartan-room.jpg" alt="Sparse interior room at Heilst&auml;tte Grabowsee with aged surfaces." data-event-id="heilstaette-grabowsee-2026-07-04" data-event-attrs="alt:content.AltSpartan">
+          <figcaption data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.CaptionSpartan" data-event-html="true"><a href="https://commons.wikimedia.org/wiki/File:Spartanisch_(8130708720).jpg">Spartanisch</a> by Mathilde Doiezie</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/images/location/grabowsee/grabowsee-door.jpg" alt="Weathered door inside Heilst&auml;tte Grabowsee." data-event-id="heilstaette-grabowsee-2026-07-04" data-event-attrs="alt:content.AltDoor">
+          <figcaption data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.CaptionDoor" data-event-html="true"><a href="https://commons.wikimedia.org/wiki/File:T%C3%BCre_Heilst%C3%A4tte_Grabowsee_(8130706576).jpg">T&uuml;re Heilst&auml;tte Grabowsee</a> by Mathilde Doiezie</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/images/location/grabowsee/grabowsee-ruined-interior.jpg" alt="Ruined interior opening at Heilst&auml;tte Grabowsee with exposed walls." data-event-id="heilstaette-grabowsee-2026-07-04" data-event-attrs="alt:content.AltBreach">
+          <figcaption data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.CaptionBreach" data-event-html="true"><a href="https://commons.wikimedia.org/wiki/File:Into_the_breach_(44042635081).jpg">Into the breach</a> by A_Peach</figcaption>
+        </figure>
+      </div>
+      <p class="attribution" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.Attribution" data-event-html="true">Location reference photos via Wikimedia Commons: <a href="https://commons.wikimedia.org/wiki/File:Heilst%C3%A4tten_Grabowsee_Corridor_(19587453126).jpg">"Heilst&auml;tten Grabowsee Corridor"</a> by Dirk Beuth; <a href="https://commons.wikimedia.org/wiki/File:Klavier_auf_der_B%C3%BChne_(8130703202).jpg">"Klavier auf der B&uuml;hne"</a>, <a href="https://commons.wikimedia.org/wiki/File:Spartanisch_(8130708720).jpg">"Spartanisch"</a> und <a href="https://commons.wikimedia.org/wiki/File:T%C3%BCre_Heilst%C3%A4tte_Grabowsee_(8130706576).jpg">"T&uuml;re Heilst&auml;tte Grabowsee"</a> by Mathilde Doiezie; <a href="https://commons.wikimedia.org/wiki/File:Into_the_breach_(44042635081).jpg">"Into the breach"</a> by A_Peach. Lizenziert unter <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>. Bilder k&ouml;nnen zugeschnitten oder verkleinert worden sein.</p>
+    </section>
+
+    <section class="section section--register" id="application">
+      <div class="section__heading">
+        <p class="eyebrow" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.ApplicationEyebrow">Bewerbung</p>
+        <h2 data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.ApplicationTitle">F&uuml;r Grabowsee bewerben</h2>
+        <p data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.ApplicationCopy">Bitte zuerst einloggen und dein privates Community-Profil speichern. F&uuml;r Grabowsee brauchen wir pro Bewerbung genau eine fotografierende Person und mindestens ein Model. Weitere Beteiligte werden per Mail eingeladen und hinterlegen ihre Detaildaten erst selbst beim Annehmen. MUA bitte nicht hier mit anmelden, sondern separat vorab mitteilen.</p>
+      </div>
+      <div class="account-locked" data-event-auth-gate>
+        <p class="eyebrow" data-i18n="registerEyebrow">Registrierung</p>
+        <strong data-event-auth-gate-title data-i18n="grabowseeLoginRequiredTitle">Bitte zuerst einloggen</strong>
+        <p data-event-auth-gate-copy data-i18n="grabowseeLoginRequiredCopy">Fuer die Eventbewerbung brauchst du zuerst deinen Login und danach dein privates Community-Profil. Name und E-Mail werden dann aus deinem Account uebernommen.</p>
+        <a class="button button--primary" href="account.html#profile-form" data-event-auth-gate-link data-i18n="grabowseeLoginRequiredAction">Zum Login und Profil</a>
+      </div>
+      <form class="register-form" id="register-form" novalidate hidden>
+        <input type="hidden" name="eventId" value="heilstaette-grabowsee-2026-07-04">
+        <label>
+          <span data-i18n="eventFunctions">Ich melde mich f&uuml;r dieses Event an als</span>
+          <select name="eventFunction" required>
+            <option value="" data-i18n="eventFunctionPlaceholder">Funktion ausw&auml;hlen</option>
+            <option value="model" data-i18n="roleModel">Model</option>
+            <option value="photographer" data-i18n="rolePhotographer">Fotograf:in</option>
+          </select>
+        </label>
+        <p class="full" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.ProfileAutoCopy">Name, E-Mail und vorhandene Profildaten werden automatisch aus deinem Community-Profil &uuml;bernommen.</p>
+        <fieldset class="invitee-list full" data-invitee-list>
+          <legend data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.InviteListTitle">Weitere beteiligte Personen</legend>
+          <div class="invitee-card" data-invitee-card>
+            <label><span data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.InviteEmailLabel">E-Mail der eingeladenen Person</span><input name="inviteEmail" type="email" placeholder="email@example.com" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-attrs="placeholder:content.InviteEmailPlaceholder"></label>
+            <label>
+              <span data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.InviteFunctionLabel">Funktion der eingeladenen Person</span>
+              <select name="inviteFunction">
+                <option value="" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.InviteFunctionPlaceholder">Funktion ausw&auml;hlen</option>
+                <option value="model" data-i18n="roleModel">Model</option>
+                <option value="photographer" data-i18n="rolePhotographer">Fotograf:in</option>
+              </select>
+            </label>
+            <button class="button button--ghost invitee-card__remove" type="button" data-remove-invitee hidden data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.InviteRemove">Entfernen</button>
+          </div>
+          <button class="button button--ghost" type="button" data-add-invitee data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.InviteAdd">Weitere Person hinzufügen</button>
+        </fieldset>
+        <label class="full"><span data-i18n="notesLabel">Hinweise</span><textarea name="notes" rows="5" data-i18n-placeholder="notesPlaceholder" placeholder="Erfahrung, Bildideen, Grenzen, organisatorische Hinweise"></textarea></label>
+        <label class="honeypot">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+        <label class="checkbox full"><input type="checkbox" name="partnerNotice"><span data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.InviteNoticeCopy">Falls ich weitere beteiligte Personen eintrage, best&auml;tige ich, dass ich sie einladen darf. Diese Personen erhalten einen Link und m&uuml;ssen mit eingeloggt best&auml;tigtem Account annehmen oder ablehnen.</span></label>
+        <label class="checkbox full"><input type="checkbox" name="consent" required><span data-i18n="consentCopy">Ich akzeptiere den Codex, insbesondere Consent, Privatsph&auml;re am Set und finale Bildfreigabe.</span></label>
+        <label class="checkbox full"><input type="checkbox" name="privacy" required><span data-i18n="privacyCopy" data-i18n-html="true">Ich bin mit der Verarbeitung meiner Angaben zur Eventorganisation einverstanden.</span></label>
+        <div class="form-actions full">
+          <button class="button button--primary" type="submit" data-i18n="sendSignup">Anmeldung senden</button>
+          <p id="form-status" role="status"></p>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span data-i18n="footerName">Boudoir Collective Berlin</span>
+    <div class="footer__links">
+      <a href="legal.html#imprint" data-i18n="footerImprint">Impressum</a>
+      <a href="legal.html#privacy" data-i18n="footerPrivacy">Datenschutz</a>
+    </div>
+    <span class="footer__license" data-event-id="heilstaette-grabowsee-2026-07-04" data-event-field="content.FooterLicense" data-event-html="true">Referenzbilder: <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, Details in der Attribution der Galerie.</span>
+  </footer>

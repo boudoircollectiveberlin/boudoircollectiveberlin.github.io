@@ -8,14 +8,21 @@
     "serve": "npx serve .",
     "dev": "npx vercel dev",
     "check": "node --check api/events.js && node --check api/register.js && node --check api/member.js && node --check api/admin.js && node --check api/registration-action.js && node --check api/config.js && node --check api/_google.js && node --check api/_mail.js && node --check scripts/m365-oauth-helper.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "dev:astro": "node scripts/sync-public.mjs && node scripts/start-astro.mjs",
+    "build": "node scripts/sync-public.mjs && astro build",
+    "preview:astro": "astro preview",
     "m365:auth-url": "node scripts/m365-oauth-helper.mjs url",
     "m365:exchange-code": "node scripts/m365-oauth-helper.mjs exchange"
   },
   "dependencies": {
+    "astro": "^7.4.0",
     "googleapis": "^118.0.0",
-    "jose": "^6.2.3"
+    "jose": "^6.2.3",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
+    "@babel/parser": "^7.29.9",
     "serve": "^14.2.5"
   },
   "engines": {

@@ -41,7 +41,7 @@ npm run serve
 
 Der Editor bietet einen rekursiven Seitenaufbau, Komponenten-Inventar mit Drag & Drop, Kontextaktionen, direkte DE-/EN-Bearbeitung, Textdialoge, Undo/Redo, WebP-Bildersetzung, Navigation, Metadaten und responsive Vorschau. Seiteninhalte liegen in `src/content/pages`, allgemeine Übersetzungen in `i18n.js` und öffentliche Eventtexte in `data/events.json`. Website und Editor verwenden denselben Eventrenderer. Er läuft nur auf localhost und wird nicht in den statischen Build aufgenommen; produktives RBAC ist noch nicht implementiert.
 
-Details: [gemeinsames Eventmodell](docs/shared-event-model.md), [Eventredaktion, RBAC und Cloudflare-Caching](docs/event-content-and-cache-architecture.md).
+Details: [gemeinsames Eventmodell](docs/shared-event-model.md), [Übersetzungsprüfung für Eventtexte](docs/event-translation-reviews.md), [Eventredaktion, RBAC und Cloudflare-Caching](docs/event-content-and-cache-architecture.md), [lokaler Prüfstand und Fortsetzung](docs/local-validation.md).
 
 Für API-Tests mit Environment Variables:
 

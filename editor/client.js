@@ -637,6 +637,14 @@ $('#edit-selected-translation').addEventListener('click', event => {
   keySelect.value = event.currentTarget.dataset.key; loadTranslation(); setTab('translations');
 });
 const contextMenu = $('#context-menu');
+function positionContextMenu(x,y) {
+  const viewport=window.visualViewport;
+  const left=viewport?.offsetLeft || 0,top=viewport?.offsetTop || 0;
+  const width=viewport?.width || innerWidth,height=viewport?.height || innerHeight;
+  const rect=contextMenu.getBoundingClientRect(),gap=8;
+  contextMenu.style.left=Math.max(left+gap,Math.min(left+width-rect.width-gap,x))+'px';
+  contextMenu.style.top=Math.max(top+gap,Math.min(top+height-rect.height-gap,y))+'px';
+}
 function openContextMenu(event) {
   if (previewMode) return;
   const treeKey=event.target.closest('[data-select-key]')?.dataset.selectKey;
@@ -644,13 +652,16 @@ function openContextMenu(event) {
   if (!node) return;
   event.preventDefault(); selectOutline(node.dataset.editorKey);
   const rect = event.currentTarget===outline?{left:0,top:0}:canvas.getBoundingClientRect();
-  contextMenu.style.left = Math.max(0,Math.min(innerWidth-210,rect.left+(event.clientX||20)))+'px';
-  contextMenu.style.top = Math.max(0,Math.min(innerHeight-230,rect.top+(event.clientY||20)))+'px';
   $('#context-edit-text').hidden=!resourceEditable(node);
   contextMenu.querySelectorAll('[data-insert]').forEach(button=>{button.disabled=!canInsert('container',button.dataset.insert,node);});
   contextMenu.querySelectorAll('[data-action]').forEach(button => { button.disabled = $('#'+button.dataset.action).disabled; });
-  contextMenu.hidden = false; contextMenu.querySelector('button:not(:disabled):not([hidden])')?.focus();
+  contextMenu.hidden = false;
+  contextMenu.scrollTop=0;
+  positionContextMenu(rect.left+event.clientX,rect.top+event.clientY);
+  contextMenu.querySelector('button:not(:disabled):not([hidden])')?.focus({preventScroll:true});
 }
+window.addEventListener('resize',()=>{contextMenu.hidden=true;});
+window.visualViewport?.addEventListener('resize',()=>{contextMenu.hidden=true;});
 contextMenu.addEventListener('click', event => {
   if(event.target.closest('#context-edit-text'))openResourceDialog(selectedNode());
   const insert=event.target.closest('[data-insert]');

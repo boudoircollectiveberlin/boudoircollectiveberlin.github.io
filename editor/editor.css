@@ -3,6 +3,8 @@
 body{margin:0;min-width:360px}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
+dialog{position:fixed;inset:0;margin:auto;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
+#context-menu{max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto;overscroll-behavior:contain}
 button:disabled,select:disabled,textarea:disabled{opacity:.48;cursor:not-allowed}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid #817064;outline-offset:2px}
 .workspace{height:100svh;min-height:520px;display:grid;grid-template-columns:300px minmax(0,1fr);grid-template-rows:58px minmax(0,1fr)}

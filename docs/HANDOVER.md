@@ -2,11 +2,12 @@
 BCB: Astro/static HTML/CSS/vanilla JS; branch preview. No push/deploy. Reference suess_boudoir read-only. See docs/editor-transfer-suess.md for the 20.10.2026 transfer audit and implementation.
 
 # CURRENT STATE
+Journal draft checkpoint: overview redaktion-journal + DE/EN Lorem-ipsum article redaktion-lorem-ipsum, both in Journal area and normal editor. Dynamic overview uses central title/summary, opens article in same editor; generated list omitted from saved HTML. Journal nav hides when snapshot has zero articles. 42 tests, five-page approved build, DE/EN browser overview→article checks passed. Publication file unchanged. User's local server was restarted on4321 for new integration and remains running.
 Editor start: `npm run dev:editor` (same underlying launcher as `dev:astro`); prints `/__editor/` URL, forwards `--port`, disables Astro telemetry by default. Smoke-tested on port4324: HTTP200 and editor HTML. Test server stopped afterwards.
 Existing milestones: 8b777dc shared events/editor; 772c74f event translation review; a57d732 modal/menu viewport fix; 4beca1b documentation; feccfa9 semantic outline and three section templates. Current milestone: hierarchical/searchable pages, new article/content pages, approved-site snapshots, saved-draft website preview, server-side policy checks and optimistic conflicts. 39 tests, five-page baseline build and API/editor syntax checks passed. Browser created/reviewed/approved a temporary article; actual six-page build verified route/nav/teaser. Later edits stayed draft; two-session stale save rejected. Six exact originals restored; test article/backups removed. No new editorial content approved in final state.
 
 # ARCHITECTURE
-- Drafts: src/content/pages/*.html, i18n.js, data/events.json; additional page registry content/site-pages.json (empty after tests).
+- Drafts: src/content/pages/*.html, i18n.js, data/events.json; additional page registry content/site-pages.json now contains Journal overview + virtual test article. These are intentional unapproved content, not disposable test leftovers.
 - content/site-publication.json stores immutable active/reviewed/previous full-site snapshots plus audit. Existing five-page site imported as baseline; not a new content release.
 - shared/site-pages.mjs provides registry; shared/site-publication.mjs composes draft/approved pages/nav/teasers; shared/publication-state.mjs reads the release record.
 - Astro Layout + [slug].astro build only approved pages/meta; sync-public mirrors approved i18n/events. readEventCatalog defaults approved; editor must explicitly use draft:true. Public event API uses approved data. Editors/Policies/registry/release file excluded from dist.

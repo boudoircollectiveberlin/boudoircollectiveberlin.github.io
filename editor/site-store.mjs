@@ -44,20 +44,21 @@ export async function publicationAction(root,policy,identity,body) {
 export async function createSitePage(root,policy,identity,body) {
   requirePermission(policy,identity,'create','pages',{id:'new'});
   assertSiteRevision(root,body.revision);
-  if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(body.slug) || body.slug.length>60 || !['article','page'].includes(body.type) ||
+  if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(body.slug) || body.slug.length>60 || !['article','page','journal'].includes(body.type) ||
     !body.values || ['de','en'].some(locale=>typeof body.values[locale]!=='string' || body.values[locale].length>180) || !body.values.de.trim() ||
     !body.summary || ['de','en'].some(locale=>typeof body.summary[locale]!=='string' || body.summary[locale].length>2000) || !body.summary.de.trim())throw Error('Bitte Seitentyp, kurze Adresse, deutschen Titel und Kurzbeschreibung angeben.');
   const id='redaktion-'+body.slug;
   if(sitePages(root).some(page=>page.id===id))throw Error('Diese Seitenadresse existiert bereits.');
   const key='editor_'+id.replaceAll('-','_'),pages=additionalPages(root);
-  const page={id,path:id+'.html',title:body.values.de,titleKey:key+'_title',summaryKey:key+'_summary',area:'Redaktion',type:body.type,navigation:body.navigation===true,ownerId:identity.id};
+  if(body.type==='journal' && pages.some(page=>page.type==='journal'))throw Error('Eine Journalübersicht ist bereits vorhanden.');
+  const page={id,path:id+'.html',title:body.values.de,titleKey:key+'_title',summaryKey:key+'_summary',area:body.type==='page'?'Redaktion':'Journal',type:body.type,navigation:body.navigation===true,ownerId:identity.id};
   const originalI18n=await readFile(path.join(root,'i18n.js'),'utf8');
   let i18n=addTranslationPair(originalI18n,page.titleKey,body.values);
   i18n=addTranslationPair(i18n,page.summaryKey,body.summary);
   const source=await readFile(path.join(root,'src/content/pages/index.html'),'utf8');
   const header=source.slice(0,source.indexOf('<main'));
   const footer=source.slice(source.lastIndexOf('</main>')+7);
-  const html=header+`<main><section class="section-band"><h1 data-i18n="${page.titleKey}"></h1><p data-i18n="${page.summaryKey}"></p></section></main>`+footer;
+  const html=header+`<main><section class="section-band bcb-journal-header"><h1 data-i18n="${page.titleKey}"></h1><p data-i18n="${page.summaryKey}"></p></section>${body.type==='journal'?'<section class="section-band bcb-journal-list" data-bcb-journal-list></section>':''}</main>`+footer;
   validatePageHtml(html);
   const file=path.join(root,'src/content/pages',page.path);
   // Never overwrite an orphaned/unregistered source.

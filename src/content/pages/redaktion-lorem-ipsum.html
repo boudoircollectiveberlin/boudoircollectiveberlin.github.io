@@ -1,0 +1,79 @@
+<header class="topbar">
+    <div class="brand">
+      <span class="brand__name">Boudoir Collective Berlin</span>
+      <a class="brand__meta" href="https://instagram.com/boudoircollectiveberlin" target="_blank" rel="noopener" aria-label="Instagram @boudoircollectiveberlin">
+        <img src="assets/instagram_glyph_white.svg" alt="" aria-hidden="true">
+        <span>@boudoircollectiveberlin</span>
+      </a>
+    </div>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="nav-toggle__bar"></span>
+      <span class="sr-only">Menü</span>
+    </button>
+    <nav class="nav" id="primary-nav" aria-label="Hauptnavigation" data-menu>
+      <a class="nav-home" href="index.html" data-i18n="navHome">Home</a>
+      <a href="#events" data-i18n="navEvents">Events</a>
+      <a href="#codex" data-i18n="navCodex">Codex</a>
+      <a href="#contact" data-i18n="navContact">Kontakt</a>
+      <a href="account.html" data-i18n="navRegister">Registrierung</a>
+      <a href="legal.html" data-i18n="navLegal">Rechtliches</a>
+    </nav>
+    <div class="topbar__actions">
+      <div class="lang-switch" aria-label="Language">
+        <span data-i18n="langLabel">Sprache</span>
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="account-menu" data-account-menu>
+        <button class="account-menu__trigger" type="button" aria-expanded="false" aria-controls="account-flyout" data-account-toggle>
+          <span class="sr-only" data-i18n="accountMenu">Account</span>
+          <span class="account-menu__icon" aria-hidden="true"></span>
+        </button>
+        <div class="account-menu__panel" id="account-flyout" hidden data-account-panel>
+          <div class="account-menu__section">
+            <p class="account-menu__eyebrow" data-i18n="accountMenu">Account</p>
+            <p class="account-menu__badge" id="topbar-member-status" hidden></p>
+            <p class="account-menu__status" id="topbar-auth-status" role="status" data-i18n="authFlyoutSignedOut">Login für Profil, Eventanmeldung und spätere Updates.</p>
+          </div>
+          <div class="account-menu__section auth-buttons">
+            <button class="button button--primary" type="button" data-auth-provider="google" data-i18n="authGoogle" disabled>Mit Google einloggen</button>
+            <button class="button button--ghost" type="button" data-auth-provider="microsoft" data-i18n="authMicrosoft" disabled>Mit Microsoft einloggen</button>
+          </div>
+          <div class="account-menu__section account-menu__links">
+            <a class="button button--ghost" href="account.html" data-account-profile-link data-i18n="accountFlyoutRegister">Zur Registrierung</a>
+            <button class="button button--ghost" type="button" data-auth-logout hidden data-i18n="authLogout">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main><section class="section-band bcb-journal-header"><h1 data-i18n="editor_redaktion_lorem_ipsum_title"></h1><p data-i18n="editor_redaktion_lorem_ipsum_summary"></p></section><section class="section-band bcb-journal-body"><p class="bcb-journal-placeholder" data-i18n="editor_journal_test_notice"></p><h2 data-i18n="editor_journal_test_section_one"></h2><p data-i18n="editor_journal_test_body_one"></p><p data-i18n="editor_journal_test_body_two"></p></section><section class="section-band bcb-layout bcb-layout--statement"><h2 data-i18n="editor_journal_test_statement"></h2></section><section class="section-band bcb-journal-body"><h2 data-i18n="editor_journal_test_section_two"></h2><p data-i18n="editor_journal_test_body_three"></p></section></main>
+
+  <footer class="footer">
+    <span data-i18n="footerName">Boudoir Collective Berlin</span>
+    <div class="footer__links">
+      <a href="legal.html#imprint" data-i18n="footerImprint">Impressum</a>
+      <a href="legal.html#privacy" data-i18n="footerPrivacy">Datenschutz</a>
+    </div>
+    <a class="instagram-link" href="https://instagram.com/boudoircollectiveberlin" target="_blank" rel="noopener" aria-label="Instagram @boudoircollectiveberlin">
+      <img src="assets/instagram_glyph_white.svg" alt="" aria-hidden="true">
+      <span>@boudoircollectiveberlin</span>
+    </a>
+  </footer>
+
+  <div class="contact-flyout" id="contact-flyout" role="dialog" aria-modal="true" aria-labelledby="contact-flyout-name" hidden>
+    <button class="contact-flyout__overlay" type="button" data-contact-close aria-label="Kontakt schließen"></button>
+    <div class="contact-flyout__content">
+      <button class="contact-flyout__close" type="button" data-contact-close aria-label="Kontakt schließen">×</button>
+      <div class="contact-flyout__image">
+        <img id="contact-flyout-image" src="" alt="">
+      </div>
+      <div class="contact-flyout__details">
+        <p class="contact-card__name" id="contact-flyout-name"></p>
+        <div id="contact-flyout-info"></div>
+      </div>
+    </div>
+  </div>

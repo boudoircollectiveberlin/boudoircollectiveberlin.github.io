@@ -44,6 +44,7 @@ export function createSiteControls({getPage,isDirty,request,loadPage,setStatus,p
   });
   $('#site-create').addEventListener('click',()=>{
     if(isDirty()){setStatus('Bitte zuerst Änderungen speichern oder verwerfen.');return;}
+    if(getPage()?.type==='journal')$('#site-type').value='article';
     $('#site-create-message').textContent='';$('#site-create-dialog').showModal();
   });
   $('#site-create-close').addEventListener('click',()=>$('#site-create-dialog').close());

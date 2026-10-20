@@ -256,7 +256,18 @@ const translations = {
     privacyFullPolicyButton: "Vollständige Datenschutzhinweise öffnen",
     footerImprint: "Impressum",
     footerPrivacy: "Datenschutz",
-    footerName: "Boudoir Collective Berlin"
+    footerName: "Boudoir Collective Berlin",
+    "editor_redaktion_journal_title": "Journal",
+    "editor_redaktion_journal_summary": "Gedanken, Einblicke und Geschichten aus der Community.",
+    "editor_redaktion_lorem_ipsum_title": "Lorem ipsum · virtueller Testartikel",
+    "editor_redaktion_lorem_ipsum_summary": "Fiktiver Platzhalter zur Vorschau von Aufbau, Lesefluss und Journal-Einbindung. Kein redaktioneller Beitrag.",
+    "editor_journal_test_notice": "Virtueller Testinhalt — dieser Text dient ausschließlich der Gestaltungsvorschau und enthält keine Aussagen über Personen, Events oder Angebote.",
+    "editor_journal_test_section_one": "Ein erster Abschnitt",
+    "editor_journal_test_body_one": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae neque ac justo facilisis volutpat. Sed posuere, lorem at feugiat consequat, tellus erat interdum ligula, vitae aliquet nibh augue at mauris. Donec mollis sem vitae libero consectetur, vel volutpat justo tincidunt.",
+    "editor_journal_test_body_two": "Praesent vel felis sed nibh commodo dignissim. Suspendisse potenti. Curabitur non erat eget libero luctus interdum. Aenean a purus vitae velit pretium sollicitudin. Morbi blandit metus sit amet sem pellentesque, quis interdum augue malesuada.",
+    "editor_journal_test_statement": "Auch eine kurze Pause gehört zum Lesefluss — ein Platzhalter für einen späteren Kerngedanken.",
+    "editor_journal_test_section_two": "Raum für weitere Gedanken",
+    "editor_journal_test_body_three": "Nunc accumsan justo quis tortor viverra, sed tincidunt nulla egestas. Aliquam erat volutpat. Fusce faucibus lectus id nibh finibus, et feugiat mauris hendrerit. Etiam interdum felis at dolor elementum, at porttitor nisi ornare. Vivamus non mauris in lorem porttitor posuere."
   },
   en: {
     htmlLang: "en",
@@ -515,7 +526,18 @@ const translations = {
     privacyFullPolicyButton: "Open full privacy notice",
     footerImprint: "Imprint",
     footerPrivacy: "Privacy",
-    footerName: "Boudoir Collective Berlin"
+    footerName: "Boudoir Collective Berlin",
+    "editor_redaktion_journal_title": "Journal",
+    "editor_redaktion_journal_summary": "Thoughts, insights and stories from the community.",
+    "editor_redaktion_lorem_ipsum_title": "Lorem ipsum · virtual test article",
+    "editor_redaktion_lorem_ipsum_summary": "A fictional placeholder to preview layout, reading flow and journal integration. Not an editorial contribution.",
+    "editor_journal_test_notice": "Virtual test content — this text is for layout previews only and makes no claims about people, events or services.",
+    "editor_journal_test_section_one": "A first section",
+    "editor_journal_test_body_one": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae neque ac justo facilisis volutpat. Sed posuere, lorem at feugiat consequat, tellus erat interdum ligula, vitae aliquet nibh augue at mauris. Donec mollis sem vitae libero consectetur, vel volutpat justo tincidunt.",
+    "editor_journal_test_body_two": "Praesent vel felis sed nibh commodo dignissim. Suspendisse potenti. Curabitur non erat eget libero luctus interdum. Aenean a purus vitae velit pretium sollicitudin. Morbi blandit metus sit amet sem pellentesque, quis interdum augue malesuada.",
+    "editor_journal_test_statement": "A short pause is part of the reading flow — a placeholder for a future key thought.",
+    "editor_journal_test_section_two": "Room for more thoughts",
+    "editor_journal_test_body_three": "Nunc accumsan justo quis tortor viverra, sed tincidunt nulla egestas. Aliquam erat volutpat. Fusce faucibus lectus id nibh finibus, et feugiat mauris hendrerit. Etiam interdum felis at dolor elementum, at porttitor nisi ornare. Vivamus non mauris in lorem porttitor posuere."
   }
 };
 

@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "id": "redaktion-journal",
+    "path": "redaktion-journal.html",
+    "title": "Journal",
+    "titleKey": "editor_redaktion_journal_title",
+    "summaryKey": "editor_redaktion_journal_summary",
+    "area": "Journal",
+    "type": "journal",
+    "navigation": true,
+    "ownerId": "local-operator"
+  },
+  {
+    "id": "redaktion-lorem-ipsum",
+    "path": "redaktion-lorem-ipsum.html",
+    "title": "Lorem ipsum · virtueller Testartikel",
+    "titleKey": "editor_redaktion_lorem_ipsum_title",
+    "summaryKey": "editor_redaktion_lorem_ipsum_summary",
+    "area": "Journal",
+    "type": "article",
+    "navigation": false,
+    "ownerId": "local-operator"
+  }
+]

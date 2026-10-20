@@ -4,6 +4,7 @@ import { insertionAllowed, localizedValue, missingOtherLanguage } from './conten
 import { sectionLayouts } from './section-layouts.mjs';
 import { createPageNavigation } from './page-navigation.mjs';
 import { createSiteControls } from './site-controls.mjs';
+import { renderJournalList } from './journal.mjs';
 
 const $ = (selector) => document.querySelector(selector);
 const pageSelect = $('#page');
@@ -45,6 +46,7 @@ let eventRecords = [];
 let eventReviewStates = {};
 let eventReviewBaselines = {};
 let eventDrafts = {};
+let journalPages = [];
 let siteRevision;
 const pageNavigation=createPageNavigation();
 const {refreshSiteState,updateSitePreviewLink}=createSiteControls({getPage:()=>page,isDirty,loadPage,setStatus,pageNavigation,
@@ -86,6 +88,7 @@ function snapshot() {
   copy.querySelectorAll('[data-editor-editable]').forEach(node=>node.removeAttribute('contenteditable'));
   copy.querySelectorAll('*').forEach(node=>[...node.attributes].forEach(attribute=>{if(attribute.name.startsWith('data-editor-'))node.removeAttribute(attribute.name);}));
   copy.querySelectorAll('[class=""]').forEach(node=>node.removeAttribute('class'));
+  copy.querySelectorAll('[data-bcb-journal-list]').forEach(node=>{node.innerHTML='';node.removeAttribute('contenteditable');});
   return copy.innerHTML;
 }
 
@@ -123,7 +126,7 @@ function outlineTargets() {
       if (node.matches('script,style,svg,option,br')) return;
       const key = path + '-' + index;
       const eventHost = node.matches('[data-editor-event-host]');
-      const insideEventHost = Boolean(node.closest('[data-editor-event-host]')) && !eventHost;
+      const insideEventHost = (Boolean(node.closest('[data-editor-event-host]')) && !eventHost) || Boolean(node.parentElement?.closest('[data-bcb-journal-list]'));
       const target = !insideEventHost && (node.tagName === 'MAIN' || node.matches('section,article,[data-bcb-layout]') || eventHost);
       if (target) {
         node.dataset.editorKey = key;
@@ -300,6 +303,8 @@ function installFrameEditing() {
     setStatus('Ungespeicherte Änderungen');
   });
   editableBody.addEventListener('click', (event) => {
+    const journalLink=event.target.closest('[data-bcb-journal-page]');
+    if(journalLink){event.preventDefault();if(!isDirty() || window.confirm('Ungespeicherte Änderungen verwerfen?'))loadPage(journalLink.dataset.bcbJournalPage).catch(error=>setStatus(error.message));return;}
     const language=event.target.closest('[data-lang]')?.dataset.lang;
     if(language){event.preventDefault();switchEditingLocale(language);return;}
     if (previewMode) return;
@@ -416,6 +421,7 @@ async function loadPage(id) {
   pageNavigation.setCurrent(page.id);
   const dictionary=await (await fetch('/__editor/api/translations')).json();
   translations=dictionary.translations;
+  journalPages=(await (await fetch('/__editor/api/pages')).json()).pages;
   renderTranslationKeys();
   savedHtml = result.html;
   selectedKey = '';
@@ -913,8 +919,15 @@ function renderLocale() {
   document.querySelectorAll('[data-edit-locale]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.editLocale===editingLocale)));
   localeSelect.value=editingLocale;
   $('#canvas-label').textContent=`${page?.title || 'Seite'} · ${editingLocale.toUpperCase()} · ${previewMode?'Vorschau':'Bearbeiten'}`;
-  projectEventContent();
+  projectEventContent();projectJournalContent();
   renderMissingResources();
+}
+function projectJournalContent() {
+  const host=canvas.contentDocument?.querySelector('[data-bcb-journal-list]');
+  if(!host || !translations)return;
+  const values={de:{...translations.de,...translationDrafts.de},en:{...translations.en,...translationDrafts.en}};
+  host.innerHTML=renderJournalList(journalPages,values,{locale:editingLocale});
+  host.contentEditable='false';
 }
 
 function beginInlineEdit(node) {

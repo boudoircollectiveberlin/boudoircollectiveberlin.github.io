@@ -1,5 +1,5 @@
 export function pageNavigationEntries(pages) {
-  return pages.map(page=>({...page,href:page.path,path:[page.area || 'Website',...(page.type==='article'?['Artikel']:page.type==='event'?['Eventseiten']:[])]}));
+  return pages.map(page=>({...page,href:page.path,path:[page.area || 'Website',...(page.type==='article'?['Artikel']:page.type==='journal'?['Übersicht']:page.type==='event'?['Eventseiten']:[])]}));
 }
 export function filterNavigationEntries(entries,area,query='') {
   const normalize=value=>value.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLocaleLowerCase('de');

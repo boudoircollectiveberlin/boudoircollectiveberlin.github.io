@@ -123,9 +123,9 @@ export default function localEditor() {
               res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; base-uri 'self'; form-action 'none'; frame-ancestors 'self'");
               return res.end(`<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/"><link rel="stylesheet" href="/styles.css">${head}</head><body ${page.meta.bodyAttrs || ''} data-preview-drafts="${drafts?'1':'0'}"><aside role="status" style="padding:10px;background:#eee;color:#222">Lokale Website-Vorschau · ${drafts?'gespeicherte Entwürfe':'freigegebener Stand'} · Formulare deaktiviert</aside>${html}<script id="bcb-event-catalog" type="application/json">${serializeEventCatalog(catalog)}</script><script src="/__editor/site-i18n.js?drafts=${drafts?'1':'0'}" defer></script><script type="module" src="/__editor/site-preview.js"></script></body></html>`);
             }
-            if(req.method==='GET' && url.pathname==='/__editor/event-content.mjs'){
+            if(req.method==='GET' && ['/__editor/event-content.mjs','/__editor/journal.mjs'].includes(url.pathname)){
               res.setHeader('Content-Type','text/javascript; charset=utf-8');
-              return res.end(await readFile(path.join(root,'shared/event-content.mjs')));
+              return res.end(await readFile(path.join(root,'shared',path.basename(url.pathname))));
             }
             if (req.method === 'GET' && ['/__editor', '/__editor/'].includes(url.pathname)) {
               res.setHeader('Content-Type', 'text/html; charset=utf-8');

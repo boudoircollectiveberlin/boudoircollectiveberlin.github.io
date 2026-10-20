@@ -14,7 +14,7 @@ export function additionalPages(root) {
   const ids=new Set(basePages.map(page=>page.id));
   for(const page of pages) {
     if(!/^redaktion-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(page.id) || page.path!==page.id+'.html' || ids.has(page.id) ||
-      !['article','page'].includes(page.type) || typeof page.title!=='string' || !/^editor_[a-z0-9_]+$/.test(page.titleKey) ||
+      !['article','page','journal'].includes(page.type) || typeof page.title!=='string' || !/^editor_[a-z0-9_]+$/.test(page.titleKey) ||
       !/^editor_[a-z0-9_]+$/.test(page.summaryKey) || typeof page.navigation!=='boolean' || typeof page.ownerId!=='string')throw Error('Ungültige Redaktionsseite.');
     ids.add(page.id);
   }

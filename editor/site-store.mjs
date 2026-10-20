@@ -58,7 +58,7 @@ export async function createSitePage(root,policy,identity,body) {
   const source=await readFile(path.join(root,'src/content/pages/index.html'),'utf8');
   const header=source.slice(0,source.indexOf('<main'));
   const footer=source.slice(source.lastIndexOf('</main>')+7);
-  const html=header+`<main><section class="section-band bcb-journal-header"><h1 data-i18n="${page.titleKey}"></h1><p data-i18n="${page.summaryKey}"></p></section>${body.type==='journal'?'<section class="section-band bcb-journal-list" data-bcb-journal-list></section>':''}</main>`+footer;
+  const html=header+`<main${body.type==='article'?' class="bcb-journal-article"':''}><section class="section-band bcb-journal-header"><h1 data-i18n="${page.titleKey}"></h1><p data-i18n="${page.summaryKey}"></p></section>${body.type==='journal'?'<section class="section-band bcb-journal-list" data-bcb-journal-list></section>':''}</main>`+footer;
   validatePageHtml(html);
   const file=path.join(root,'src/content/pages',page.path);
   // Never overwrite an orphaned/unregistered source.

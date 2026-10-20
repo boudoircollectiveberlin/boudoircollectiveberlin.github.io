@@ -2,6 +2,7 @@
 BCB: Astro/static HTML/CSS/vanilla JS; branch preview. No push/deploy. Reference suess_boudoir read-only. See docs/editor-transfer-suess.md for the 20.10.2026 transfer audit and implementation.
 
 # CURRENT STATE
+Editor start: `npm run dev:editor` (same underlying launcher as `dev:astro`); prints `/__editor/` URL, forwards `--port`, disables Astro telemetry by default. Smoke-tested on port4324: HTTP200 and editor HTML. Test server stopped afterwards.
 Existing milestones: 8b777dc shared events/editor; 772c74f event translation review; a57d732 modal/menu viewport fix; 4beca1b documentation; feccfa9 semantic outline and three section templates. Current milestone: hierarchical/searchable pages, new article/content pages, approved-site snapshots, saved-draft website preview, server-side policy checks and optimistic conflicts. 39 tests, five-page baseline build and API/editor syntax checks passed. Browser created/reviewed/approved a temporary article; actual six-page build verified route/nav/teaser. Later edits stayed draft; two-session stale save rejected. Six exact originals restored; test article/backups removed. No new editorial content approved in final state.
 
 # ARCHITECTURE

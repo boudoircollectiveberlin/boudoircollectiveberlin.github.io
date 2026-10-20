@@ -34,7 +34,7 @@ npm run serve
 
 ### Lokaler Inhaltseditor und Preview (VS Code)
 
-- Ohne VS Code: `npm run dev:astro`, anschließend die ausgegebene lokale Adresse mit `/__editor/` öffnen.
+- Ohne VS Code: `npm run dev:editor`, anschließend die ausgegebene Editoradresse öffnen. `npm run dev:astro` bleibt als gleichwertiger Startbefehl erhalten.
 - Task ausführen: `Terminal -> Run Task -> Preview: Start local webserver`
 - Alternativ im Debug-Panel: `Preview: Local Webserver`
 - Der Editor öffnet unter `http://127.0.0.1:4321/__editor/` (Port ggf. abweichend).

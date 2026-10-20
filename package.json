@@ -9,6 +9,7 @@
     "dev": "npx vercel dev",
     "check": "node --check api/events.js && node --check api/register.js && node --check api/member.js && node --check api/admin.js && node --check api/registration-action.js && node --check api/config.js && node --check api/_google.js && node --check api/_mail.js && node --check scripts/m365-oauth-helper.mjs",
     "test": "node --test tests/*.test.mjs",
+    "dev:editor": "node scripts/sync-public.mjs && node scripts/start-astro.mjs",
     "dev:astro": "node scripts/sync-public.mjs && node scripts/start-astro.mjs",
     "build": "node scripts/sync-public.mjs && astro build",
     "preview:astro": "astro preview",

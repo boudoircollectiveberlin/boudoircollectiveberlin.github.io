@@ -2,6 +2,8 @@ import { renderEventCard, eventText, setEventText, applyEventBindings, safeEvent
 import { createHistory } from './history.mjs';
 import { insertionAllowed, localizedValue, missingOtherLanguage } from './content-model.mjs';
 import { sectionLayouts } from './section-layouts.mjs';
+import { createPageNavigation } from './page-navigation.mjs';
+import { createSiteControls } from './site-controls.mjs';
 
 const $ = (selector) => document.querySelector(selector);
 const pageSelect = $('#page');
@@ -43,6 +45,16 @@ let eventRecords = [];
 let eventReviewStates = {};
 let eventReviewBaselines = {};
 let eventDrafts = {};
+let siteRevision;
+const pageNavigation=createPageNavigation();
+const {refreshSiteState,updateSitePreviewLink}=createSiteControls({getPage:()=>page,isDirty,loadPage,setStatus,pageNavigation,
+  request:body=>editorFetch('/__editor/api/site-action',{method:'POST',headers:{'Content-Type':'application/json','X-Editor-Token':token},body:JSON.stringify(body)})});
+async function editorFetch(url,options) {
+  const body=JSON.parse(options.body);
+  const response=await fetch(url,{...options,body:JSON.stringify({revision:siteRevision,...body})});
+  if(response.ok) {const result=await response.clone().json();if(result.revision)siteRevision=result.revision;}
+  return response;
+}
 
 function setStatus(message) {
   status.textContent = message;
@@ -400,6 +412,11 @@ async function loadPage(id) {
   const result = await response.json();
   if (!response.ok) throw new Error(result.error || 'Seite konnte nicht geladen werden.');
   page = result.page;
+  siteRevision=result.revision;
+  pageNavigation.setCurrent(page.id);
+  const dictionary=await (await fetch('/__editor/api/translations')).json();
+  translations=dictionary.translations;
+  renderTranslationKeys();
   savedHtml = result.html;
   selectedKey = '';
   activeInlineNode=undefined;
@@ -409,6 +426,7 @@ async function loadPage(id) {
   $('#canvas-label').textContent = `${page.title} · ${previewMode ? 'Vorschau' : 'Bearbeiten'}`;
   canvas.onload = installFrameEditing;
   canvas.srcdoc = documentFor(savedHtml);
+  refreshSiteState();updateSitePreviewLink();
 }
 
 async function savePage() {
@@ -421,13 +439,16 @@ async function savePage() {
   saveButton.disabled = true;
   setStatus('Änderungen werden gespeichert …');
   try {
-    const response = await fetch('/__editor/api/save', {
+    const response = await editorFetch('/__editor/api/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Editor-Token': token },
       body: JSON.stringify({ id: page.id, html, translations:drafts,events }),
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Speichern fehlgeschlagen.');
+    if (!response.ok) {
+      if(response.status===409)openSaveConflict();
+      throw new Error(result.error || 'Speichern fehlgeschlagen.');
+    }
     savedHtml = html;
     for(const locale of ['de','en'])Object.assign(translations[locale],drafts[locale]);
     for(const locale of ['de','en'])for(const [key,value] of Object.entries(drafts[locale]))if(translationDrafts[locale][key]===value)delete translationDrafts[locale][key];
@@ -436,12 +457,29 @@ async function savePage() {
     savedSnapshot = html;
     pageHistory.reset(captureHistory());
     await loadEventPreview();
+    await refreshSiteState();
+    if(page.titleKey){const result=await (await fetch('/__editor/api/pages')).json();pageNavigation.setEntries(result.pages,page.id);page.title=translations.de[page.titleKey] || page.title;}
     updateStatus();
   } catch (error) {
     saveButton.disabled = false;
     setStatus(error.message);
   }
 }
+
+function openSaveConflict() {
+  $('#conflict-own').srcdoc=documentFor(body().innerHTML.replace(/contenteditable="[^"]*"/g,''));
+  $('#conflict-stored').src='/__editor/site-preview?id='+encodeURIComponent(page.id)+'&drafts=1';
+  $('#conflict-dialog').showModal();
+}
+$('#conflict-close').addEventListener('click',()=>$('#conflict-dialog').close());
+$('#conflict-download').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify({page:page.id,revision:siteRevision,html:snapshot(),translations:translationDrafts,events:Object.values(eventDrafts)},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=page.id+'-entwurf.json';link.click();URL.revokeObjectURL(url);
+});
+$('#conflict-reload').addEventListener('click',async()=>{
+  if(!window.confirm('Eigenen ungespeicherten Entwurf verwerfen und den gespeicherten Stand laden? Sichere ihn bei Bedarf zuerst als Datei.'))return;
+  $('#conflict-dialog').close();translationDirty=false;await loadPage(page.id);
+});
 
 function loadTranslation() {
   selectedLocale = localeSelect.value;
@@ -489,7 +527,7 @@ function renderMedia() {
       if (!/\.svg$/i.test(asset.src)) {
         button.disabled = true; setStatus('WebP wird vorbereitet …');
         try {
-          const response = await fetch('/__editor/api/media-prepare', {method:'POST',headers:{'Content-Type':'application/json','X-Editor-Token':token},body:JSON.stringify({src:asset.src})});
+          const response = await editorFetch('/__editor/api/media-prepare', {method:'POST',headers:{'Content-Type':'application/json','X-Editor-Token':token},body:JSON.stringify({src:asset.src})});
           const result=await response.json(); if(!response.ok)throw new Error(result.error);
           if(!image.isConnected)return;
           image.setAttribute('src',result.src);
@@ -513,6 +551,7 @@ async function saveTranslation() {
 }
 
 pageSelect.addEventListener('change', async () => {
+  if(!pageSelect.value)return;
   if (isDirty() && !window.confirm('Ungespeicherte Änderungen verwerfen?')) {
     pageSelect.value = page.id;
     return;
@@ -597,12 +636,12 @@ Promise.all([
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Editor konnte nicht geladen werden.');
     token = result.token;
-    pageSelect.replaceChildren(...result.pages.map((item) => new Option(item.title, item.id)));
-    pageSelect.disabled = false;
+    pageNavigation.setEntries(result.pages,result.pages[0]?.id);
+    $('#site-create').disabled=!result.canCreate;
     saveButton.disabled = false;
     undoButton.disabled = false;
     redoButton.disabled = false;
-    await loadPage(result.pages[0].id);
+    if(result.pages.length)await loadPage(result.pages[0].id);
   }),
   fetch('/__editor/api/translations').then(async (response) => {
     const result = await response.json();
@@ -636,7 +675,7 @@ $('#apply-link').addEventListener('click', async () => {
   if (!link || !/^(?:https?:\/\/|mailto:|tel:|#|[a-zA-Z0-9_./-]+$)/.test(value) || /^(?:javascript|data):/i.test(value)) { setStatus('Bitte eine gültige Linkadresse angeben.'); return; }
   if(!$('#shared-link-label').hidden && $('#shared-link').checked) {
     $('#apply-link').disabled=true;
-    try{const response=await fetch('/__editor/api/navigation-save',{method:'POST',headers:{'Content-Type':'application/json','X-Editor-Token':token},body:JSON.stringify({key:link.dataset.i18n,href:value})});const result=await response.json();if(!response.ok)throw new Error(result.error);link.setAttribute('href',value);recordChange();setStatus('Navigation auf '+result.count+' Seiten lokal gespeichert.');}catch(error){setStatus(error.message);}finally{$('#apply-link').disabled=false;}
+    try{const response=await editorFetch('/__editor/api/navigation-save',{method:'POST',headers:{'Content-Type':'application/json','X-Editor-Token':token},body:JSON.stringify({key:link.dataset.i18n,href:value})});const result=await response.json();if(!response.ok)throw new Error(result.error);link.setAttribute('href',value);recordChange();refreshSiteState();setStatus('Navigation auf '+result.count+' Seiten als Entwurf gespeichert.');}catch(error){setStatus(error.message);}finally{$('#apply-link').disabled=false;}
   } else {link.setAttribute('href',value); recordChange();}
 });
 $('#edit-selected-translation').addEventListener('click', event => {
@@ -796,7 +835,7 @@ $('#edit-metadata').addEventListener('click',async()=>{
 $('#meta-close').addEventListener('click',()=>$('#metadata-dialog').close());
 $('#meta-save').addEventListener('click',async()=>{
   $('#meta-save').disabled=true;
-  try{const response=await fetch('/__editor/api/metadata-save',{method:'POST',headers:{'Content-Type':'application/json','X-Editor-Token':token},body:JSON.stringify({id:page.id,locale:editingLocale,values:{title:$('#meta-title').value,description:$('#meta-description').value}})});const result=await response.json();if(!response.ok)throw new Error(result.error);$('#metadata-dialog').close();setStatus('Metadaten lokal gespeichert.');}catch(error){$('#meta-message').textContent=error.message;}finally{$('#meta-save').disabled=false;}
+  try{const response=await editorFetch('/__editor/api/metadata-save',{method:'POST',headers:{'Content-Type':'application/json','X-Editor-Token':token},body:JSON.stringify({id:page.id,locale:editingLocale,values:{title:$('#meta-title').value,description:$('#meta-description').value}})});const result=await response.json();if(!response.ok)throw new Error(result.error);$('#metadata-dialog').close();refreshSiteState();setStatus('Metadaten als Entwurf gespeichert.');if(page.titleKey && !isDirty())await loadPage(page.id);}catch(error){$('#meta-message').textContent=error.message;}finally{$('#meta-save').disabled=false;}
 });
 
 function lockTranslatedText(){renderLocale();}

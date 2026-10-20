@@ -43,3 +43,7 @@ Das veraltete `.codex/local-server-4175.log` wurde entfernt und der eigene Tests
 Nächster Arbeitsschritt: optimistische Speicherkonflikte für Seiten, Wörterbuch und Eventdaten; danach Rollen-/Event-/Sprachrechte und Freigabe konkreter Revisionen. Eventprüfung gilt derzeit für Deutsch als Quelle; allgemeine Wörterbuchtexte und wählbare Quellsprache folgen separat. Operative Teilnehmeraktionen bleiben unabhängig vom Git- und Veröffentlichungsprozess. Cloudflare-Gateway, Cache-Invalidierung und Backendmigration sind weiterhin geplant.
 
 Verdichtetes, versioniertes Handover: [HANDOVER.md](HANDOVER.md). Lokale Kopien: `.codex/handovers/latest.md` und die timestamped Handovers (bewusst Git-ignoriert). Dieser Prüfstand liegt versioniert im Projekt, damit die Fortsetzung auch ohne lokale Chatdateien nachvollziehbar bleibt.
+
+## Abschluss 20.10.2026: Übernahme aus suess_boudoir
+
+39 Tests, fünf statische Seiten und API-/Editor-Syntaxprüfungen erfolgreich. Browserprüfungen und echte Freigabe-/Buildprobe: siehe editor-transfer-suess.md. Sechs Originaldateien bytegenau wiederhergestellt; temporärer Artikel und Backups entfernt. Keine neuen Artikel oder Freigaben verbleiben. Gehostete Rollenidentität und Umstellung alter Root-Deployments bleiben erforderlich; die neue Freigabegrenze gilt für Astro dist.

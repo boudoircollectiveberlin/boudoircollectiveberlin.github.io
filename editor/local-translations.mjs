@@ -2,6 +2,7 @@ import { parse } from '@babel/parser';
 import { lstat, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { readPublication } from '../shared/publication-state.mjs';
 
 function translationProperties(source) {
   const ast = parse(source, { sourceType: 'script' });
@@ -81,7 +82,7 @@ export async function saveTranslation(root, locale, key, value, pair) {
       if (error.code !== 'ENOENT') throw error;
     });
   }
-  await writeFile(path.join(root, 'public', 'i18n.js'), updated);
+  await writeFile(path.join(root, 'public', 'i18n.js'), readPublication(root).active.snapshot.i18n);
 }
 
 export function applyTranslationDrafts(source, drafts = {}) {
@@ -109,5 +110,5 @@ export async function writeTranslationSource(root, source) {
   const temporary = path.join(root,`.i18n-${randomUUID()}.tmp`);
   try { await writeFile(temporary,source,{flag:'wx'}); await rename(temporary,file); }
   finally { await unlink(temporary).catch(error=>{if(error.code!=='ENOENT')throw error;}); }
-  await writeFile(path.join(root,'public/i18n.js'),source);
+  await writeFile(path.join(root,'public/i18n.js'),readPublication(root).active.snapshot.i18n);
 }

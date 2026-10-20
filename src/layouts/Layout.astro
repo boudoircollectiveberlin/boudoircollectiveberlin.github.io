@@ -1,15 +1,18 @@
 ---
 import { readEventCatalog } from '../../shared/read-events.mjs';
 import { renderEventPage, serializeEventCatalog } from '../../shared/event-content.mjs';
+import { readPublication, composeSitePage } from '../../shared/site-publication.mjs';
 interface Props {
   lang: string;
   bodyAttrs?: string;
   head?: string[];
 }
-const { lang, bodyAttrs = '', head = [] } = Astro.props;
-const catalog = await readEventCatalog(process.cwd());
 const page = Astro.url.pathname.split('/').pop() || 'index.html';
-const content = renderEventPage(await Astro.slots.render('default'), catalog, {page,locale:lang});
+const published=composeSitePage(readPublication(process.cwd()).active.snapshot,page.replace(/\.html$/,''));
+if(!published)throw new Error('Seite hat keinen freigegebenen Stand.');
+const { lang, bodyAttrs = '', head = [] } = published.meta;
+const catalog = await readEventCatalog(process.cwd());
+const content = renderEventPage(published.html, catalog, {page,locale:lang});
 const renderedHead = renderEventPage(head.join('\n'),catalog,{page,locale:lang});
 const bodyProps = Object.fromEntries(
   [...bodyAttrs.matchAll(/([\w-]+)="([^"]*)"/g)].map((m) => [m[1], m[2]]),

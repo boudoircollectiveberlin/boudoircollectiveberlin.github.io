@@ -1,0 +1,8 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { readPublication } from '../../shared/site-publication.mjs';
+export function getStaticPaths() {
+  return readPublication(process.cwd()).active.snapshot.pages.filter(page=>page.titleKey).map(page=>({params:{slug:page.id}}));
+}
+---
+<Layout lang="de" />

@@ -1,58 +1,42 @@
 # PROJECT OVERVIEW
-Boudoir Collective Berlin: Astro/static HTML, CSS, vanilla JS. Branch `preview`. Important milestones committed; nothing pushed or deployed. Read this file and `.codex/handovers/latest.md` to resume.
+BCB: Astro/static HTML/CSS/vanilla JS; branch preview. No push/deploy. Reference suess_boudoir read-only. See docs/editor-transfer-suess.md for the 20.10.2026 transfer audit and implementation.
 
 # CURRENT STATE
-- `8b777dc`: Astro/editor foundation + shared event model/renderer.
-- `9d5e0ec`: event/cache architecture documentation.
-- `772c74f`: event translation review revisions.
-- `a57d732`: viewport-bounded context menus and scrollable modal dialogs.
-- Current local change: semantic editor outline and three validated reusable section layouts; existing page fragments remain backward-compatible HTML. Not yet committed/pushed.
-- Final validation before current change: 32 tests, five-page static build, API/editor syntax checks pass. Current editor consolidation: 34 tests plus desktop/mobile browser insert/undo checks passed. Evidence: `docs/local-validation.md`.
-- Old `.codex/local-server-4175.log` removed. Test backups already restored byte-for-byte and removed. Own test server stopped; restart with `npm run dev:astro`, open `/__editor/`. Generated public/dist refreshed and retained; dependencies retained.
-- Existing untracked DSPro9 drafts, `.vscode`, AGENTS.md, project skills and local registration spreadsheet preserved. No blanket staging or cleanup of user work.
+Existing milestones: 8b777dc shared events/editor; 772c74f event translation review; a57d732 modal/menu viewport fix; 4beca1b documentation; feccfa9 semantic outline and three section templates. Current milestone: hierarchical/searchable pages, new article/content pages, approved-site snapshots, saved-draft website preview, server-side policy checks and optimistic conflicts. 39 tests, five-page baseline build and API/editor syntax checks passed. Browser created/reviewed/approved a temporary article; actual six-page build verified route/nav/teaser. Later edits stayed draft; two-session stale save rejected. Six exact originals restored; test article/backups removed. No new editorial content approved in final state.
 
 # ARCHITECTURE
-- `data/events.json`: canonical public DE/EN event text, content, assets and facts; preserve IDs, status, prices and unknown dates/times.
-- `shared/event-content.mjs`: validated public projection, rich-text safety, card renderer and detail bindings. `shared/read-events.mjs`: Node adapter + public SHA-256 revision (fingerprint, not yet a write-conflict guard).
-- Astro layouts embed public catalog; `script.js` reuses it. Legacy pages read same-origin JSON once. No event backend read for Astro display. `api/events.js` shares the public reader; existing operational APIs remain unchanged.
-- Pages: `src/pages/*.astro`; editable fragments: `src/content/pages/*.html`; general translations: `i18n.js`. Editor local routes in `editor/local-editor.mjs`, interface in `editor/client.js`.
-- Loopback/origin/token checks; serialized local writes and rollback, individual atomic source replacements. Multi-file writes are not crash-atomic. Editor never shipped in Astro static build.
-- Event review sidecar `editor/event-reviews.json`: imported source hashes; confirmed pairs also store target hash. Explicit approval checks original DE/EN values, binds confirmation to final pair. Source/target edits invalidate status. No review metadata in public catalog/build/revision. Review is not publication approval.
+- Drafts: src/content/pages/*.html, i18n.js, data/events.json; additional page registry content/site-pages.json (empty after tests).
+- content/site-publication.json stores immutable active/reviewed/previous full-site snapshots plus audit. Existing five-page site imported as baseline; not a new content release.
+- shared/site-pages.mjs provides registry; shared/site-publication.mjs composes draft/approved pages/nav/teasers; shared/publication-state.mjs reads the release record.
+- Astro Layout + [slug].astro build only approved pages/meta; sync-public mirrors approved i18n/events. readEventCatalog defaults approved; editor must explicitly use draft:true. Public event API uses approved data. Editors/Policies/registry/release file excluded from dist.
+- editor/site-store.mjs: fixed-path atomic writes, exact revisions, create/review/publish/withdraw, policy checks. Serialized mutation queue in local-editor.mjs; multi-file operations not crash-atomic. General stale save returns409; inputs retained. Main save opens comparison, local draft export and confirmed reload.
+- Release covers whole site due shared dictionary/navigation/events. review needs approve right; publish needs publish right and exact reviewed revision. withdraw restores previous whole-site snapshot, retaining drafts. No automatic Git/build/deploy or scheduling.
 
 # FRONTEND STATE
-- Single click edits active language; double-click/right-click opens paired dialog. No per-field translation buttons.
-- Preview markers ONLY indicate missing OTHER language. Review/stale status appears in event dialog; German is currently the source. General dictionary review and selectable source remain open.
-- Editor outline groups semantic sections instead of exposing every DOM node. Structural actions target semantic sections; insertion uses validated two-column, three-card and statement layouts. Existing fragments and direct text editing remain compatible; full typed migration of existing pages remains open.
-- Undo/Redo, WebP media, navigation, metadata and device preview implemented.
-- Context menu measured after showing and clamped to viewport with 8px gap; internally scrollable when necessary. Modals fixed/centered, height capped with internal scrolling. Browser checked bottom footer right-click and following text dialog.
-- Browser verified shared event title edits/list-detail consistency and translation confirmation save/reopen/source-change warning. Exact test source restored. Screenshots live outside repo in this chat's visualization folder.
+Normal editor for all pages/articles. Area + searchable page/article selector; area/search alone never navigate. Three reusable section templates, semantic outline, inline active-language editing, paired dialogs, Undo/Redo, media, metadata/nav retained. New article title/summary feed central nav/teasers. Missing-other-language indicators only; event review status in dialog, DE source. Live editor preview includes unsaved changes; separate saved website preview toggle selects drafts/approved consistently. Private preview read-only forms and no-store/noindex. Existing bottom-edge modal/menu fix retained.
 
 # BACKEND / INTEGRATIONS STATE
-- active: GitHub Pages/Vercel, Firebase identity, private Google Sheets membership/registration and existing mail integration unchanged.
-- active: local static event catalog/shared renderer; operational actions still use existing APIs.
-- planned: Cloudflare Workers gateway, RBAC, scoped edge read caches around 1h TTL and targeted invalidation; no infrastructure/DNS/security changes performed.
-- required: accept/reject/payment/invite operations remain independent of Git commits/checks/PRs/builds/deploys. Authorization and writes authoritative on each request. Private browser responses no-store. Protected internal cache after per-request authorization, correctly partitioned by event/user/scope. Rights revocation cannot wait for TTL. Handle invalidation failure and in-flight refills.
-- considered: D1 editorial drafts and separate operational migration; no second writable source of truth.
-- unresolved: production RBAC/database/publication workflow. Google Calendar/ICS/scheduling not implemented; Microsoft Forms not introduced.
+- active: GitHub Pages/Vercel, Firebase identity, private Google Sheets and mail APIs unchanged; operational APIs independent of editorial release.
+- active locally: policy/content-rbac.json + editor/policy.mjs enforce reads/writes, assigned documents/events, language restrictions, separate reviewer/publisher. Roles/ownership never accepted from HTTP input; trusted loopback local-operator only.
+- planned: hosted verified identity/role assignment and role-specific UI; protected policy authority; Cloudflare gateway + correctly scoped authorized edge read caches around1h TTL with targeted invalidation. Auth/writes authoritative per request; private browser no-store; role revocation must not wait TTL.
+- considered: D1 editorial drafts and separate operational migration; no second writable source.
+- unresolved: hosted deployment/bootstrap, legacy hardcoded operative policies. Calendar/ICS not implemented; Forms not introduced.
 
 # DECISIONS
-Commit tested milestones on `preview`; no push/deploy without authorization. Keep static rendering and integration continuity. Do not infer event facts or change authored operational policies. Reference repo `suess_boudoir` remains read-only. No full functional parity claim.
+Commit tested milestones on preview; never push/deploy without approval. Preserve shared sources and BCB appearance; no copied brand articles/illustrations/CTAs. Source-versioned drafts are not confidential in a public repository. New release boundary is Astro dist; old root-directory deployments must migrate to approved build before using unpublished content. No claim of hosted RBAC or full Suess parity.
 
 # CONSTRAINTS
-Preserve user drafts/configuration and existing integrations. No credentials/private data in handovers. No external participant actions or mail in smoke tests. Build before tests because tests read dist. Set `ASTRO_TELEMETRY_DISABLED=1` for restricted local builds. `scripts/split-pages.mjs` and event migration are one-time tools; do not regenerate evolved sources with them.
+Preserve untracked DSPro9/.vscode/AGENTS.md/.codex assets and skills. No external participant actions/mail. Build before tests; ASTRO_TELEMETRY_DISABLED=1. On Windows sandbox, fixture atomic replaces need unrestricted test execution; full39 tests passed there. Never rerun one-time split-pages/event migration over evolved sources. Do not overwrite approved snapshot from current drafts to bypass review.
 
 # OPEN ISSUES
-- General optimistic save conflicts for page/dictionary/events; review confirmation alone has a limited original-pair guard.
-- Role/event/locale permissions, revision-bound publication approval, audit and hosted authoring.
-- General translation review/source-language choice, event creation/group/cover acceptance, broader complex layout/rich-text/media tests.
-- Legacy operational API hardcoded policy/date labels and cache/no-store coverage need dedicated migration.
+Hosted identity/policy trust/UI roles; Cloudflare caching/invalidation; finer per-page publishing; navigation order and post-creation menu settings; article overview/reading time and gallery-grid authoring; general dictionary translation review/source locale. Approved snapshot freezes HTML/meta/i18n/events, not renderer/CSS/asset bytes: code/media releases still need normal review. Server requires restart after integration edits.
 
 # CURRENT TODOS
-- [x] Shared event display/editing and static snapshot.
-- [x] Event translation review and bottom-edge menu/dialog fix.
-- [x] Validation, source restoration, cleanup and committed continuation documentation.
-- [ ] General conflict handling, then RBAC and exact-revision publication.
-- [ ] Cloudflare gateway/caches/invalidation and isolated operational migration.
+- [x] Suess chat/source audit and useful BCB feature transfer.
+- [x] Same editor for articles, hierarchy/search, consistent preview/nav/teasers.
+- [x] Full-site exact review/approval/rollback, policies and optimistic conflicts.
+- [x]39 tests/build/browser evidence, exact restoration and committed handover.
+- [ ] Hosted identity adapter and role-specific acceptance; targeted caching/invalidation.
 
 # NEXT RECOMMENDED TASK
-Implement optimistic save conflicts for page, dictionary and event revisions. Preserve pending drafts on conflict, provide a usable reload/compare path, and test two editor sessions. Then introduce server-side role/event/locale scope and revision-specific approval/publication. Keep participant operations separate. Commit each tested milestone.
+Connect a verified server identity/assignment adapter before hosting the editor, enforce protected policy trust, and derive UI capabilities from the same policy. Keep participant operations completely separate. Then improve page-specific publication granularity/navigation settings. Start by reading this handover and docs/editor-transfer-suess.md; inspect git status before edits.

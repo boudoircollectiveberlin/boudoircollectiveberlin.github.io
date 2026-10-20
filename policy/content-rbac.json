@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "roles": {
+    "local-operator": { "*": { "read": true, "create": true, "update": true, "approve": true, "publish": true } },
+    "editor": {
+      "pages": { "read": { "documents": "assigned-or-owned" }, "create": true, "update": { "documents": "assigned-or-owned" } },
+      "events": { "read": { "documents": "assigned" }, "update": { "documents": "assigned", "languages": "assigned" } },
+      "translations": { "read": true, "update": { "languages": "assigned" } },
+      "media": { "read": true, "update": true }
+    },
+    "translator": {
+      "pages": { "read": { "documents": "assigned" } },
+      "events": { "read": { "documents": "assigned" }, "update": { "documents": "assigned", "languages": "assigned" } },
+      "translations": { "read": true, "update": { "languages": "assigned" } },
+      "media": { "read": true }
+    },
+    "reviewer": { "*": { "read": true }, "publications": { "read": true, "approve": true } },
+    "publisher": { "*": { "read": true }, "publications": { "read": true, "publish": true } }
+  }
+}

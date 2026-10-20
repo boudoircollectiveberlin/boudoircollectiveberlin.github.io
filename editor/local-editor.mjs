@@ -7,10 +7,15 @@ import { randomBytes, timingSafeEqual, randomUUID } from 'node:crypto';
 import { readFile, readdir, lstat, realpath, writeFile, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { contentFile, editablePages, getEditablePage, isLocalRequest, validatePageHtml } from './local-editor-core.mjs';
+import { contentFile, getEditablePage, isLocalRequest, validatePageHtml } from './local-editor-core.mjs';
 import { readTranslations, saveTranslation, applyTranslationDrafts, writeTranslationSource } from './local-translations.mjs';
 import { readEventCatalog } from '../shared/read-events.mjs';
 import { readReviews, writeReviews, reviewFile, describeReviews, applyReviews } from './event-reviews.mjs';
+import { sitePages } from '../shared/site-pages.mjs';
+import { readDraftSite, revisionOf, readPublication, publicationStatus, composeSitePage } from '../shared/site-publication.mjs';
+import { renderEventPage, serializeEventCatalog, escapeEventHtml } from '../shared/event-content.mjs';
+import { allowed, requirePermission, localOperator } from './policy.mjs';
+import { assertSiteRevision, authorizeMutation, publicationAction, createSitePage } from './site-store.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const editorRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -90,6 +95,34 @@ export default function localEditor() {
 
           try {
             const url = new URL(req.url, `http://${req.headers.host}`);
+            const policy=JSON.parse(await readFile(path.join(root,'policy/content-rbac.json'),'utf8'));
+            const identity=localOperator;
+            const requireRead=(resource,document)=>requirePermission(policy,identity,'read',resource,document);
+            if(req.method==='GET' && url.pathname==='/__editor/api/site') {
+              requireRead('publications',{id:'site'});
+              res.setHeader('Content-Type','application/json; charset=utf-8');
+              return res.end(JSON.stringify({...publicationStatus(root),canReview:allowed(policy,identity,'approve','publications',{id:'site'}),canPublish:allowed(policy,identity,'publish','publications',{id:'site'})}));
+            }
+            if(req.method==='GET' && url.pathname==='/__editor/site-i18n.js') {
+              requireRead('translations',{id:'site'});
+              res.setHeader('Content-Type','text/javascript; charset=utf-8');
+              return res.end(url.searchParams.get('drafts')==='1'?await readFile(path.join(root,'i18n.js')):readPublication(root).active.snapshot.i18n);
+            }
+            if(req.method==='GET' && url.pathname==='/__editor/site-preview') {
+              const drafts=url.searchParams.get('drafts')==='1',id=url.searchParams.get('id') || 'index';
+              const sourcePage=sitePages(root).find(page=>page.id===id);
+              if(drafts)requireRead('pages',sourcePage || {id});
+              const source=drafts?readDraftSite(root):readPublication(root).active.snapshot;
+              const snapshot=drafts?{...source,pages:source.pages.filter(page=>allowed(policy,identity,'read','pages',sitePages(root).find(item=>item.id===page.id))),events:{...source.events,events:source.events.events.filter(event=>allowed(policy,identity,'read','events',{id:event.id}))}}:source;
+              const page=composeSitePage(snapshot,id);
+              if(!page){res.statusCode=404;res.setHeader('Content-Type','text/html; charset=utf-8');return res.end('<p>Diese Seite ist in diesem Website-Stand nicht freigegeben.</p>');}
+              const catalog={...snapshot.events,revision:revisionOf(snapshot.events)};
+              const html=renderEventPage(page.html,catalog,{page:page.path,locale:'de'});
+              const head=renderEventPage(page.meta.head.join('\n'),catalog,{page:page.path,locale:'de'});
+              res.setHeader('Content-Type','text/html; charset=utf-8');
+              res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; base-uri 'self'; form-action 'none'; frame-ancestors 'self'");
+              return res.end(`<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="/"><link rel="stylesheet" href="/styles.css">${head}</head><body ${page.meta.bodyAttrs || ''} data-preview-drafts="${drafts?'1':'0'}"><aside role="status" style="padding:10px;background:#eee;color:#222">Lokale Website-Vorschau · ${drafts?'gespeicherte Entwürfe':'freigegebener Stand'} · Formulare deaktiviert</aside>${html}<script id="bcb-event-catalog" type="application/json">${serializeEventCatalog(catalog)}</script><script src="/__editor/site-i18n.js?drafts=${drafts?'1':'0'}" defer></script><script type="module" src="/__editor/site-preview.js"></script></body></html>`);
+            }
             if(req.method==='GET' && url.pathname==='/__editor/event-content.mjs'){
               res.setHeader('Content-Type','text/javascript; charset=utf-8');
               return res.end(await readFile(path.join(root,'shared/event-content.mjs')));
@@ -104,29 +137,41 @@ export default function localEditor() {
               res.setHeader('Content-Type', asset.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
               return res.end(await readFile(path.join(editorRoot, asset)));
             }
+            if(req.method==='GET' && ['/__editor/page-navigation.mjs','/__editor/site-controls.mjs','/__editor/site-preview.js'].includes(url.pathname)) {
+              res.setHeader('Content-Type','text/javascript; charset=utf-8');return res.end(await readFile(path.join(editorRoot,path.basename(url.pathname))));
+            }
             if (req.method === 'GET' && url.pathname === '/__editor/api/pages') {
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
               res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
-              return res.end(JSON.stringify({ pages: editablePages, token }));
+              const draft=readDraftSite(root);
+              const pages=sitePages(root).filter(page=>allowed(policy,identity,'read','pages',page)).map(page=>({...page,title:draft.pages.find(item=>item.id===page.id).title}));
+              return res.end(JSON.stringify({pages,token,canCreate:allowed(policy,identity,'create','pages',{id:'new'})}));
             }
             if (req.method === 'GET' && url.pathname === '/__editor/api/page') {
               const page = getEditablePage(url.searchParams.get('id'));
               if (!page) throw Object.assign(new Error('Unbekannte Seite.'), { status: 404 });
+              requireRead('pages',page);
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
-              return res.end(JSON.stringify({ page, html: await readFile(contentFile(root, page.id), 'utf8') }));
+              return res.end(JSON.stringify({page,html:await readFile(contentFile(root,page.id),'utf8'),revision:revisionOf(readDraftSite(root))}));
             }
             if (req.method === 'GET' && url.pathname === '/__editor/api/translations') {
+              requireRead('translations',{id:'site'});
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
               return res.end(JSON.stringify({ translations: readTranslations(await readFile(path.join(root, 'i18n.js'), 'utf8')) }));
             }
             if (req.method === 'GET' && url.pathname === '/__editor/api/metadata') {
               const page = getEditablePage(url.searchParams.get('id'));
               if(!page) throw new Error('Unbekannte Seite.');
-              const catalog=await readEventCatalog(root),event=eventForPage(catalog,page.path);
+              requireRead('pages',page);
+              const catalog=await readEventCatalog(root,{draft:true}),event=eventForPage(catalog,page.path);
               if(event){
                 const locale=url.searchParams.get('locale')==='en'?'en':'de';
                 res.setHeader('Content-Type','application/json; charset=utf-8');
                 return res.end(JSON.stringify({title:eventText(event,'content.PageTitle')?.[locale] || event.title[locale],description:eventText(event,'content.MetaDescription')?.[locale] || event.summary[locale]}));
+              }
+              if(page.titleKey) {
+                const translations=readTranslations(await readFile(path.join(root,'i18n.js'),'utf8')),locale=url.searchParams.get('locale')==='en'?'en':'de';
+                res.setHeader('Content-Type','application/json; charset=utf-8');return res.end(JSON.stringify({title:translations[locale][page.titleKey],description:translations[locale][page.summaryKey]}));
               }
               const source = await readFile(path.join(root,'src/pages',page.id+'.astro'),'utf8');
               res.setHeader('Content-Type','application/json; charset=utf-8');
@@ -134,14 +179,16 @@ export default function localEditor() {
             }
             if (req.method === 'GET' && url.pathname === '/__editor/api/events') {
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
-              const catalog=await readEventCatalog(root);
+              const catalog=await readEventCatalog(root,{draft:true});
+              catalog.events=catalog.events.filter(event=>allowed(policy,identity,'read','events',{id:event.id}));
               return res.end(JSON.stringify({...catalog,reviews:describeReviews(catalog,await readReviews(root))}));
             }
             if (req.method === 'GET' && url.pathname === '/__editor/api/media') {
+              requireRead('media',{id:'library'});
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
               return res.end(JSON.stringify({ assets: await listMedia() }));
             }
-            if (req.method === 'POST' && ['/__editor/api/save', '/__editor/api/translation-save', '/__editor/api/event-save', '/__editor/api/media-prepare', '/__editor/api/text-create', '/__editor/api/metadata-save', '/__editor/api/navigation-save'].includes(url.pathname)) {
+            if (req.method === 'POST' && ['/__editor/api/site-action','/__editor/api/save', '/__editor/api/translation-save', '/__editor/api/event-save', '/__editor/api/media-prepare', '/__editor/api/text-create', '/__editor/api/metadata-save', '/__editor/api/navigation-save'].includes(url.pathname)) {
               if (req.headers.origin !== `http://${req.headers.host}` || req.headers['sec-fetch-site'] === 'cross-site')
                 throw Object.assign(new Error('Fremder Ursprung ist nicht erlaubt.'), { status: 403 });
               const supplied = req.headers['x-editor-token'];
@@ -154,9 +201,17 @@ export default function localEditor() {
               mutationQueue = new Promise(resolve => { release = resolve; });
               await previous;
               try {
+              if(url.pathname==='/__editor/api/site-action') {
+                let page;
+                if(body.action==='create')page=await createSitePage(root,policy,identity,body);
+                else await publicationAction(root,policy,identity,body);
+                res.setHeader('Content-Type','application/json; charset=utf-8');return res.end(JSON.stringify({ok:true,page,revision:revisionOf(readDraftSite(root))}));
+              }
+              assertSiteRevision(root,body.revision);
+              authorizeMutation(root,policy,identity,url.pathname.split('/').pop(),body);
               if (url.pathname === '/__editor/api/navigation-save') {
                 const edits=[];
-                for(const item of editablePages) {
+                for(const item of sitePages(root)) {
                   const html=await readFile(contentFile(root,item.id),'utf8');
                   const result=replaceNavigationLink(html,body.key,body.href,item.id);
                   if(result.count)edits.push({id:item.id,html,result});
@@ -165,17 +220,23 @@ export default function localEditor() {
                 const written=[];
                 try {for(const edit of edits){await savePage(edit.id,edit.result.html);written.push(edit);}}
                 catch(error){for(const edit of written.reverse())await savePage(edit.id,edit.html);throw error;}
-                res.setHeader('Content-Type','application/json; charset=utf-8');return res.end(JSON.stringify({ok:true,count:edits.length}));
+                res.setHeader('Content-Type','application/json; charset=utf-8');return res.end(JSON.stringify({ok:true,count:edits.length,revision:revisionOf(readDraftSite(root))}));
               }
               if (url.pathname === '/__editor/api/metadata-save') {
                 const page = getEditablePage(body.id); if(!page)throw new Error('Unbekannte Seite.');
-                const event=eventForPage(await readEventCatalog(root),page.path);
+                const event=eventForPage(await readEventCatalog(root,{draft:true}),page.path);
                 if(event){
                   if(!['de','en'].includes(body.locale) || !body.values || ['title','description'].some(field=>typeof body.values[field]!=='string'))throw new Error('Ungültige Eventmetadaten.');
                   const updates=[['content.PageTitle',body.values.title],['content.MetaDescription',body.values.description]].map(([field,value])=>({id:event.id,field,values:{...eventText(event,field),[body.locale]:value}}));
                   const source=JSON.parse(await readFile(path.join(root,'data/events.json'),'utf8'));
                   await writeEventSource(root,JSON.stringify(applyEventDrafts(source,updates),null,2)+'\n');
-                  res.setHeader('Content-Type','application/json; charset=utf-8');return res.end(JSON.stringify({ok:true}));
+                  res.setHeader('Content-Type','application/json; charset=utf-8');return res.end(JSON.stringify({ok:true,revision:revisionOf(readDraftSite(root))}));
+                }
+                if(page.titleKey) {
+                  const source=await readFile(path.join(root,'i18n.js'),'utf8');
+                  const updated=applyTranslationDrafts(source,{[body.locale]:{[page.titleKey]:body.values.title,[page.summaryKey]:body.values.description}});
+                  await writeTranslationSource(root,updated);
+                  res.setHeader('Content-Type','application/json; charset=utf-8');return res.end(JSON.stringify({ok:true,revision:revisionOf(readDraftSite(root))}));
                 }
                 const file=path.join(root,'src/pages',page.id+'.astro');
                 if((await lstat(file)).isSymbolicLink())throw new Error('Verknüpfte Seitendatei ist nicht erlaubt.');
@@ -183,7 +244,7 @@ export default function localEditor() {
                 const temporary=path.join(root,'src/pages','.'+randomUUID()+'.tmp');
                 try{await writeFile(temporary,updated,{flag:'wx'});await rename(temporary,file);}
                 finally{await unlink(temporary).catch(error=>{if(error.code!=='ENOENT')throw error;});}
-                res.setHeader('Content-Type','application/json; charset=utf-8');return res.end(JSON.stringify({ok:true}));
+                res.setHeader('Content-Type','application/json; charset=utf-8');return res.end(JSON.stringify({ok:true,revision:revisionOf(readDraftSite(root))}));
               }
               if (url.pathname === '/__editor/api/media-prepare') {
                 const result = await prepareMedia(root, body.src);
@@ -217,15 +278,12 @@ export default function localEditor() {
                 const file = path.join(root, 'data/events.json');
                 if ((await lstat(file)).isSymbolicLink()) throw new Error('Verknüpfte Eventdatei ist nicht erlaubt.');
                 const data = updateEventField(JSON.parse(await readFile(file, 'utf8')), body);
-                const temporary = path.join(root, 'data', '.' + randomUUID() + '.tmp');
-                try { await writeFile(temporary, JSON.stringify(data,null,2)+'\n', {flag:'wx'}); await rename(temporary,file); }
-                finally { await unlink(temporary).catch(error=>{if(error.code!=='ENOENT')throw error;}); }
-                await writeFile(path.join(root,'public/data/events.json'), JSON.stringify(data,null,2)+'\n');
+                await writeEventSource(root,JSON.stringify(data,null,2)+'\n');
               }
               else if (url.pathname === '/__editor/api/text-create') await saveTranslation(root, null, body.key, null, body.values);
               else await saveTranslation(root, body.locale, body.key, body.value);
               res.setHeader('Content-Type', 'application/json; charset=utf-8');
-              return res.end(JSON.stringify({ ok: true }));
+              return res.end(JSON.stringify({ ok:true,revision:revisionOf(readDraftSite(root)) }));
               } finally { release(); }
             }
             throw Object.assign(new Error('Nicht gefunden.'), { status: 404 });

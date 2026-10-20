@@ -1,22 +1,15 @@
 import path from 'node:path';
 import { validateSectionLayoutMarkers } from './section-layouts.mjs';
+import { basePages, sitePages } from '../shared/site-pages.mjs';
 
-export const editablePages = Object.freeze([
-  { id: 'index', title: 'Startseite', path: 'index.html' },
-  { id: 'account', title: 'Account', path: 'account.html' },
-  { id: 'event-grabowsee', title: 'Event: Grabowsee', path: 'event-grabowsee.html' },
-  { id: 'event-wrodow', title: 'Event: Wrodow', path: 'event-wrodow.html' },
-  { id: 'legal', title: 'Rechtliches', path: 'legal.html' },
-]);
+export const editablePages = basePages;
 
-const pagesById = new Map(editablePages.map((page) => [page.id, page]));
-
-export function getEditablePage(id) {
-  return pagesById.get(id);
+export function getEditablePage(id,root=process.cwd()) {
+  return sitePages(root).find(page=>page.id===id);
 }
 
 export function contentFile(root, id) {
-  const page = getEditablePage(id);
+  const page = getEditablePage(id,root);
   if (!page) throw new Error('Unbekannte Seite.');
   const directory = path.resolve(root, 'src', 'content', 'pages');
   const file = path.resolve(directory, page.path);

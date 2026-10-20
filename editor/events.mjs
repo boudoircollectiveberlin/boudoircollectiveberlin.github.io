@@ -2,6 +2,7 @@ import { lstat, writeFile, rename, unlink } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { eventText, setEventText, safeEventRichText, publicEventCatalog } from '../shared/event-content.mjs';
+import { readPublication } from '../shared/publication-state.mjs';
 
 export function updateEventField(data, { id, field, values }) {
   const event = data.events.find(item => item.id === id);
@@ -27,5 +28,5 @@ export async function writeEventSource(root, source) {
   const temporary=path.join(root,'data','.'+randomUUID()+'.tmp');
   try{await writeFile(temporary,source,{flag:'wx'});await rename(temporary,file);}
   finally{await unlink(temporary).catch(error=>{if(error.code!=='ENOENT')throw error;});}
-  await writeFile(path.join(root,'public/data/events.json'),source);
+  await writeFile(path.join(root,'public/data/events.json'),JSON.stringify(readPublication(root).active.snapshot.events,null,2)+'\n');
 }

@@ -1,4 +1,11 @@
 import { renderEventCard, applyEventBindings } from './event-content.mjs';
+const editLink=document.createElement('a');
+const editURL=new URL('/__editor/',location.origin);
+editURL.searchParams.set('page',new URL(location.href).searchParams.get('id') || 'index');
+editLink.href=editURL.href;
+editLink.textContent='Im Editor bearbeiten';
+editLink.style.cssText='display:inline-block;margin-right:18px;padding:8px 14px;background:#211f1d;color:#fff;text-decoration:none;border-radius:4px;font-weight:600';
+document.querySelector('body > aside[role="status"]')?.prepend(editLink);
 const catalog=JSON.parse(document.getElementById('bcb-event-catalog').textContent);
 function localize() {
   const locale=localStorage.getItem('bcb-language')==='en'?'en':'de';

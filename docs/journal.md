@@ -2,6 +2,8 @@
 
 Start: `npm run dev:editor` → Bereich **Journal** → **Übersicht** oder **Artikel**.
 
+Direktlink zum Artikel im Editor: `/__editor/?page=redaktion-lorem-ipsum`. Die separate Website-Vorschau enthält oben „Im Editor bearbeiten“ und öffnet damit dieselbe Seite im vollständigen Editorrahmen. Dort wechselt „Vorschau/Bearbeiten“ ohne Seitenwechsel. Die aktuelle Editorseite bleibt in der URL erhalten.
+
 - `redaktion-journal` ist die bearbeitbare Journalübersicht mit automatischer Artikelliste. Titel und Vorspann lassen sich normal bearbeiten; die Liste bezieht Titel/Kurzbeschreibung zentral aus den Artikeln. Ein Klick öffnet den Artikel im gleichen Editor.
 - `redaktion-lorem-ipsum` ist ein ausdrücklich fiktiver DE/EN-Testartikel mit Lorem ipsum, Abschnitten und einem hervorgehobenen Platzhalter. Er enthält keine Event- oder Angebotsaussagen.
 - Artikel verwenden eine durchgehende, mittig gesetzte Lesespalte (maximal 800px), Titel und Vorspann untereinander, offene Absatzabstände und zurückhaltende Hervorhebungen. Die allgemeinen zweispaltigen Panel-Layouts werden innerhalb von Journalartikeln nicht auf die Textabschnitte angewandt; BCB-Schrift und Farben bleiben erhalten. Auch neue Artikel erhalten diesen Seitenrahmen.

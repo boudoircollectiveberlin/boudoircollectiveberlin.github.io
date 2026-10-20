@@ -432,6 +432,7 @@ async function loadPage(id) {
   $('#canvas-label').textContent = `${page.title} · ${previewMode ? 'Vorschau' : 'Bearbeiten'}`;
   canvas.onload = installFrameEditing;
   canvas.srcdoc = documentFor(savedHtml);
+  const editorURL=new URL(location.href);editorURL.searchParams.set('page',page.id);history.replaceState(null,'',editorURL);
   refreshSiteState();updateSitePreviewLink();
 }
 
@@ -642,12 +643,14 @@ Promise.all([
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Editor konnte nicht geladen werden.');
     token = result.token;
-    pageNavigation.setEntries(result.pages,result.pages[0]?.id);
+    const requestedPage=new URL(location.href).searchParams.get('page');
+    const initialPage=result.pages.find(item=>item.id===requestedPage) || result.pages[0];
+    pageNavigation.setEntries(result.pages,initialPage?.id);
     $('#site-create').disabled=!result.canCreate;
     saveButton.disabled = false;
     undoButton.disabled = false;
     redoButton.disabled = false;
-    if(result.pages.length)await loadPage(result.pages[0].id);
+    if(initialPage)await loadPage(initialPage.id);
   }),
   fetch('/__editor/api/translations').then(async (response) => {
     const result = await response.json();

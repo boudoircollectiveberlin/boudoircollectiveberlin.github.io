@@ -1,6 +1,9 @@
 {
   "name": "BCB Redaktion · GitHub-Beitragende",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
   "forwardPorts": [4321],
   "portsAttributes": {
     "4321": { "label": "BCB Editor – Port privat belassen", "onAutoForward": "notify", "protocol": "http" }

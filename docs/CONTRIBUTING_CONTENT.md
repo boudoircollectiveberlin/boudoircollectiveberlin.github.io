@@ -12,6 +12,8 @@ Direkteinstieg: [Codespace für preview erstellen](https://codespaces.new/boudoi
 
 Nach Einrichtung oder erneutem Start startet der Editor automatisch mit der bestätigten GitHub-Identität und deren Zuweisungen. Port4321 bleibt privat. Fehlt die Zuweisung oder Anmeldung, startet kein Ersatzprofil. Das Startprotokoll liegt unter `/tmp/bcb-editor-<Codespace-Name>/server.log`. Nach einer Änderung der Devcontainer-Konfiguration einen bestehenden Codespace über **Codespaces: Rebuild Container** aktualisieren.
 
+Die Umgebung installiert die aktuelle Node22-Version (mindestens22.22.0). Bei älteren Codespaces kann Port4321 bereits angezeigt werden, obwohl Astro wegen einer veralteten Node-Version beendet wurde. Dann zuerst den neuesten `preview`-Stand holen und den Container neu bauen; die Portanzeige allein bestätigt keinen laufenden Editor.
+
 1. Öffne das BCB-Repository auf GitHub und wähle den vom Maintainer genannten Zielbranch.
 2. Öffne **Code → Codespaces → Create codespace**. Die vorbereitete Umgebung installiert die Projektabhängigkeiten.
 3. Prüfe unter **Ports**, dass Port **4321 privat** ist. Nicht auf öffentlich oder Organisation umstellen.

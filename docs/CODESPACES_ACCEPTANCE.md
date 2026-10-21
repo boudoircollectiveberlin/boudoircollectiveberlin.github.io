@@ -2,6 +2,8 @@
 
 Stand: 21.10.2026: echter Codespace mit BCB-Dominik geprüft; echte Positiv-/Negativ-PR-Abnahme weiterhin offen.
 
+Ergänzende Einstiegsabnahme: alter Codespace vom Nutzer gelöscht (GitHub-Liste leer, alte Adresse ungültig). Neuer 2-Core-Codespace ausdrücklich freigegeben; BCB-Ordnervertrauen separat vom Nutzer bestätigt. Ersteinrichtung deckte Abbruch des Hintergrundservers nach Hook-Ende auf. Korrektur8203630: eigene Sitzung via setsid, idempotenter postAttach-Wiederanlauf. Nach echtem Rebuild startete der Server ohne manuellen Befehl; GitHub öffnete automatisch einen neuen privaten Browsertab, Port-Root leitete ins Journal, Identität bcb-dominik und DE/EN erfolgreich. Screenshot bcb-codespaces-autostart.png. Keine Inhalte gespeichert, keine Produktionszugriffe. Automatischer Einstieg nach Rebuild damit bestätigt; neue Drittpersonen-/PR-Abnahme bleibt offen.
+
 | Nachweis | Lokal | Echter Codespace |
 | --- | --- | --- |
 | Node22 / npm ci / Build / Tests | Projektprüfungen | Node22.23.4, Container-Rebuild, Build, 49 Tests und Syntaxchecks erfolgreich |

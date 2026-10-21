@@ -1,4 +1,9 @@
 {
   "version": 1,
-  "contributors": {}
+  "contributors": {
+    "bcb-dominik": {
+      "documents": ["redaktion-journal", "redaktion-lorem-ipsum"],
+      "languages": ["de", "en"]
+    }
+  }
 }

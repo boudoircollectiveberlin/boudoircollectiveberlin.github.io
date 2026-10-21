@@ -46,13 +46,13 @@ Nur zum Ausprobieren ohne echten Account-Mapping: `npm run dev:editor:test`. Die
 
 ## Für Maintainer
 
-`policy/contributors.json` liegt auf dem vertrauenswürdigen Zielbranch. Beispiel (durch echten Login ersetzen; nicht als echte Freischaltung übernehmen):
+`policy/contributors.json` liegt auf dem vertrauenswürdigen Zielbranch. Lokal vorbereitete Zuweisung für den benannten Testaccount `BCB-Dominik` (Login wird kleingeschrieben normalisiert):
 
 ```json
 {
   "version": 1,
   "contributors": {
-    "github-login": {
+    "bcb-dominik": {
       "documents": ["redaktion-journal", "redaktion-lorem-ipsum"],
       "languages": ["de", "en"]
     }
@@ -60,4 +60,4 @@ Nur zum Ausprobieren ohne echten Account-Mapping: `npm run dev:editor:test`. Die
 }
 ```
 
-Die Datei ist zunächst bewusst leer. Keine Passwörter oder Tokens eintragen. Der Bootstrap ist ein eigener vertrauenswürdiger Maintainer-Schritt; ein Beitrag kann sich nicht selbst freischalten. Zusätzliche Event-, Prüf- oder Veröffentlichungsrechte sind nicht Teil dieses Prozesses.
+Die Zuweisung ist lokal vorbereitet. Sie greift auf GitHub erst nach Übernahme in den vertrauenswürdigen Zielbranch; die echte Codespaces-/PR-Abnahme steht aus. Keine Passwörter oder Tokens eintragen. Der Bootstrap ist ein eigener vertrauenswürdiger Maintainer-Schritt; ein Beitrag kann sich nicht selbst freischalten. Zusätzliche Event-, Prüf- oder Veröffentlichungsrechte sind nicht Teil dieses Prozesses.

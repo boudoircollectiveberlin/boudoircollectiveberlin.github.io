@@ -29,3 +29,13 @@ test('test contributor has journal permissions and cannot publish, change naviga
   assert.doesNotThrow(()=>authorizeMutation(process.cwd(),policy,identity,'save',{id:page.id,html:page.html,translations:{de:{editor_journal_test_body_one:'Eine Änderung'}}}));
   assert.throws(()=>authorizeMutation(process.cwd(),policy,identity,'save',{id:page.id,html:page.html,translations:{de:{navHome:'Manipuliert'}}}),error=>error.status===403);
 });
+test('BCB-Dominik resolves only after verified bootstrap and retains limited journal permissions',()=>{
+  const identity=editorIdentity(process.cwd(),{BCB_EDITOR_PROFILE:'github-contributor',BCB_EDITOR_VERIFIED_LOGIN:'bcb-dominik'});
+  assert.equal(identity.id,'bcb-dominik');
+  assert.deepEqual(identity.documents,['redaktion-journal','redaktion-lorem-ipsum']);
+  assert.deepEqual(identity.languages,['de','en']);
+  assert.equal(allowed(policy,identity,'update','pages',{id:'redaktion-lorem-ipsum'}),true);
+  assert.equal(allowed(policy,identity,'publish','publications',{id:'site'}),false);
+  assert.equal(allowed(policy,identity,'update','navigation',{id:'site'}),false);
+  assert.throws(()=>editorIdentity(process.cwd(),{BCB_EDITOR_PROFILE:'github-contributor'}),/freigeschalteter/);
+});

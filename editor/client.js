@@ -643,6 +643,8 @@ Promise.all([
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Editor konnte nicht geladen werden.');
     token = result.token;
+    $('#editor-identity').textContent=result.identity?.label || 'Lokaler Editor';
+    if(!result.canManageNavigation){$('#site-type').querySelectorAll('option').forEach(option=>{if(option.value!=='article')option.remove();});$('#site-in-navigation').checked=false;$('#site-in-navigation').disabled=true;}
     const requestedPage=new URL(location.href).searchParams.get('page');
     const initialPage=result.pages.find(item=>item.id===requestedPage) || result.pages[0];
     pageNavigation.setEntries(result.pages,initialPage?.id);

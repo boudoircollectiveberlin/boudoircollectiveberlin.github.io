@@ -1,0 +1,63 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { validateContribution } from '../editor/contribution-check.mjs';
+import { applyTranslationDrafts } from '../editor/local-translations.mjs';
+import { verifiedGitHubLogin } from '../editor/github-contributor.mjs';
+const policy=JSON.parse(await readFile('policy/content-rbac.json','utf8'));
+const pages=await readFile('content/site-pages.json','utf8'),i18n=await readFile('i18n.js','utf8');
+const ids=['index','account','event-grabowsee','event-wrodow','legal',...JSON.parse(pages).map(page=>page.id)];
+const html=Object.fromEntries(await Promise.all(ids.map(async id=>[id,await readFile(`src/content/pages/${id}.html`,'utf8')])));
+const fixture=()=>({policy,identity:{id:'sample-author',roles:['journal-contributor'],documents:['redaktion-journal','redaktion-lorem-ipsum'],languages:['en']},changes:[{status:'M',path:'i18n.js',mode:'100644'}],basePages:pages,candidatePages:pages,baseI18n:i18n,candidateI18n:applyTranslationDrafts(i18n,{en:{editor_journal_test_body_one:'An assigned English contribution'}}),baseHtml:html,candidateHtml:html});
+test('trusted policy accepts assigned language content and rejects unrelated text, source edits, release edits and symlinks',()=>{
+  assert.equal(validateContribution(fixture()).ok,true);
+  assert.throws(()=>validateContribution({...fixture(),candidateI18n:applyTranslationDrafts(i18n,{de:{editor_journal_test_body_one:'Falsche Sprache'}})}),/Berechtigung/);
+  assert.throws(()=>validateContribution({...fixture(),candidateI18n:applyTranslationDrafts(i18n,{en:{navHome:'Hijacked'}})}),/Berechtigung/);
+  assert.throws(()=>validateContribution({...fixture(),candidateI18n:fixture().candidateI18n+'\nfetch("https://example.invalid")'}),/JavaScript/);
+  assert.throws(()=>validateContribution({...fixture(),candidateI18n:applyTranslationDrafts(i18n,{en:{editor_journal_test_body_one:'<img src=x onerror=alert(1)>'}})}),/HTML/);
+  assert.throws(()=>validateContribution({...fixture(),candidateI18n:i18n.replace('de: {','evil: fetch("https://example.invalid"), de: {')}));
+  for(const change of [{status:'M',path:'content/site-publication.json',mode:'100644'},{status:'M',path:'policy/content-rbac.json',mode:'100644'},{status:'M',path:'i18n.js',mode:'120000'},{status:'D',path:'i18n.js',mode:'100644'}])assert.throws(()=>validateContribution({...fixture(),changes:[change]}),/Unzulässiger/);
+});
+test('ownership changes fail and a new article is bound to its confirmed author',()=>{
+  const changed=JSON.parse(pages);changed[0].ownerId='sample-author';
+  assert.throws(()=>validateContribution({...fixture(),candidatePages:JSON.stringify(changed)}),/Eigentümer/);
+  const page={id:'redaktion-new-story',path:'redaktion-new-story.html',title:'New story',titleKey:'editor_new_story',summaryKey:'editor_new_lead',area:'Journal',type:'article',navigation:false,ownerId:'sample-author'};
+  const candidateHtml={...html,[page.id]:'<main><section><h1 data-i18n="editor_new_story"></h1><p data-i18n="editor_new_lead"></p></section></main>'};
+  const candidateI18n=applyTranslationDrafts(i18n,{de:{editor_new_story:'',editor_new_lead:''},en:{editor_new_story:'New story',editor_new_lead:'A short introduction'}});
+  const proposed={...fixture(),candidatePages:JSON.stringify([...JSON.parse(pages),page]),candidateI18n,candidateHtml,changes:[{status:'A',path:`src/content/pages/${page.path}`,mode:'100644'},{status:'M',path:'i18n.js',mode:'100644'},{status:'M',path:'content/site-pages.json',mode:'100644'}]};
+  // Empty DE values are still changes to DE; contributor must hold both language grants for paired new keys.
+  proposed.identity={...proposed.identity,languages:['de','en']};
+  assert.equal(validateContribution(proposed).ok,true);
+  assert.throws(()=>validateContribution({...proposed,candidatePages:JSON.stringify([...JSON.parse(pages),{...page,ownerId:'someone-else'}])}),/bestätigten Autor/);
+});
+test('GitHub bootstrap obtains identity from the authenticated user endpoint and fails closed',async()=>{
+  let endpoint;
+  assert.equal(await verifiedGitHubLogin('fixture-not-a-secret',async url=>{endpoint=url;return {ok:true,json:async()=>({login:'Example-Author'})};}),'example-author');
+  assert.equal(endpoint,'https://api.github.com/user');
+  await assert.rejects(verifiedGitHubLogin(''),/Anmeldung fehlt/);
+  await assert.rejects(verifiedGitHubLogin('fixture',async()=>({ok:false})),/bestätigt/);
+});
+test('CLI validates real Git blobs against target-branch assignments and rejects candidate code',async t=>{
+  const root=await mkdtemp(path.join(tmpdir(),'bcb-git-contribution-'));
+  t.after(async()=>{assert.ok(path.resolve(root).startsWith(path.join(path.resolve(tmpdir()),'bcb-git-contribution-')));await rm(root,{recursive:true,force:true});});
+  const put=async(file,text)=>{await mkdir(path.dirname(path.join(root,file)),{recursive:true});await writeFile(path.join(root,file),text);};
+  const git=args=>execFileSync('git',['-c','commit.gpgsign=false','-c',`core.hooksPath=${path.join(root,'no-hooks')}`,...args],{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']});
+  await mkdir(path.join(root,'no-hooks'));
+  git(['init','-b','codex/validation']);
+  await put('policy/content-rbac.json',JSON.stringify(policy));
+  await put('policy/contributors.json',JSON.stringify({version:1,contributors:{'example-author':{documents:['redaktion-journal','redaktion-lorem-ipsum'],languages:['en']}}}));
+  await put('content/site-pages.json',pages);await put('i18n.js',i18n);
+  for(const [id,source]of Object.entries(html))await put(`src/content/pages/${id}.html`,source);
+  const commit=message=>{git(['add','.']);git(['-c','user.name=BCB Test','-c','user.email=test@example.invalid','commit','-m',message]);return git(['rev-parse','HEAD']).trim();};
+  const base=commit('Trusted target');
+  await put('i18n.js',fixture().candidateI18n);const head=commit('Assigned content');
+  const script=path.resolve('scripts/check-contribution.mjs');
+  const run=sha=>execFileSync(process.execPath,[script],{cwd:root,encoding:'utf8',env:{...process.env,BCB_CONTRIBUTION_BASE:base,BCB_CONTRIBUTION_HEAD:sha,BCB_CONTRIBUTOR_LOGIN:'example-author'},stdio:['ignore','pipe','pipe']});
+  assert.equal(JSON.parse(run(head)).ok,true);
+  await put('i18n.js',fixture().candidateI18n+'\nthrow Error("Candidate must never execute");');
+  const malicious=commit('Untrusted code');
+  assert.throws(()=>run(malicious),error=>String(error.stderr).includes('JavaScript außerhalb'));
+});

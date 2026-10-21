@@ -1,0 +1,11 @@
+{
+  "name": "BCB Redaktion · begrenztes Testprofil",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "forwardPorts": [4321],
+  "portsAttributes": {
+    "4321": { "label": "BCB Editor – Port privat belassen", "onAutoForward": "notify", "protocol": "http" }
+  },
+  "containerEnv": { "BCB_EDITOR_PROFILE": "contributor", "ASTRO_TELEMETRY_DISABLED": "1" },
+  "postCreateCommand": "npm ci",
+  "customizations": { "vscode": { "extensions": ["astro-build.astro-vscode"] } }
+}

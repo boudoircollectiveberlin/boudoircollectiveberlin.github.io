@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { codespaceHost,editorRequestAllowed,editorOriginAllowed,editorIdentity } from '../editor/environment.mjs';
+import { allowed } from '../editor/policy.mjs';
+import { authorizeMutation } from '../editor/site-store.mjs';
+import { readDraftSite } from '../shared/site-publication.mjs';
+const policy=JSON.parse(await readFile('policy/content-rbac.json','utf8'));
+const env={CODESPACES:'true',CODESPACE_NAME:'test-bcb-abc',GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:'app.github.dev'};
+const request=(host,origin,remote='127.0.0.1')=>({headers:{host,origin},socket:{remoteAddress:remote}});
+test('Codespaces permits only the configured forwarding host behind loopback and its exact origin',()=>{
+  const host=codespaceHost(env);
+  assert.equal(editorRequestAllowed(request(host,'https://'+host),env),true);
+  assert.equal(editorOriginAllowed(request(host,'https://'+host),env),true);
+  assert.equal(editorRequestAllowed(request('other-4321.app.github.dev','https://other-4321.app.github.dev'),env),false);
+  assert.equal(editorRequestAllowed(request(host,'https://'+host,'10.0.0.2'),env),false);
+  assert.equal(editorRequestAllowed(request(host,'https://'+host),{}),false);
+  assert.equal(editorOriginAllowed(request(host,'https://evil.invalid'),env),false);
+  assert.equal(editorOriginAllowed(request(host,'http://'+host),env),false);
+});
+test('test contributor has journal permissions and cannot publish, change navigation or operative events',()=>{
+  const identity=editorIdentity(process.cwd(),{BCB_EDITOR_PROFILE:'contributor'});
+  assert.equal(allowed(policy,identity,'update','pages',{id:'redaktion-lorem-ipsum'}),true);
+  for(const [resource,id,action] of [['publications','site','publish'],['publications','site','approve'],['navigation','site','update'],['events','schloss-wrodow-2026-08-08','update'],['pages','index','update']])assert.equal(allowed(policy,identity,action,resource,{id}),false);
+  assert.equal(editorIdentity(process.cwd(),env).test,true);
+  assert.throws(()=>editorIdentity(process.cwd(),{...env,BCB_EDITOR_PROFILE:'operator'}),/ausschließlich/);
+  assert.equal(allowed(policy,{...identity,documents:'redaktion-lorem-ipsum'},'update','pages',{id:'redaktion-lorem-ipsum'}),false);
+  const page=readDraftSite(process.cwd()).pages.find(page=>page.id==='redaktion-lorem-ipsum');
+  assert.doesNotThrow(()=>authorizeMutation(process.cwd(),policy,identity,'save',{id:page.id,html:page.html,translations:{de:{editor_journal_test_body_one:'Eine Änderung'}}}));
+  assert.throws(()=>authorizeMutation(process.cwd(),policy,identity,'save',{id:page.id,html:page.html,translations:{de:{navHome:'Manipuliert'}}}),error=>error.status===403);
+});

@@ -3,6 +3,7 @@
 body{margin:0;min-width:360px}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
+#editor-identity{color:#f8f6f2;font-size:12px}
 dialog{position:fixed;inset:0;margin:auto;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
 #conflict-dialog{width:min(1120px,95vw);padding:24px}#conflict-dialog::backdrop{background:#0006}.conflict-columns{display:grid;grid-template-columns:1fr 1fr;gap:16px}.conflict-columns iframe{width:100%;height:45vh;border:1px solid #cfcac2}.conflict-columns section{min-width:0}@media(max-width:700px){.conflict-columns{grid-template-columns:1fr}}
 #context-menu{max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);overflow:auto;overscroll-behavior:contain}

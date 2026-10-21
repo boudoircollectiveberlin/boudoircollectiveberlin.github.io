@@ -1,6 +1,11 @@
 {
   "version": 1,
   "roles": {
+    "journal-contributor": {
+      "pages": { "read": { "documents": "assigned-or-owned" }, "create": true, "update": { "documents": "assigned-or-owned" } },
+      "translations": { "read": true, "update": { "documents": "assigned-or-owned", "languages": "assigned" } },
+      "media": { "read": true }
+    },
     "local-operator": { "*": { "read": true, "create": true, "update": true, "approve": true, "publish": true } },
     "editor": {
       "pages": { "read": { "documents": "assigned-or-owned" }, "create": true, "update": { "documents": "assigned-or-owned" } },

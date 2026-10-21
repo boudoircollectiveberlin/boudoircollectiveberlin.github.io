@@ -7,15 +7,16 @@ import { randomBytes, timingSafeEqual, randomUUID } from 'node:crypto';
 import { readFile, readdir, lstat, realpath, writeFile, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { contentFile, getEditablePage, isLocalRequest, validatePageHtml } from './local-editor-core.mjs';
+import { contentFile, getEditablePage, validatePageHtml } from './local-editor-core.mjs';
 import { readTranslations, saveTranslation, applyTranslationDrafts, writeTranslationSource } from './local-translations.mjs';
 import { readEventCatalog } from '../shared/read-events.mjs';
 import { readReviews, writeReviews, reviewFile, describeReviews, applyReviews } from './event-reviews.mjs';
 import { sitePages } from '../shared/site-pages.mjs';
 import { readDraftSite, revisionOf, readPublication, publicationStatus, composeSitePage } from '../shared/site-publication.mjs';
-import { renderEventPage, serializeEventCatalog, escapeEventHtml } from '../shared/event-content.mjs';
-import { allowed, requirePermission, localOperator } from './policy.mjs';
+import { renderEventPage, serializeEventCatalog } from '../shared/event-content.mjs';
+import { allowed, requirePermission } from './policy.mjs';
 import { assertSiteRevision, authorizeMutation, publicationAction, createSitePage } from './site-store.mjs';
+import { codespaceHost, editorIdentity, editorRequestAllowed, editorOriginAllowed } from './environment.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const editorRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -70,6 +71,9 @@ async function listMedia(directory = path.join(root, 'assets'), prefix = '') {
 }
 
 export default function localEditor() {
+  const identity=editorIdentity(root);
+  const editorPort=process.env.BCB_EDITOR_PORT || '4321';
+  const forwardedHost=codespaceHost(process.env,editorPort);
   const token = randomBytes(32).toString('hex');
   let enabled = false;
   let mutationQueue = Promise.resolve();
@@ -79,7 +83,7 @@ export default function localEditor() {
       'astro:config:setup': ({ command, updateConfig }) => {
         enabled = command === 'dev' && process.env.LOCAL_EDITOR === '1';
         if (enabled)
-          updateConfig({ server: { host: '127.0.0.1', strictPort: true } });
+          updateConfig({ server: { host: '127.0.0.1', strictPort: true },vite:{server:{allowedHosts:forwardedHost?[forwardedHost]:[]}} });
       },
       'astro:server:setup': ({ server }) => {
         if (!enabled) return;
@@ -88,7 +92,7 @@ export default function localEditor() {
           res.setHeader('Cache-Control', 'no-store');
           res.setHeader('X-Robots-Tag', 'noindex, nofollow');
           res.setHeader('X-Content-Type-Options', 'nosniff');
-          if (!isLocalRequest(req)) {
+          if (!editorRequestAllowed(req,process.env,editorPort)) {
             res.statusCode = 403;
             return res.end('Nur lokal verfügbar.');
           }
@@ -96,7 +100,6 @@ export default function localEditor() {
           try {
             const url = new URL(req.url, `http://${req.headers.host}`);
             const policy=JSON.parse(await readFile(path.join(root,'policy/content-rbac.json'),'utf8'));
-            const identity=localOperator;
             const requireRead=(resource,document)=>requirePermission(policy,identity,'read',resource,document);
             if(req.method==='GET' && url.pathname==='/__editor/api/site') {
               requireRead('publications',{id:'site'});
@@ -145,7 +148,7 @@ export default function localEditor() {
               res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
               const draft=readDraftSite(root);
               const pages=sitePages(root).filter(page=>allowed(policy,identity,'read','pages',page)).map(page=>({...page,title:draft.pages.find(item=>item.id===page.id).title}));
-              return res.end(JSON.stringify({pages,token,canCreate:allowed(policy,identity,'create','pages',{id:'new'})}));
+              return res.end(JSON.stringify({pages,token,identity:{label:identity.label,test:identity.test},canManageNavigation:allowed(policy,identity,'update','navigation',{id:'site'}),canCreate:allowed(policy,identity,'create','pages',{id:'new'})}));
             }
             if (req.method === 'GET' && url.pathname === '/__editor/api/page') {
               const page = getEditablePage(url.searchParams.get('id'));
@@ -189,7 +192,7 @@ export default function localEditor() {
               return res.end(JSON.stringify({ assets: await listMedia() }));
             }
             if (req.method === 'POST' && ['/__editor/api/site-action','/__editor/api/save', '/__editor/api/translation-save', '/__editor/api/event-save', '/__editor/api/media-prepare', '/__editor/api/text-create', '/__editor/api/metadata-save', '/__editor/api/navigation-save'].includes(url.pathname)) {
-              if (req.headers.origin !== `http://${req.headers.host}` || req.headers['sec-fetch-site'] === 'cross-site')
+              if (!editorOriginAllowed(req,process.env,editorPort) || req.headers['sec-fetch-site'] === 'cross-site')
                 throw Object.assign(new Error('Fremder Ursprung ist nicht erlaubt.'), { status: 403 });
               const supplied = req.headers['x-editor-token'];
               if (typeof supplied !== 'string' || !/^[a-f0-9]{64}$/.test(supplied) ||

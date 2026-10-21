@@ -26,6 +26,8 @@ Die vollständige Reihenfolge für GitHub, Vercel, Firebase und Google Sheets st
 
 ## Lokal starten
 
+Migration und Beiträge: [Arbeitsplan mit Abnahmekriterien](docs/MIGRATION_PLAN.md), [Schritt-für-Schritt für Beitragende](docs/CONTRIBUTING_CONTENT.md), [Codespaces-Abnahme](docs/CODESPACES_ACCEPTANCE.md). Begrenztes Journal-Testprofil: `npm run dev:editor:test`. Gesamtprüfung: `npm run validate`.
+
 ```bash
 npm install
 npm run check

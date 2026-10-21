@@ -1,19 +1,20 @@
 const actions=new Set(['read','create','update','approve','publish']);
 export function allowed(policy,identity,action,resource,document={}) {
-  if(policy?.version!==1 || typeof identity?.id!=='string' || !identity.id.trim() || !Array.isArray(identity.roles) || !actions.has(action))return false;
+  if(policy?.version!==1 || typeof identity?.id!=='string' || !identity.id.trim() || !Array.isArray(identity.roles) || identity.roles.some(role=>typeof role!=='string') ||
+    (identity.documents!==undefined && !Array.isArray(identity.documents)) || (identity.languages!==undefined && !Array.isArray(identity.languages)) || !actions.has(action))return false;
   return identity.roles.some(role=>{
     const grants=Object.hasOwn(policy.roles || {},role)?policy.roles[role]:undefined;
     const grant=(grants?.[resource] || grants?.['*'])?.[action];
     if(grant===true)return true;
     if(!grant || typeof grant!=='object' || Array.isArray(grant) || !Object.keys(grant).length || Object.keys(grant).some(key=>!['documents','languages'].includes(key)))return false;
-    if(grant.documents) {
+    if(Object.hasOwn(grant,'documents')) {
       const assigned=identity.documents?.includes(document.id);
       const owned=document.ownerId===identity.id;
       if(grant.documents==='assigned' && !assigned)return false;
       if(grant.documents==='assigned-or-owned' && !assigned && !owned)return false;
       if(!['assigned','assigned-or-owned'].includes(grant.documents))return false;
     }
-    if(grant.languages && (grant.languages!=='assigned' || !['de','en'].includes(document.locale) || !identity.languages?.includes(document.locale)))return false;
+    if(Object.hasOwn(grant,'languages') && (grant.languages!=='assigned' || !['de','en'].includes(document.locale) || !identity.languages?.includes(document.locale)))return false;
     return true;
   });
 }

@@ -4,8 +4,9 @@ import { randomUUID } from 'node:crypto';
 import { readDraftSite, revisionOf, readPublication, publicationFile } from '../shared/site-publication.mjs';
 import { sitePages, additionalPages } from '../shared/site-pages.mjs';
 import { addTranslationPair } from './local-translations.mjs';
-import { requirePermission } from './policy.mjs';
+import { requirePermission, allowed } from './policy.mjs';
 import { validatePageHtml } from './local-editor-core.mjs';
+import { safeEventRichText } from '../shared/event-content.mjs';
 
 export async function atomicSource(file,source) {
   const directory=path.dirname(file);
@@ -43,6 +44,7 @@ export async function publicationAction(root,policy,identity,body) {
 }
 export async function createSitePage(root,policy,identity,body) {
   requirePermission(policy,identity,'create','pages',{id:'new'});
+  if((body.type!=='article' || body.navigation===true) && !allowed(policy,identity,'update','navigation',{id:'site'}))throw Object.assign(Error('Neue Beiträge sind Artikel ohne Änderungen an der Hauptnavigation.'),{status:403});
   assertSiteRevision(root,body.revision);
   if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(body.slug) || body.slug.length>60 || !['article','page','journal'].includes(body.type) ||
     !body.values || ['de','en'].some(locale=>typeof body.values[locale]!=='string' || body.values[locale].length>180) || !body.values.de.trim() ||
@@ -81,10 +83,21 @@ export function authorizeMutation(root,policy,identity,route,body) {
   const pages=sitePages(root),page=pages.find(page=>page.id===body.id);
   const draft=readDraftSite(root);
   const check=(action,resource,document)=>requirePermission(policy,identity,action,resource,document);
+  const checkText=(key,locale,value)=>{
+    if(typeof value!=='string')throw Error('Ungültiger Sprachtext.');
+    safeEventRichText(value);
+    const references=draft.pages.filter(item=>{
+      const html=item.id===body.id && typeof body.html==='string'?body.html:item.html;
+      return html.includes(`="${key}"`) || html.includes(`:${key}`);
+    });
+    // Shared text requires permission for every referencing page, not just the open page.
+    if(!references.length)check('update','translations',{id:key,locale});
+    for(const item of references)check('update','translations',{...pages.find(page=>page.id===item.id),locale});
+  };
   if(route==='save') {
     if(!page)throw Error('Unbekannte Seite.');
     if(body.html!==draft.pages.find(item=>item.id===page.id).html)check('update','pages',page);
-    for(const [locale,values] of Object.entries(body.translations || {}))for(const key of Object.keys(values))check('update','translations',{id:key,locale});
+    for(const [locale,values] of Object.entries(body.translations || {}))for(const key of Object.keys(values))checkText(key,locale,values[key]);
     for(const update of body.events || []) {
       const event=draft.events.events.find(item=>item.id===update.id);
       if(!event)throw Error('Unbekanntes Event.');
@@ -103,7 +116,7 @@ export function authorizeMutation(root,policy,identity,route,body) {
   }else if(route==='event-save') {
     // The legacy batch endpoint is operator-only: use normal drafts for scoped event edits.
     check('update','navigation',{id:'site'});
-  }else if(route==='translation-save')check('update','translations',{id:body.key,locale:body.locale});
-  else if(route==='text-create')for(const locale of Object.keys(body.values || {}))check('update','translations',{id:body.key,locale});
+  }else if(route==='translation-save')checkText(body.key,body.locale,body.value);
+  else if(route==='text-create')for(const locale of Object.keys(body.values || {}))checkText(body.key,locale,body.values[locale]);
   else throw Error('Unbekannte Redaktionsaktion.');
 }

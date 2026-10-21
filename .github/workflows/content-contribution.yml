@@ -1,0 +1,34 @@
+name: Content contribution policy
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  validate-content:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: true # Read-only token; candidate code is never executed.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Fetch candidate as data only
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          [[ "$HEAD_SHA" =~ ^[a-f0-9]{40}$ && "$PR_NUMBER" =~ ^[0-9]+$ ]]
+          git fetch origin "refs/pull/$PR_NUMBER/head"
+          test "$(git rev-parse FETCH_HEAD)" = "$HEAD_SHA"
+      - name: Validate using trusted target-branch code and policy
+        env:
+          BCB_CONTRIBUTION_BASE: ${{ github.event.pull_request.base.sha }}
+          BCB_CONTRIBUTION_HEAD: ${{ github.event.pull_request.head.sha }}
+          BCB_CONTRIBUTOR_LOGIN: ${{ github.event.pull_request.user.login }}
+        run: node scripts/check-contribution.mjs

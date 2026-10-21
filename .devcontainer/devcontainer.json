@@ -1,5 +1,5 @@
 {
-  "name": "BCB Redaktion · begrenztes Testprofil",
+  "name": "BCB Redaktion · GitHub-Beitragende",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
   "forwardPorts": [4321],
   "portsAttributes": {
@@ -7,5 +7,6 @@
   },
   "containerEnv": { "BCB_EDITOR_PROFILE": "contributor", "ASTRO_TELEMETRY_DISABLED": "1" },
   "postCreateCommand": "npm ci",
+  "postStartCommand": "bash .devcontainer/start-editor.sh",
   "customizations": { "vscode": { "extensions": ["astro-build.astro-vscode"] } }
 }

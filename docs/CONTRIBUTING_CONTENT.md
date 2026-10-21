@@ -8,11 +8,15 @@ Der Migrationsstand muss zuerst auf GitHub bereitgestellt sein; er ist derzeit l
 
 ## Einmal die Umgebung öffnen
 
+Direkteinstieg: [Codespace für preview erstellen](https://codespaces.new/boudoircollectiveberlin/boudoircollectiveberlin.github.io/tree/preview). Damit wird direkt der Redaktionsbranch ausgewählt. Ein von `main` gestarteter Codespace verwendet dessen eigene Konfiguration; die Einrichtung aus `preview` ist dort erst nach Übernahme der Devcontainer-Konfiguration verfügbar. Bestehende Arbeitsbranches werden nicht automatisch gewechselt.
+
+Nach Einrichtung oder erneutem Start startet der Editor automatisch mit der bestätigten GitHub-Identität und deren Zuweisungen. Port4321 bleibt privat. Fehlt die Zuweisung oder Anmeldung, startet kein Ersatzprofil. Das Startprotokoll liegt unter `/tmp/bcb-editor-<Codespace-Name>/server.log`. Nach einer Änderung der Devcontainer-Konfiguration einen bestehenden Codespace über **Codespaces: Rebuild Container** aktualisieren.
+
 1. Öffne das BCB-Repository auf GitHub und wähle den vom Maintainer genannten Zielbranch.
 2. Öffne **Code → Codespaces → Create codespace**. Die vorbereitete Umgebung installiert die Projektabhängigkeiten.
 3. Prüfe unter **Ports**, dass Port **4321 privat** ist. Nicht auf öffentlich oder Organisation umstellen.
 4. Öffne ein Terminal und führe `npm run validate` aus. Bei Fehlern nicht weiter veröffentlichen, sondern das Fehlerprotokoll an die verantwortliche Person geben.
-5. Starte `npm run dev:editor:contribute`. Deine GitHub-Identität wird über GitHubs `/user`-Endpunkt bestätigt. Die erlaubten Seiten und Sprachen kommen aus der Zuweisungsdatei. Fehlt die Zuweisung, stoppt der Start.
+5. Der Editor wird automatisch gestartet. Für einen manuellen Start nach Beenden des bisherigen Prozesses: `npm run dev:editor:contribute`. Deine GitHub-Identität wird über GitHubs `/user`-Endpunkt bestätigt. Die erlaubten Seiten und Sprachen kommen aus der Zuweisungsdatei. Fehlt die Zuweisung, stoppt der Start.
 6. Öffne im Ports-Fenster die Adresse von Port4321 und hänge `/__editor/` an. Verwende die weitergeleitete HTTPS-Adresse, nicht die localhost-Adresse deines Computers.
 
 Nur zum Ausprobieren ohne echten Account-Mapping: `npm run dev:editor:test`. Die Oberfläche zeigt ausdrücklich **Testbeitragender · Journal**. Das ist eine lokale Testidentität, kein angelegtes GitHub-Konto. Sie darf Journalentwürfe ändern und neue eigene Artikel anlegen, aber weder Startseite, gemeinsame Navigation, Events noch Freigaben verändern. Aus dem Testprofil erzeugte neue Artikel sind nicht als echter Autorenbeitrag einzureichen.
@@ -35,7 +39,7 @@ Nur zum Ausprobieren ohne echten Account-Mapping: `npm run dev:editor:test`. Die
 
 ## Den Beitrag zur Prüfung abgeben
 
-1. Beende den Editor mit Strg+C, wenn du fertig bist.
+1. Speichere alle Änderungen. Bei manuellem Start kannst du den Editor mit Strg+C beenden; der automatisch gestartete Editor läuft im Hintergrund bis zum Stoppen des Codespaces weiter.
 2. Öffne **Source Control** in VS Code und lege einen neuen Branch an, z.B. `content/mein-artikel`.
 3. Prüfe die Änderungen. Zum Content-Beitrag gehören ausschließlich die betroffenen Artikeldateien unter `src/content/pages/redaktion-*.html`, `i18n.js` und bei neuen Artikeln `content/site-pages.json`. Keine generierten Ordner, Policies, Workflows, Secrets, Quellskripte oder Freigabedateien hinzufügen.
 4. Committe die ausgewählten Dateien mit einer kurzen Beschreibung, z.B. „Journal: Text zu … ergänzen“.

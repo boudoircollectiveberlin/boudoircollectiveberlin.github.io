@@ -1,20 +1,20 @@
 # Codespaces-Abnahmeprotokoll
 
-Stand: lokal vorbereitet, **noch kein echter Codespaces-/GitHub-PR-Durchlauf**.
+Stand: 21.10.2026: echter Codespace mit BCB-Dominik geprüft; echte Positiv-/Negativ-PR-Abnahme weiterhin offen.
 
 | Nachweis | Lokal | Echter Codespace |
 | --- | --- | --- |
-| Node22 / npm ci / Build / Tests | Projektprüfungen | offen |
+| Node22 / npm ci / Build / Tests | Projektprüfungen | Node22.23.4, Container-Rebuild, Build, 49 Tests und Syntaxchecks erfolgreich |
 | Private Port4321-Weiterleitung / exakter Origin / fremder Host abgelehnt | automatisierte Host-/Origin-Tests | offen |
-| Oberfläche zeigt begrenzte Testidentität, nur Journal zugewiesen | Browser und lokale HTTP-Prüfung erfolgreich | offen |
+| Oberfläche zeigt begrenzte Identität, nur Journal zugewiesen | Browser und lokale HTTP-Prüfung erfolgreich | GitHub-Beitragender bcb-dominik, genau zwei Journal-Einträge, DE/EN-Wechsel geprüft |
 | Erlaubter DE/EN-Journaltext speicherbar | automatisiert | offen |
 | Startseite, fremdes Event, globale Navigation, Freigabe verweigert | automatisiert | offen |
 | Nur eigenes/zugewiesenes Sprachmaterial im Beitrag zulässig | automatisiert | offen |
-| GitHub-Identität über authentifizierten /user-Endpunkt | isolierte API-Tests | offen |
+| GitHub-Identität über authentifizierten /user-Endpunkt | isolierte API-Tests | echter Start erfolgreich als bcb-dominik |
 | PR-Autor aus vertrauenswürdigen Metadaten / Zielbranch-Policy | Validator-/Negativtests | offen |
 | Echte Git-Blob-Kandidaten: erlaubter Beitrag akzeptiert, eingeschleuster Code abgelehnt | temporäres Git-Repository geprüft, Kandidat nie ausgeführt | offen |
 | Code-, Policy-, Release-, Symlink- und aktive Sprachdateiänderungen abgelehnt | automatisiert | offen |
-| Entwürfe fehlen im öffentlichen Build | bestehende Journal-/Buildtests | offen |
+| Entwürfe fehlen im öffentlichen Build | bestehende Journal-/Buildtests | Build und Tests im Codespace erfolgreich |
 | Anleitung von einer neuen dritten Person durchlaufen | offen | offen |
 
 Nach echtem Test ergänzen: Zielbranch und Bootstrap-Commit, Testaccount, Datum, Codespace-Port-Sichtbarkeit, Positiv-/Negativ-PR-Links, Check-Ergebnisse, Browserbefunde, verbleibende Fehler. Keine Tokens, Cookies, Teilnehmerdaten oder vollständigen privaten URLs mit Zugangsdaten speichern.
@@ -31,3 +31,5 @@ npm run dev:editor:contribute
 ```
 
 Der Codespaces-Test darf keine produktiven APIs oder Mailaktionen verwenden. Vor einer tatsächlichen Website-Freigabe muss der fiktive Lorem-ipsum-Beitrag ersetzt oder aus dem Freigabeumfang entfernt werden; die aktuelle Freigabe umfasst die gesamte Website.
+
+Browserabnahme 21.10.2026: preview bis 6fb0394, Port4321 privat; Editor über weitergeleitete HTTPS-Adresse erreichbar, Profil bcb-dominik, Journal DE/EN und deaktivierte Freigabebuttons geprüft. Lokaler und weitergeleiteter Host jeweils HTTP200. Codespaces-Starthook nach gezieltem Beenden des Astro-Prozesses erneut ausgeführt: Bereitschaftsmeldung und HTTP200 erfolgreich, doppelter Aufruf erzeugt keinen zweiten Server. Vollständiger Stop/Resume mit dem zuletzt geänderten Hook noch separat offen. Keine Inhalte gespeichert/geändert und keine Produktiv-APIs ausgelöst. Screenshots bcb-codespaces-validated.png. Ursprüngliche Ursache: Image Node22.16.0 zu alt für Astro; jetzt offizielle Node22-Featureinstallation. Echte Content-PRs und cloudseitige Schreib-Negativtests bleiben offen.

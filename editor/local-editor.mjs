@@ -88,6 +88,12 @@ export default function localEditor() {
       'astro:server:setup': ({ server }) => {
         if (!enabled) return;
         server.middlewares.use(async (req, res, next) => {
+          // Codespaces opens the forwarded port root; lead contributors into the editor.
+          // Public site routes and the saved website preview remain directly accessible.
+          if (forwardedHost && req.method === 'GET' && req.url === '/' && editorRequestAllowed(req,process.env,editorPort)) {
+            res.writeHead(302, { Location: '/__editor/', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' });
+            return res.end();
+          }
           if (!req.url?.startsWith('/__editor')) return next();
           res.setHeader('Cache-Control', 'no-store');
           res.setHeader('X-Robots-Tag', 'noindex, nofollow');

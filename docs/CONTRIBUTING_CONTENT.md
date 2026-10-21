@@ -8,6 +8,8 @@ Der Migrationsstand muss zuerst auf GitHub bereitgestellt sein; er ist derzeit l
 
 ## Einmal die Umgebung öffnen
 
+**Normaler Einstieg:** Codespace öffnen, Einrichtung abwarten, der Editor öffnet automatisch im Browser. Falls der Browser den Tab nicht zeigt, unter **Ports → 4321 → In Browser öffnen** klicken. Auch die reine Portadresse führt jetzt direkt zur Redaktion. Zum Wiederkommen einen vorhandenen Codespace unter [Deine Codespaces](https://github.com/codespaces) öffnen; nicht für jede Sitzung einen neuen anlegen.
+
 Direkteinstieg: [Codespace für preview erstellen](https://codespaces.new/boudoircollectiveberlin/boudoircollectiveberlin.github.io/tree/preview). Damit wird direkt der Redaktionsbranch ausgewählt. Ein von `main` gestarteter Codespace verwendet dessen eigene Konfiguration; die Einrichtung aus `preview` ist dort erst nach Übernahme der Devcontainer-Konfiguration verfügbar. Bestehende Arbeitsbranches werden nicht automatisch gewechselt.
 
 Nach Einrichtung oder erneutem Start startet der Editor automatisch mit der bestätigten GitHub-Identität und deren Zuweisungen. Port4321 bleibt privat. Fehlt die Zuweisung oder Anmeldung, startet kein Ersatzprofil. Das Startprotokoll liegt unter `/tmp/bcb-editor-<Codespace-Name>/server.log`. Nach einer Änderung der Devcontainer-Konfiguration einen bestehenden Codespace über **Codespaces: Rebuild Container** aktualisieren.
@@ -19,7 +21,7 @@ Die Umgebung installiert die aktuelle Node22-Version (mindestens22.22.0). Bei ä
 3. Prüfe unter **Ports**, dass Port **4321 privat** ist. Nicht auf öffentlich oder Organisation umstellen.
 4. Öffne ein Terminal und führe `npm run validate` aus. Bei Fehlern nicht weiter veröffentlichen, sondern das Fehlerprotokoll an die verantwortliche Person geben.
 5. Der Editor wird automatisch gestartet. Für einen manuellen Start nach Beenden des bisherigen Prozesses: `npm run dev:editor:contribute`. Deine GitHub-Identität wird über GitHubs `/user`-Endpunkt bestätigt. Die erlaubten Seiten und Sprachen kommen aus der Zuweisungsdatei. Fehlt die Zuweisung, stoppt der Start.
-6. Öffne im Ports-Fenster die Adresse von Port4321 und hänge `/__editor/` an. Verwende die weitergeleitete HTTPS-Adresse, nicht die localhost-Adresse deines Computers.
+6. Der Browser öffnet die private Portadresse automatisch. Falls nötig unter **Ports → 4321 → In Browser öffnen** nachholen. Die Portadresse leitet direkt zur Redaktion weiter. Verwende die weitergeleitete HTTPS-Adresse, nicht die localhost-Adresse deines Computers.
 
 Nur zum Ausprobieren ohne echten Account-Mapping: `npm run dev:editor:test`. Die Oberfläche zeigt ausdrücklich **Testbeitragender · Journal**. Das ist eine lokale Testidentität, kein angelegtes GitHub-Konto. Sie darf Journalentwürfe ändern und neue eigene Artikel anlegen, aber weder Startseite, gemeinsame Navigation, Events noch Freigaben verändern. Aus dem Testprofil erzeugte neue Artikel sind nicht als echter Autorenbeitrag einzureichen.
 

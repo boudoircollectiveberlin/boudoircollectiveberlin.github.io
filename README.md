@@ -1,5 +1,15 @@
 # Boudoir Collective Berlin
 
+## Texte und Journal bearbeiten
+
+**[Redaktion in Codespaces öffnen](https://codespaces.new/boudoircollectiveberlin/boudoircollectiveberlin.github.io/tree/preview)** · [Bestehenden Codespace fortsetzen](https://github.com/codespaces)
+
+GitHub-Anmeldung und vorherige Seitenzuweisung erforderlich. Nach der Einrichtung startet der Editor automatisch und die private Redaktionsadresse wird im Browser geöffnet. Falls kein Tab erscheint: unten **Ports → 4321 → In Browser öffnen**. Die Adresse führt direkt in die Redaktion; kein Pfad muss ergänzt werden.
+
+**Bearbeiten → Speichern → Vorschau → Beitrag zur Prüfung einreichen.** Speichern veröffentlicht nichts. Die [kurze Schritt-für-Schritt-Anleitung](docs/CONTRIBUTING_CONTENT.md) erklärt auch das Einreichen und Beenden. Zum Beenden: **Strg+Umschalt+P → Codespaces: Stop Current Codespace**.
+
+Bei Startproblemen zeigt das Einrichtungsprotokoll die fehlende Bereitschaft und den Ort des Startprotokolls. Kein neues Konto, Passwort oder zusätzliches Testprofil ist nötig.
+
 Community- und Eventseite für `@boudoircollectiveberlin`.
 
 Die Seite ist als statisches Frontend mit optionaler Vercel-API aufgebaut:
